@@ -114,3 +114,53 @@ export interface ESPNWorldCupSummaryResponse {
     venue?: { fullName?: string; address?: { city?: string } };
   };
 }
+
+// Extended summary response — full match center data
+export interface ESPNCommentaryEntry {
+  text: string;
+  clock?: { displayValue: string };
+  type?: { text: string };
+  athletesInvolved?: { id: string; displayName: string }[];
+}
+
+export interface ESPNPickcenterEntry {
+  provider?: { name: string };
+  homeTeamOdds?: { moneyLine?: number };
+  awayTeamOdds?: { moneyLine?: number };
+  drawOdds?: { moneyLine?: number };
+  overUnder?: number;
+  spread?: number;
+  awayTeamSpread?: number;
+}
+
+export interface ESPNHeadToHeadGame {
+  competitions?: {
+    date: string;
+    competitors: { homeAway: string; team: { abbreviation: string }; score: string; winner?: boolean }[];
+    status?: { type?: { completed: boolean } };
+    notes?: { text: string }[];
+  }[];
+}
+
+export interface ESPNLeader {
+  team?: { abbreviation: string; logo?: string };
+  leaders?: {
+    displayName: string;
+    leaders?: {
+      athlete: { displayName: string; headshot?: { href: string }; id: string };
+      value: number;
+      displayValue: string;
+    }[];
+  }[];
+}
+
+// Extended summary response shape
+export interface ESPNMatchSummaryFull extends ESPNWorldCupSummaryResponse {
+  commentary?: ESPNCommentaryEntry[];
+  pickcenter?: ESPNPickcenterEntry[];
+  headToHeadGames?: { events?: ESPNHeadToHeadGame[] };
+  leaders?: ESPNLeader[];
+  article?: { story?: string };
+  videos?: { source?: { HD?: { href: string } }; thumbnail?: string; description?: string; duration?: number }[];
+  winprobability?: { homeWinPercentage: number; tiePercentage: number; awayWinPercentage?: number; playId?: string }[];
+}

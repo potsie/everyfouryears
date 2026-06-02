@@ -1,7 +1,8 @@
 import { espnFetch } from '@/lib/espn/core';
-import { normalizeScoreboardEvent, type WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
+import { normalizeScoreboardEvent, normalizeMatchDetail, type WorldCupMatchNormalized, type MatchCenterData } from '@/lib/normalize/world-cup-normalizer';
 import { normalizeGroupStandings } from '@/lib/normalize/standings';
 import type { WorldCupGroupTable } from '@/types/standings-types';
+import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
 
 type TeamDictionary = Record<string, { name: string; abbr: string; logo: string }>;
 
@@ -86,4 +87,10 @@ export async function fetchAllGroupStandings(
 
   const results = await Promise.all(groupIds.map(id => fetchGroupById(id, teamDict)));
   return results.filter((g): g is WorldCupGroupTable => g !== null);
+}
+
+export async function fetchMatchSummary(eventId: string): Promise<MatchCenterData> {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${eventId}`;
+  const data = await espnFetch<ESPNMatchSummaryFull>(url, `wc-match-${eventId}`, 60);
+  return normalizeMatchDetail(eventId, data);
 }

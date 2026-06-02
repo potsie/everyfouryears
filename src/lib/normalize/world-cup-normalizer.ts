@@ -4,6 +4,7 @@ import type {
   ESPNKeyEvent,
   ESPNWorldCupRosterTeam,
   ESPNMatchDetail,
+  ESPNMatchSummaryFull,
 } from '@/types/world-cup-types';
 
 export interface WorldCupGoal {
@@ -235,5 +236,355 @@ export function normalizeWorldCupGame(
     broadcaster,
     home: buildTeam('home'),
     away: buildTeam('away'),
+  };
+}
+
+// ---- Types for the Match Center UI ----
+
+export interface MatchCenterTeam {
+  id: string;
+  abbr: string;
+  name: string;
+  logo: string;
+  score: number | null;      // null = pre-match
+  formation: string;
+  coach: string;
+  lines: MatchLinePlayer[][];  // grouped by position line: [GK], [DEF...], [MID...], [FWD...]
+  bench: string[];
+  goals: MatchGoal[];
+}
+
+export interface MatchLinePlayer {
+  id: string;
+  name: string;             // short name
+  jersey: string;
+  isCaptain: boolean;
+  isStar: boolean;
+  headshotUrl: string;
+}
+
+export interface MatchGoal {
+  minute: string;
+  player: string;
+  detail: string;            // e.g. "assist McKennie" or "penalty"
+}
+
+export interface MatchKeyEvent {
+  at: number;               // minute as number
+  extra: number;            // stoppage time (0 if none)
+  type: 'goal' | 'pen' | 'og' | 'yellow' | 'red' | 'sub' | 'var' | 'whistle';
+  team: 'home' | 'away' | 'neutral';
+  player: string;
+  detail: string;
+  scoreHome: number | null;
+  scoreAway: number | null;
+}
+
+export interface MatchStat {
+  label: string;
+  home: number;
+  away: number;
+  unit?: string;
+  pct?: boolean;
+}
+
+export interface CommentaryEntry {
+  min: string;
+  type: 'goal' | 'pen' | 'yellow' | 'red' | 'var' | 'sub' | 'note' | 'whistle';
+  text: string;
+}
+
+export interface MatchOdds {
+  homeMoneyline: string;
+  drawMoneyline: string;
+  awayMoneyline: string;
+  overUnder: string;
+}
+
+export interface H2HGame {
+  date: string;
+  comp: string;
+  homeAbbr: string;
+  awayAbbr: string;
+  score: string;
+}
+
+export interface MatchCenterData {
+  eventId: string;
+  state: 'pre' | 'in' | 'post';
+  date: string;
+  kickoffISO: string;
+  group: string;
+  matchday: string;
+  round: string;
+  venue: string;
+  venueCity: string;
+  broadcaster: string;
+  attendance: number | null;
+  clock: string;
+  home: MatchCenterTeam;
+  away: MatchCenterTeam;
+  events: MatchKeyEvent[];
+  stats: MatchStat[];
+  commentary: CommentaryEntry[];
+  odds: MatchOdds | null;
+  winProbHome: number | null;    // 0-100 latest win prob for home
+  winProbDraw: number | null;
+  h2h: H2HGame[];
+  groupStandings: { abbr: string; logo: string; played: number; gd: string; pts: number; status: 'advancing' | 'bubble' | 'out' | '' }[];
+  motmName: string | null;
+  motmLine: string | null;
+}
+
+function parseMinute(displayValue: string): { at: number; extra: number } {
+  const m = displayValue.replace("'", '');
+  if (m.includes('+')) {
+    const [base, extra] = m.split('+').map(Number);
+    return { at: base, extra: extra || 0 };
+  }
+  return { at: Number(m) || 0, extra: 0 };
+}
+
+function eventType(text: string): MatchKeyEvent['type'] {
+  if (text === 'Penalty Kick Goal') return 'pen';
+  if (text.includes('Goal') || text.includes('goal')) return 'goal';
+  if (text === 'Yellow Card') return 'yellow';
+  if (text === 'Red Card') return 'red';
+  if (text === 'Substitution') return 'sub';
+  if (text === 'End Match' || text === 'Full Time') return 'whistle';
+  return 'goal' as MatchKeyEvent['type']; // fallback — filtered before use
+}
+
+function commentaryType(text: string, typeText?: string): CommentaryEntry['type'] {
+  const t = typeText ?? '';
+  if (t.includes('Goal')) return 'goal';
+  if (t.includes('Penalty')) return 'pen';
+  if (t.includes('Yellow')) return 'yellow';
+  if (t.includes('Red')) return 'red';
+  if (t.includes('Sub')) return 'sub';
+  if (t.includes('VAR')) return 'var';
+  if (text.toLowerCase().includes('whistle') || text.toLowerCase().includes('full time')) return 'whistle';
+  return 'note';
+}
+
+function groupRosters(
+  rosters: ESPNWorldCupRosterTeam[] | undefined,
+  teamId: string,
+): { lines: MatchLinePlayer[][]; bench: string[] } {
+  if (!rosters) return { lines: [], bench: [] };
+  const teamRoster = rosters.find(r => r.team.id === teamId);
+  if (!teamRoster) return { lines: [], bench: [] };
+
+  const starters = teamRoster.roster.filter(p => p.starter);
+  const subs = teamRoster.roster.filter(p => !p.starter);
+
+  // Group starters by position line
+  const posOrder: Record<string, number> = { GK: 0, G: 0, DEF: 1, D: 1, MID: 2, M: 2, FWD: 3, F: 3, ATT: 3 };
+  const lineMap: Record<number, MatchLinePlayer[]> = {};
+  for (const p of starters) {
+    const posAbbr = p.position?.abbreviation?.toUpperCase() ?? 'MID';
+    const lineIdx = posOrder[posAbbr] ?? 2;
+    if (!lineMap[lineIdx]) lineMap[lineIdx] = [];
+    lineMap[lineIdx].push({
+      id: p.athlete.id,
+      name: p.athlete.shortName || p.athlete.displayName,
+      jersey: p.jersey,
+      isCaptain: false,
+      isStar: false,
+      headshotUrl: p.athlete.headshot?.href ?? `https://a.espncdn.com/i/headshots/soccer/players/full/${p.athlete.id}.png`,
+    });
+  }
+  const lines = [0, 1, 2, 3].map(i => lineMap[i] ?? []).filter(l => l.length > 0);
+  const bench = subs.map(p => p.athlete.shortName || p.athlete.displayName);
+  return { lines, bench };
+}
+
+export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull): MatchCenterData {
+  const comp = data.header.competitions[0];
+  const homeComp = comp.competitors.find(c => c.homeAway === 'home')!;
+  const awayComp = comp.competitors.find(c => c.homeAway === 'away')!;
+  const homeId = homeComp.team.id;
+  const awayId = awayComp.team.id;
+
+  const keyEvents = data.keyEvents ?? [];
+  const state = comp.status.type.state;
+
+  // Events for timeline
+  let runningHome = 0, runningAway = 0;
+  const events: MatchKeyEvent[] = keyEvents
+    .filter(e => {
+      const t = e.type.text;
+      return t !== 'Kickoff' && t !== 'Halftime';
+    })
+    .map(e => {
+      const { at, extra } = parseMinute(e.clock?.displayValue ?? '0');
+      const team: 'home' | 'away' | 'neutral' = e.team?.id === homeId ? 'home' : e.team?.id === awayId ? 'away' : 'neutral';
+      const player = e.participants?.[0]?.athlete.displayName ?? '';
+      const assist = e.participants?.[1]?.athlete.displayName;
+      const type = eventType(e.type.text);
+      if (type === 'goal' || type === 'pen') {
+        if (team === 'home') runningHome++;
+        else if (team === 'away') runningAway++;
+      }
+      return {
+        at, extra, type, team, player,
+        detail: assist ? `assist ${assist}` : e.type.text === 'Penalty Kick Goal' ? 'penalty' : '',
+        scoreHome: (type === 'goal' || type === 'pen') ? runningHome : null,
+        scoreAway: (type === 'goal' || type === 'pen') ? runningAway : null,
+      };
+    });
+
+  // Add whistle for post
+  if (state === 'post') {
+    events.push({ at: 90, extra: 0, type: 'whistle', team: 'neutral', player: '', detail: 'Full Time', scoreHome: null, scoreAway: null });
+  }
+
+  // Stats
+  const homeEntry = data.boxscore.teams.find(t => t.homeAway === 'home');
+  const awayEntry = data.boxscore.teams.find(t => t.homeAway === 'away');
+  const hStats = homeEntry?.statistics ?? [];
+  const aStats = awayEntry?.statistics ?? [];
+  const getStat = (stats: typeof hStats, name: string) => Number(stats.find(s => s.name === name)?.displayValue ?? 0);
+
+  const stats: MatchStat[] = [
+    { label: 'Possession', home: getStat(hStats, 'possessionPct'), away: getStat(aStats, 'possessionPct'), unit: '%', pct: true },
+    { label: 'Shots', home: getStat(hStats, 'totalShots'), away: getStat(aStats, 'totalShots') },
+    { label: 'Shots on target', home: getStat(hStats, 'shotsOnTarget'), away: getStat(aStats, 'shotsOnTarget') },
+    { label: 'Saves', home: getStat(hStats, 'saves'), away: getStat(aStats, 'saves') },
+    { label: 'Corners', home: getStat(hStats, 'wonCorners'), away: getStat(aStats, 'wonCorners') },
+    { label: 'Fouls', home: getStat(hStats, 'foulsCommitted'), away: getStat(aStats, 'foulsCommitted') },
+    { label: 'Offsides', home: getStat(hStats, 'offsides'), away: getStat(aStats, 'offsides') },
+    { label: 'Passes', home: getStat(hStats, 'totalPasses'), away: getStat(aStats, 'totalPasses') },
+    { label: 'Pass accuracy', home: getStat(hStats, 'passPct'), away: getStat(aStats, 'passPct'), unit: '%', pct: true },
+    { label: 'Yellow cards', home: getStat(hStats, 'yellowCards'), away: getStat(aStats, 'yellowCards') },
+    { label: 'Red cards', home: getStat(hStats, 'redCards'), away: getStat(aStats, 'redCards') },
+  ].filter(s => s.home > 0 || s.away > 0 || s.pct);
+
+  // Lineups
+  const homeRoster = groupRosters(data.rosters, homeId);
+  const awayRoster = groupRosters(data.rosters, awayId);
+
+  // Commentary
+  const commentary: CommentaryEntry[] = (data.commentary ?? []).map(c => ({
+    min: c.clock?.displayValue ?? '—',
+    type: commentaryType(c.text, c.type?.text),
+    text: c.text,
+  }));
+
+  // Odds
+  let odds: MatchOdds | null = null;
+  const pc = data.pickcenter?.[0];
+  if (pc) {
+    const fmt = (n?: number) => n == null ? '—' : n > 0 ? `+${n}` : String(n);
+    odds = {
+      homeMoneyline: fmt(pc.homeTeamOdds?.moneyLine),
+      drawMoneyline: fmt(pc.drawOdds?.moneyLine),
+      awayMoneyline: fmt(pc.awayTeamOdds?.moneyLine),
+      overUnder: pc.overUnder != null ? String(pc.overUnder) : '—',
+    };
+  }
+
+  // Win probability (latest entry)
+  const wpEntries = data.winprobability ?? [];
+  const lastWP = wpEntries[wpEntries.length - 1];
+  const winProbHome = lastWP ? Math.round(lastWP.homeWinPercentage * 100) : null;
+  const winProbDraw = lastWP ? Math.round((lastWP.tiePercentage ?? 0) * 100) : null;
+
+  // H2H
+  const h2h: H2HGame[] = (data.headToHeadGames?.events ?? []).slice(0, 4).map(ev => {
+    const c = ev.competitions?.[0];
+    if (!c) return null;
+    const home = c.competitors.find(t => t.homeAway === 'home');
+    const away = c.competitors.find(t => t.homeAway === 'away');
+    const d = new Date(c.date);
+    const dateStr = d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+    const comp = c.notes?.[0]?.text ?? 'Friendly';
+    return {
+      date: dateStr,
+      comp,
+      homeAbbr: home?.team.abbreviation ?? '',
+      awayAbbr: away?.team.abbreviation ?? '',
+      score: `${home?.score ?? 0}–${away?.score ?? 0}`,
+    };
+  }).filter((g): g is H2HGame => g !== null);
+
+  // Group standings (from embedded standings in summary)
+  const groupStandings: MatchCenterData['groupStandings'] = [];
+
+  // Broadcast
+  const broadcaster = comp.geoBroadcasts?.[0]?.media?.shortName ?? '';
+
+  // Group info from header
+  const rawGroup = (comp as any).groups?.shortName ?? (comp as any).group?.shortName ?? '';
+  const groupLetter = rawGroup.replace(/^Group\s+/i, '').trim();
+  const seasonTypeId = Number(data.header.season?.type?.id ?? 1);
+  const roundNames: Record<number, string> = { 1: 'Group Stage', 2: 'Round of 32', 3: 'Round of 16', 4: 'Quarterfinals', 5: 'Semifinals', 6: 'Third Place', 7: 'Final' };
+  const round = roundNames[seasonTypeId] ?? 'Match';
+  const matchday = (comp as any).week?.number ? `Matchday ${(comp as any).week?.number}` : round;
+
+  function buildTeam(competitor: typeof homeComp, homeAway: 'home' | 'away'): MatchCenterTeam {
+    const roster = homeAway === 'home' ? homeRoster : awayRoster;
+    const teamId = competitor.team.id;
+    const score = state === 'pre' ? null : Number(competitor.score);
+    const teamGoals = keyEvents
+      .filter(e => (e.type.text.includes('Goal')) && e.team?.id === teamId)
+      .map(e => ({
+        minute: e.clock?.displayValue ?? '',
+        player: e.participants?.[0]?.athlete.displayName ?? '',
+        detail: e.participants?.[1] ? `assist ${e.participants[1].athlete.displayName}` : e.type.text === 'Penalty Kick Goal' ? 'penalty' : '',
+      }));
+    return {
+      id: teamId,
+      abbr: competitor.team.abbreviation,
+      name: competitor.team.displayName,
+      logo: competitor.team.logo ?? '',
+      score,
+      formation: '',
+      coach: '',
+      lines: roster.lines,
+      bench: roster.bench,
+      goals: teamGoals,
+    };
+  }
+
+  // MOTM from leaders (post-match)
+  let motmName: string | null = null;
+  let motmLine: string | null = null;
+  if (data.leaders && state === 'post') {
+    const ratingLeader = data.leaders.find(l =>
+      l.leaders?.some(ll => ll.displayName?.toLowerCase().includes('rating'))
+    );
+    const top = ratingLeader?.leaders?.[0]?.leaders?.[0];
+    if (top) {
+      motmName = top.athlete.displayName;
+      motmLine = `Rating: ${top.displayValue}`;
+    }
+  }
+
+  return {
+    eventId,
+    state,
+    date: comp.date,
+    kickoffISO: comp.date,
+    group: groupLetter,
+    matchday,
+    round,
+    venue: data.gameInfo.venue?.fullName ?? '',
+    venueCity: data.gameInfo.venue?.address?.city ?? '',
+    broadcaster,
+    attendance: data.gameInfo.attendance ?? null,
+    clock: comp.status.displayClock,
+    home: buildTeam(homeComp, 'home'),
+    away: buildTeam(awayComp, 'away'),
+    events,
+    stats,
+    commentary,
+    odds,
+    winProbHome,
+    winProbDraw,
+    h2h,
+    groupStandings,
+    motmName,
+    motmLine,
   };
 }
