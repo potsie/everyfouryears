@@ -899,3 +899,44 @@ body.dense .tl-row { padding: 5px 0; }
 @media (max-width: 620px) {
   .th-id h1, .ph-titles h1 { font-size: 30px; }
 }
+
+/* ── Teams listing flag card ── */
+.team-flag-card {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-md); box-shadow: var(--sh-1);
+  padding: 14px; text-decoration: none;
+  transition: box-shadow .14s, transform .08s, border-color .14s;
+}
+.team-flag-card:hover {
+  box-shadow: var(--sh-2); transform: translateY(-1px); border-color: var(--line-2);
+}
+
+/* ── Two-column layout: main content + right shelf ── */
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+  margin-top: 0;
+}
+@media (max-width: 980px) {
+  .cols { grid-template-columns: 1fr; }
+}
+
+.shelf { display: flex; flex-direction: column; gap: 16px; }
+
+/* panel card (used in shelf) */
+.panel {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-md); box-shadow: var(--sh-1); overflow: hidden;
+}
+.panel + .panel { margin-top: 0; }
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 15px; border-bottom: 1px solid var(--line);
+}
+.panel-head h3 {
+  font-family: var(--display); font-weight: 700; font-size: 14px;
+  margin: 0; color: var(--ink);
+}
