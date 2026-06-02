@@ -1,0 +1,482 @@
+[
+  {
+    "espn_id": "478",
+    "team_name": "France",
+    "fifa_ranking": 1,
+    "fifa_points": 1877.32,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "164",
+    "team_name": "Spain",
+    "fifa_ranking": 2,
+    "fifa_points": 1876.4,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "202",
+    "team_name": "Argentina",
+    "fifa_ranking": 3,
+    "fifa_points": 1874.81,
+    "confederation": "CONMEBOL",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "448",
+    "team_name": "England",
+    "fifa_ranking": 4,
+    "fifa_points": 1825.97,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "482",
+    "team_name": "Portugal",
+    "fifa_ranking": 5,
+    "fifa_points": 1763.83,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "205",
+    "team_name": "Brazil",
+    "fifa_ranking": 6,
+    "fifa_points": 1761.16,
+    "confederation": "CONMEBOL",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "449",
+    "team_name": "Netherlands",
+    "fifa_ranking": 7,
+    "fifa_points": 1757.87,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "2869",
+    "team_name": "Morocco",
+    "fifa_ranking": 8,
+    "fifa_points": 1755.87,
+    "confederation": "CAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "459",
+    "team_name": "Belgium",
+    "fifa_ranking": 9,
+    "fifa_points": 1734.71,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "481",
+    "team_name": "Germany",
+    "fifa_ranking": 10,
+    "fifa_points": 1730.37,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "477",
+    "team_name": "Croatia",
+    "fifa_ranking": 11,
+    "fifa_points": 1717.07,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "208",
+    "team_name": "Colombia",
+    "fifa_ranking": 13,
+    "fifa_points": 1693.09,
+    "confederation": "CONMEBOL",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "654",
+    "team_name": "Senegal",
+    "fifa_ranking": 14,
+    "fifa_points": 1688.99,
+    "confederation": "CAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "203",
+    "team_name": "Mexico",
+    "fifa_ranking": 15,
+    "fifa_points": 1681.03,
+    "confederation": "CONCACAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "660",
+    "team_name": "United States",
+    "fifa_ranking": 16,
+    "fifa_points": 1673.13,
+    "confederation": "CONCACAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "212",
+    "team_name": "Uruguay",
+    "fifa_ranking": 17,
+    "fifa_points": 1673.07,
+    "confederation": "CONMEBOL",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "627",
+    "team_name": "Japan",
+    "fifa_ranking": 18,
+    "fifa_points": 1660.43,
+    "confederation": "AFC",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "475",
+    "team_name": "Switzerland",
+    "fifa_ranking": 19,
+    "fifa_points": 1649.4,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "469",
+    "team_name": "Iran",
+    "fifa_ranking": 21,
+    "fifa_points": 1615.3,
+    "confederation": "AFC",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "465",
+    "team_name": "Türkiye",
+    "fifa_ranking": 22,
+    "fifa_points": 1599.04,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "209",
+    "team_name": "Ecuador",
+    "fifa_ranking": 23,
+    "fifa_points": 1594.78,
+    "confederation": "CONMEBOL",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "474",
+    "team_name": "Austria",
+    "fifa_ranking": 24,
+    "fifa_points": 1593.45,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "451",
+    "team_name": "South Korea",
+    "fifa_ranking": 25,
+    "fifa_points": 1588.66,
+    "confederation": "AFC",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "628",
+    "team_name": "Australia",
+    "fifa_ranking": 27,
+    "fifa_points": 1580.67,
+    "confederation": "AFC",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "624",
+    "team_name": "Algeria",
+    "fifa_ranking": 28,
+    "fifa_points": 1564.26,
+    "confederation": "CAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "2620",
+    "team_name": "Egypt",
+    "fifa_ranking": 29,
+    "fifa_points": 1563.24,
+    "confederation": "CAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "206",
+    "team_name": "Canada",
+    "fifa_ranking": 30,
+    "fifa_points": 1556.48,
+    "confederation": "CONCACAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "464",
+    "team_name": "Norway",
+    "fifa_ranking": 31,
+    "fifa_points": 1550.94,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "2659",
+    "team_name": "Panama",
+    "fifa_ranking": 33,
+    "fifa_points": 1540.64,
+    "confederation": "CONCACAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "4789",
+    "team_name": "Ivory Coast",
+    "fifa_ranking": 34,
+    "fifa_points": 1532.98,
+    "confederation": "CAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "466",
+    "team_name": "Sweden",
+    "fifa_ranking": 38,
+    "fifa_points": 1514.77,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "210",
+    "team_name": "Paraguay",
+    "fifa_ranking": 40,
+    "fifa_points": 1503.5,
+    "confederation": "CONMEBOL",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "450",
+    "team_name": "Czechia",
+    "fifa_ranking": 41,
+    "fifa_points": 1501.38,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "580",
+    "team_name": "Scotland",
+    "fifa_ranking": 43,
+    "fifa_points": 1498.35,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "659",
+    "team_name": "Tunisia",
+    "fifa_ranking": 44,
+    "fifa_points": 1483.05,
+    "confederation": "CAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "2850",
+    "team_name": "Congo DR",
+    "fifa_ranking": 46,
+    "fifa_points": 1478.35,
+    "confederation": "CAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "2570",
+    "team_name": "Uzbekistan",
+    "fifa_ranking": 50,
+    "fifa_points": 1465.34,
+    "confederation": "AFC",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "4398",
+    "team_name": "Qatar",
+    "fifa_ranking": 55,
+    "fifa_points": 1454.96,
+    "confederation": "AFC",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "4375",
+    "team_name": "Iraq",
+    "fifa_ranking": 57,
+    "fifa_points": 1447.14,
+    "confederation": "AFC",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "467",
+    "team_name": "South Africa",
+    "fifa_ranking": 60,
+    "fifa_points": 1429.73,
+    "confederation": "CAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "655",
+    "team_name": "Saudi Arabia",
+    "fifa_ranking": 61,
+    "fifa_points": 1421.43,
+    "confederation": "AFC",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "2917",
+    "team_name": "Jordan",
+    "fifa_ranking": 63,
+    "fifa_points": 1391.45,
+    "confederation": "AFC",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "452",
+    "team_name": "Bosnia-Herzegovina",
+    "fifa_ranking": 65,
+    "fifa_points": 1385.84,
+    "confederation": "UEFA",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "2597",
+    "team_name": "Cape Verde",
+    "fifa_ranking": 69,
+    "fifa_points": 1366.13,
+    "confederation": "CAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "4469",
+    "team_name": "Ghana",
+    "fifa_ranking": 74,
+    "fifa_points": 1346.31,
+    "confederation": "CAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "11678",
+    "team_name": "Curacao",
+    "fifa_ranking": 82,
+    "fifa_points": 1294.65,
+    "confederation": "CONCACAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "2654",
+    "team_name": "Haiti",
+    "fifa_ranking": 83,
+    "fifa_points": 1291.71,
+    "confederation": "CONCACAF",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  },
+  {
+    "espn_id": "2666",
+    "team_name": "New Zealand",
+    "fifa_ranking": 85,
+    "fifa_points": 1281.57,
+    "confederation": "OFC",
+    "world_cup_appearances": null,
+    "head_coach": null,
+    "nickname": null
+  }
+]

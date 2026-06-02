@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/* ── Design tokens (mirrors handoff/reference/hifi/ds.css) ── */
+@theme {
+  --color-navy: #0a2240;
+  --color-navy-700: #13335c;
+  --color-navy-600: #234a78;
+  --color-ink: #0b1d33;
+  --color-ink-2: #4a5a6e;
+  --color-ink-3: #7d8b9c;
+  --color-page: #eef1f6;
+  --color-surface: #ffffff;
+  --color-inset: #f1f4f9;
+  --color-line: #e2e8f1;
+  --color-line-2: #d4dbe6;
+  --color-live: #16a34a;
+  --color-live-ink: #0b7a37;
+  --color-live-soft: #e6f6ec;
+  --color-danger: #e0464b;
+  --color-advance: #eaf7ef;
+  --color-best3: #fff7e6;
+}
+
+:root {
+  --navy: #0a2240;
+  --navy-700: #13335c;
+  --navy-600: #234a78;
+  --ink: #0b1d33;
+  --ink-2: #4a5a6e;
+  --ink-3: #7d8b9c;
+  --bg: #eef1f6;
+  --surface: #ffffff;
+  --inset: #f1f4f9;
+  --line: #e2e8f1;
+  --line-2: #d4dbe6;
+  --live: #16a34a;
+  --live-ink: #0b7a37;
+  --live-soft: #e6f6ec;
+  --danger: #e0464b;
+  --advance: #eaf7ef;
+  --best3: #fff7e6;
+  --accent: #0a2240;
+  --accent-ink: #ffffff;
+  --r-lg: 20px;
+  --r-md: 14px;
+  --r-sm: 10px;
+  --r-xs: 8px;
+  --sh-1: 0 1px 2px rgba(11, 29, 51, 0.05), 0 2px 8px rgba(11, 29, 51, 0.05);
+  --sh-2: 0 2px 4px rgba(11, 29, 51, 0.06), 0 10px 30px rgba(11, 29, 51, 0.08);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Archivo Expanded — activate the width axis at 125% */
+.font-display {
+  font-stretch: 125%;
+}
+
+/* Tabular numerals */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hide scrollbars while keeping scroll functionality */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Live pulse dot */
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--live);
+  position: relative;
+  flex-shrink: 0;
+}
+.pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--live);
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+.pulse-dot.on-dark {
+  background: #36d399;
+}
+.pulse-dot.on-dark::after {
+  border-color: #36d399;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Slide-in animation for the stats drawer */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
