@@ -1,0 +1,860 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Flag } from '@/components/Flag';
+import { Shot } from '@/components/Shot';
+import { GroupMini, type GroupMiniRow } from '@/components/GroupMini';
+import type {
+  MatchCenterData,
+  MatchKeyEvent,
+  MatchStat,
+  CommentaryEntry,
+  MatchCenterTeam,
+} from '@/lib/normalize/world-cup-normalizer';
+
+/* ---- inline SVG icons ---- */
+function Back() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="m15 6-6 6 6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function PinSm() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+      <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" stroke="currentColor" strokeWidth="2" />
+      <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  );
+}
+function RefIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+      <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function PeopleIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+      <circle cx="9" cy="8" r="3.2" stroke="currentColor" strokeWidth="2" />
+      <path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 6.2a3.2 3.2 0 0 1 0 6M17 14.5a5.5 5.5 0 0 1 3.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+function TvIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="2" />
+      <path d="m8 21 4-3 4 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function PlayIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M8 5.5v13l11-6.5-11-6.5Z" />
+    </svg>
+  );
+}
+function SubArrows() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+      <path d="M7 4v13m0 0 3-3m-3 3-3-3M17 20V7m0 0 3 3m-3-3-3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function PulseDot() {
+  return (
+    <span
+      className="pulse-dot"
+      style={{
+        display: 'inline-block',
+        width: 7,
+        height: 7,
+        borderRadius: '50%',
+        background: 'var(--live)',
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
+/* ---- date/time helpers ---- */
+function formatKickoffDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return '';
+  }
+}
+function formatKickoffTime(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
+/* ==============================================================
+   MATCH HERO
+   ============================================================== */
+function MatchHero({ match }: { match: MatchCenterData }) {
+  const { state, home, away, kickoffISO, group, matchday, venue, venueCity, broadcaster, clock, attendance } = match;
+
+  const homeScore = home.score;
+  const awayScore = away.score;
+
+  const loseHome = state === 'post' && homeScore !== null && awayScore !== null && homeScore < awayScore;
+  const loseAway = state === 'post' && homeScore !== null && awayScore !== null && awayScore < homeScore;
+
+  const kickoffDate = formatKickoffDate(kickoffISO);
+  const kickoffTime = formatKickoffTime(kickoffISO);
+
+  return (
+    <div className="mh">
+      <div className="mh-grain" />
+      <div className="mh-in">
+        <div className="mh-top">
+          <Link href="/schedule" className="mh-back">
+            <Back /> Schedule
+          </Link>
+          <span className="mh-meta">
+            {group && (
+              <>
+                <span className="gtag">GROUP {group}</span>
+                <span className="sep">·</span>
+              </>
+            )}
+            <span>{matchday}</span>
+            <span className="sep">·</span>
+            <span>{kickoffDate}</span>
+          </span>
+        </div>
+
+        <div className="mh-score">
+          {/* Home */}
+          <div className={'mh-team' + (loseHome ? ' lose' : '')}>
+            <Flag logo={home.logo} abbr={home.abbr} size={56} className="fl" />
+            <div className="code">{home.abbr}</div>
+            <div className="nm">{home.name}</div>
+            {state === 'post' && homeScore !== null && awayScore !== null && homeScore > awayScore && (
+              <div className="wintag">● Winner</div>
+            )}
+          </div>
+
+          {/* Center */}
+          <div className="mh-center">
+            {state === 'in' && (
+              <div className="mh-status live">
+                <PulseDot /> {clock} · Live
+              </div>
+            )}
+            {state === 'post' && <div className="mh-status ft">Full Time</div>}
+            {state === 'pre' && (
+              <div className="mh-status pre">{kickoffTime}</div>
+            )}
+
+            {state === 'pre' ? (
+              <>
+                <div className="mh-kick">VS</div>
+                <div className="mh-when">{kickoffTime} kick-off</div>
+              </>
+            ) : (
+              <div className="mh-nums tnum">
+                <span className={'n' + (loseHome ? ' dim' : '')}>{homeScore ?? 0}</span>
+                <span className="dash">–</span>
+                <span className={'n' + (loseAway ? ' dim' : '')}>{awayScore ?? 0}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Away */}
+          <div className={'mh-team' + (loseAway ? ' lose' : '')}>
+            <Flag logo={away.logo} abbr={away.abbr} size={56} className="fl" />
+            <div className="code">{away.abbr}</div>
+            <div className="nm">{away.name}</div>
+            {state === 'post' && awayScore !== null && homeScore !== null && awayScore > homeScore && (
+              <div className="wintag">● Winner</div>
+            )}
+          </div>
+        </div>
+
+        <div className="mh-foot">
+          <span className="it"><PinSm /> {venue}{venueCity ? ` · ${venueCity}` : ''}</span>
+          {state !== 'pre' && attendance !== null && (
+            <span className="it"><PeopleIcon /> {attendance.toLocaleString()} attendance</span>
+          )}
+          <span className="grow" />
+          <span className="it">Where to watch</span>
+          {broadcaster && <span className="tvb">{broadcaster}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ==============================================================
+   TIMELINE
+   ============================================================== */
+function evMinute(e: MatchKeyEvent): string {
+  return e.at + (e.extra ? `+${e.extra}` : '') + "'";
+}
+
+function EventIcon({ e }: { e: MatchKeyEvent }) {
+  if (e.type === 'goal' || e.type === 'pen' || e.type === 'og') {
+    return <span className="tl-icn goal">⚽</span>;
+  }
+  if (e.type === 'yellow') return <span className="tl-icn card-y" />;
+  if (e.type === 'red') return <span className="tl-icn card-r" />;
+  if (e.type === 'sub') return <span className="tl-icn sub"><SubArrows /></span>;
+  return <span className="tl-icn sub">VAR</span>;
+}
+
+function Timeline({ match }: { match: MatchCenterData }) {
+  const { state, events, home, away } = match;
+  const homeScore = home.score ?? 0;
+  const awayScore = away.score ?? 0;
+
+  const shown = state === 'post'
+    ? events
+    : events.filter(e => e.type !== 'whistle');
+
+  let htInserted = false;
+  const rows: React.ReactNode[] = [];
+
+  shown.forEach((e, i) => {
+    // Insert HT marker before first event at/after minute 46
+    if (!htInserted && e.at >= 46 && e.type !== 'whistle') {
+      // Find score at HT from the last goal before minute 46
+      const htGoals = events.filter(ev => (ev.type === 'goal' || ev.type === 'pen') && ev.at < 46);
+      const lastHT = htGoals[htGoals.length - 1];
+      const htH = lastHT?.scoreHome ?? 0;
+      const htA = lastHT?.scoreAway ?? 0;
+      rows.push(
+        <div className="tl-mark" key="ht">
+          <span>Half Time · {htH}–{htA}</span>
+        </div>
+      );
+      htInserted = true;
+    }
+
+    if (e.type === 'whistle') {
+      rows.push(
+        <div className="tl-mark" key={`w${i}`}>
+          <span>{e.detail} · {homeScore}–{awayScore}</span>
+        </div>
+      );
+      return;
+    }
+
+    const isGoal = e.type === 'goal' || e.type === 'pen' || e.type === 'og';
+    const side = e.team === 'home' ? 'home' : 'away';
+
+    rows.push(
+      <div className={`tl-row ${side}${isGoal ? ' goal' : ''}`} key={i}>
+        <div className="tl-card">
+          <EventIcon e={e} />
+          <span className="pl">{e.player}</span>
+          {e.detail && <span className="dt">{e.detail}</span>}
+          {isGoal && e.scoreHome !== null && e.scoreAway !== null && (
+            <span className="tl-score tnum">{e.scoreHome}–{e.scoreAway}</span>
+          )}
+        </div>
+        <span className="tl-min tnum">{evMinute(e)}</span>
+      </div>
+    );
+  });
+
+  // Add "live now" marker for in-progress matches
+  if (state === 'in') {
+    rows.push(
+      <div className="tl-mark" key="livenow">
+        <span style={{ color: 'var(--live-ink)', background: 'var(--live-soft)', borderColor: '#cfe8d8' }}>
+          ● Live · {match.clock}
+        </span>
+      </div>
+    );
+  }
+
+  return <div className="tl">{rows}</div>;
+}
+
+/* ==============================================================
+   STAT BARS
+   ============================================================== */
+function StatBar({ s }: { s: MatchStat }) {
+  const max = s.pct ? (s.home + s.away) || 1 : Math.max(s.home, s.away) || 1;
+  const hp = (s.home / max) * 100;
+  const ap = (s.away / max) * 100;
+  const fmt = (v: number) => (Number.isInteger(v) ? v : v.toFixed(1)) + (s.unit ?? '');
+  return (
+    <div className="sbar">
+      <div className="sbar-top">
+        <span className={'v' + (s.home < s.away ? ' dim' : '')}>{fmt(s.home)}</span>
+        <span className="lab">{s.label}</span>
+        <span className={'v away' + (s.away < s.home ? ' dim' : '')}>{fmt(s.away)}</span>
+      </div>
+      <div className="sbar-track">
+        <span className="hbg"><i style={{ width: `${hp}%` }} /></span>
+        <span className="abg"><i style={{ width: `${ap}%` }} /></span>
+      </div>
+    </div>
+  );
+}
+
+function PossessionHeader({ stats, homeAbbr, awayAbbr }: { stats: MatchStat[]; homeAbbr: string; awayAbbr: string }) {
+  const p = stats[0];
+  if (!p) return null;
+  return (
+    <div className="poss">
+      <div className="poss-side h">
+        <div className="p tnum">{p.home}%</div>
+        <div className="l">{homeAbbr}</div>
+      </div>
+      <div
+        className="poss-ring"
+        style={{ background: `conic-gradient(var(--navy-600) 0 ${p.home}%, var(--accent) ${p.home}% 100%)` }}
+      >
+        <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--surface)', display: 'grid', placeItems: 'center' }}>
+          <span className="cap">Poss.</span>
+        </div>
+      </div>
+      <div className="poss-side a">
+        <div className="p tnum">{p.away}%</div>
+        <div className="l">{awayAbbr}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ==============================================================
+   PITCH / LINEUPS
+   ============================================================== */
+function Pitch({ home, away }: { home: MatchCenterTeam; away: MatchCenterTeam }) {
+  function placeDots(lines: MatchCenterTeam['lines'], side: 'home' | 'away') {
+    const L = lines.length || 1;
+    return lines.flatMap((line, li) => {
+      const y = side === 'home'
+        ? 94 - li * (42 / Math.max(L - 1, 1))
+        : 6 + li * (42 / Math.max(L - 1, 1));
+      const k = line.length || 1;
+      return line.map((pl, j) => {
+        const x = 12 + ((j + 0.5) / k) * 76;
+        return (
+          <div
+            className={`dot ${side}`}
+            style={{ left: `${x}%`, top: `${y}%` }}
+            key={`${side}-${li}-${j}`}
+          >
+            <div className={'disc' + (pl.isStar ? ' star' : '')}>{pl.jersey}</div>
+            <div className="nm">{pl.name}{pl.isCaptain ? ' (C)' : ''}</div>
+          </div>
+        );
+      });
+    });
+  }
+
+  return (
+    <div className="pitch">
+      <div className="box-line top" />
+      <div className="box-line bot" />
+      {placeDots(away.lines, 'away')}
+      {placeDots(home.lines, 'home')}
+    </div>
+  );
+}
+
+function Lineups({ match }: { match: MatchCenterData }) {
+  const { state, home, away } = match;
+  const probable = state === 'pre';
+
+  const hasLineups = home.lines.length > 0 || away.lines.length > 0;
+
+  if (!hasLineups) {
+    return (
+      <div className="mc-card">
+        <div className="mc-head">
+          <h3>{probable ? 'Probable lineups' : 'Lineups'}</h3>
+        </div>
+        <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>
+          {probable ? 'Probable lineups will appear closer to kick-off.' : 'Lineups not yet available.'}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mc-card">
+      <div className="mc-head">
+        <h3>{probable ? 'Probable lineups' : 'Lineups'}</h3>
+        {home.formation && away.formation && (
+          <span className="sub">{home.formation} · {away.formation}</span>
+        )}
+      </div>
+      <div className="pitch-wrap">
+        <Pitch home={home} away={away} />
+      </div>
+      <div className="lu-meta">
+        <span className="side">
+          <Flag logo={home.logo} abbr={home.abbr} size={18} />
+          <span className="code">{home.abbr}</span>
+          {home.formation && <span className="fm">{home.formation}</span>}
+        </span>
+        {(home.coach || away.coach) && (
+          <span className="coach">{away.coach} vs {home.coach}</span>
+        )}
+        <span className="side">
+          {away.formation && <span className="fm">{away.formation}</span>}
+          <span className="code">{away.abbr}</span>
+          <Flag logo={away.logo} abbr={away.abbr} size={18} />
+        </span>
+      </div>
+      {(home.bench.length > 0 || away.bench.length > 0) && (
+        <div className="bench">
+          <div>
+            <h4><Flag logo={home.logo} abbr={home.abbr} size={14} /> {home.abbr} bench</h4>
+            <ul>{home.bench.map((n, i) => <li key={i}>{n}</li>)}</ul>
+          </div>
+          <div>
+            <h4><Flag logo={away.logo} abbr={away.abbr} size={14} /> {away.abbr} bench</h4>
+            <ul>{away.bench.map((n, i) => <li key={i}>{n}</li>)}</ul>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ==============================================================
+   COMMENTARY
+   ============================================================== */
+const CMT_TAG: Record<string, [string, string]> = {
+  goal: ['goal', 'Goal'],
+  pen: ['goal', 'Penalty'],
+  yellow: ['card', 'Yellow'],
+  red: ['card', 'Red'],
+  var: ['var', 'VAR'],
+  sub: ['sub', 'Sub'],
+};
+
+function Commentary({ match }: { match: MatchCenterData }) {
+  const { state, commentary, clock } = match;
+  return (
+    <div className="mc-card">
+      <div className="mc-head">
+        <h3>Live commentary</h3>
+        <span className="sub">{state === 'post' ? 'Full match' : state === 'in' ? `Live · ${clock}` : 'Auto-updating'}</span>
+      </div>
+      <div className="cmt">
+        {commentary.map((c: CommentaryEntry, i: number) => {
+          const tag = CMT_TAG[c.type];
+          const isKey = ['goal', 'pen', 'yellow', 'red'].includes(c.type);
+          return (
+            <div className={'cmt-row' + (isKey ? ' key' : '')} key={i}>
+              <div className="cmt-min tnum">{c.min}</div>
+              <div className="cmt-body">
+                {tag && <span className={`cmt-tag ${tag[0]}`}>{tag[1]}</span>}
+                {c.text}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ==============================================================
+   MAIN COLUMN (tabs)
+   ============================================================== */
+function Empty({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mc-card">
+      <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function MainColumn({ tab, match }: { tab: string; match: MatchCenterData }) {
+  const { state, stats, home, away, clock } = match;
+
+  if (tab === 'Stats') {
+    if (state === 'pre') return <Empty>Match stats appear once the match kicks off.</Empty>;
+    return (
+      <div className="mc-card">
+        <div className="mc-head">
+          <h3>Team stats</h3>
+          <span className="sub">{state === 'in' ? `Live · ${clock}` : 'Full time'}</span>
+        </div>
+        <PossessionHeader stats={stats} homeAbbr={home.abbr} awayAbbr={away.abbr} />
+        <div className="stats-wrap">
+          {stats.slice(1).map(s => <StatBar key={s.label} s={s} />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (tab === 'Lineups') {
+    return <Lineups match={match} />;
+  }
+
+  if (tab === 'Commentary') {
+    if (state === 'pre') {
+      const kickoffTime = formatKickoffTime(match.kickoffISO);
+      return <Empty>Commentary begins at kick-off, {kickoffTime}.</Empty>;
+    }
+    if (match.commentary.length === 0) return <Empty>No commentary available yet.</Empty>;
+    return <Commentary match={match} />;
+  }
+
+  // Summary tab
+  if (state === 'pre') {
+    return (
+      <>
+        <div className="mc-card">
+          <div className="mc-head">
+            <h3>Match preview</h3>
+            {match.group && <span className="sub">Group {match.group}</span>}
+          </div>
+          <div style={{ padding: '16px', fontSize: 14, lineHeight: 1.6, color: 'var(--ink-2)' }}>
+            {match.round} clash at {match.venue}. <b style={{ color: 'var(--ink)' }}>{home.name}</b> face <b style={{ color: 'var(--ink)' }}>{away.name}</b> in what promises to be a must-watch fixture. Kick-off is {formatKickoffTime(match.kickoffISO)}.
+          </div>
+        </div>
+        <Lineups match={match} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      {state === 'post' && match.motmName && (
+        <div className="mc-card">
+          <div className="mc-head">
+            <h3>Player of the match</h3>
+            <span className="motm-badge">★ Official</span>
+          </div>
+          <div className="motm">
+            <div className="av">
+              <Shot size={48} name={match.motmName} />
+            </div>
+            <div className="info">
+              <div className="nm">{match.motmName}</div>
+              {match.motmLine && <div className="ln">{match.motmLine}</div>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="mc-card">
+        <div className="mc-head">
+          <h3>Key events</h3>
+          <span className="sub">{state === 'in' ? `Live · ${clock}` : 'Full time'}</span>
+        </div>
+        {match.events.length === 0
+          ? <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>No events yet.</div>
+          : <Timeline match={match} />
+        }
+      </div>
+
+      {stats.length > 0 && (
+        <div className="mc-card">
+          <div className="mc-head">
+            <h3>Match stats</h3>
+            <span className="sub" style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)' }}>
+              Top 5 · <a href="#stats-tab" style={{ color: 'var(--ink-2)', textDecoration: 'none' }}>All stats →</a>
+            </span>
+          </div>
+          <PossessionHeader stats={stats} homeAbbr={home.abbr} awayAbbr={away.abbr} />
+          <div className="stats-wrap">
+            {stats.slice(1, 6).map(s => <StatBar key={s.label} s={s} />)}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ==============================================================
+   SHELF PANELS
+   ============================================================== */
+function ProbPanel({ match }: { match: MatchCenterData }) {
+  const { state, odds, winProbHome, winProbDraw, home, away } = match;
+
+  const probHome = winProbHome ?? (state === 'pre' ? null : null);
+  const probDraw = winProbDraw ?? null;
+  const probAway = (probHome !== null && probDraw !== null) ? 100 - probHome - probDraw : null;
+
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <h3>Win probability</h3>
+        <span style={{ fontSize: 12, color: 'var(--ink-3)', fontWeight: 600 }}>
+          {state === 'in' ? 'Live' : 'Pre-match'}
+        </span>
+      </div>
+
+      {probHome !== null && probDraw !== null && probAway !== null && (
+        <>
+          <div className="prob-bar">
+            <span className="ph" style={{ width: `${probHome}%` }} />
+            <span className="pd" style={{ width: `${probDraw}%` }} />
+            <span className="pa" style={{ width: `${probAway}%` }} />
+          </div>
+          <div className="prob-legend">
+            <span className="pl">
+              <span className="v tnum">{probHome}%</span>
+              <span className="k">{home.abbr} win</span>
+            </span>
+            <span className="pl" style={{ alignItems: 'center' }}>
+              <span className="v tnum">{probDraw}%</span>
+              <span className="k">Draw</span>
+            </span>
+            <span className="pl r">
+              <span className="v tnum">{probAway}%</span>
+              <span className="k">{away.abbr} win</span>
+            </span>
+          </div>
+        </>
+      )}
+
+      {odds && (
+        <>
+          <div className="odds-grid">
+            <div className="odds-cell">
+              <div className="k">{home.abbr}</div>
+              <div className="v">{odds.homeMoneyline}</div>
+            </div>
+            <div className="odds-cell">
+              <div className="k">Draw</div>
+              <div className="v">{odds.drawMoneyline}</div>
+            </div>
+            <div className="odds-cell">
+              <div className="k">{away.abbr}</div>
+              <div className="v">{odds.awayMoneyline}</div>
+            </div>
+          </div>
+          <div className="odds-note">
+            <span>DraftKings moneyline</span>
+            <span>O/U {odds.overUnder}</span>
+          </div>
+        </>
+      )}
+
+      {!odds && probHome === null && (
+        <div style={{ padding: '16px', fontSize: 13, color: 'var(--ink-3)', textAlign: 'center' }}>
+          Odds available closer to kick-off.
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MotmPanel({ match }: { match: MatchCenterData }) {
+  if (!match.motmName) return null;
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <h3>Player of the match</h3>
+        <span className="motm-badge">★</span>
+      </div>
+      <div className="motm">
+        <div className="av">
+          <Shot size={48} name={match.motmName} />
+        </div>
+        <div className="info">
+          <div className="nm">{match.motmName}</div>
+          {match.motmLine && <div className="ln">{match.motmLine}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function H2HPanel({ match }: { match: MatchCenterData }) {
+  const { h2h, home, away } = match;
+  if (h2h.length === 0) return null;
+
+  const homeW = h2h.filter(g => g.homeAbbr === home.abbr && parseInt(g.score.split('–')[0]) > parseInt(g.score.split('–')[1])).length
+    + h2h.filter(g => g.awayAbbr === home.abbr && parseInt(g.score.split('–')[1]) > parseInt(g.score.split('–')[0])).length;
+  const awayW = h2h.filter(g => g.homeAbbr === away.abbr && parseInt(g.score.split('–')[0]) > parseInt(g.score.split('–')[1])).length
+    + h2h.filter(g => g.awayAbbr === away.abbr && parseInt(g.score.split('–')[1]) > parseInt(g.score.split('–')[0])).length;
+  const draws = h2h.length - homeW - awayW;
+  const tot = h2h.length || 1;
+
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <h3>Head to head</h3>
+        <span style={{ fontSize: 12, color: 'var(--ink-3)', fontWeight: 600 }}>Last {h2h.length}</span>
+      </div>
+
+      <div className="h2h-sum">
+        <div className="seg">
+          <div className="n tnum">{homeW}</div>
+          <div className="k">{home.abbr}</div>
+        </div>
+        <div className="meter">
+          <div className="track">
+            <span className="w" style={{ width: `${(homeW / tot) * 100}%` }} />
+            <span className="d" style={{ width: `${(draws / tot) * 100}%` }} />
+            <span className="l" style={{ width: `${(awayW / tot) * 100}%` }} />
+          </div>
+        </div>
+        <div className="seg">
+          <div className="n tnum">{awayW}</div>
+          <div className="k">{away.abbr}</div>
+        </div>
+      </div>
+
+      {h2h.map((g, i) => (
+        <div className="h2h-row" key={i}>
+          <span className="meet">
+            {g.homeAbbr} <span className="sc tnum">{g.score}</span> {g.awayAbbr}
+          </span>
+          <span className="comp">{g.date} · {g.comp}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GroupPanel({ match }: { match: MatchCenterData }) {
+  const { group, groupStandings } = match;
+  if (!group || groupStandings.length === 0) return null;
+
+  const rows: GroupMiniRow[] = groupStandings.map(s => ({
+    abbr: s.abbr,
+    logo: s.logo,
+    played: s.played,
+    gd: s.gd,
+    pts: s.pts,
+    status: s.status,
+  }));
+
+  return (
+    <div className="panel" style={{ padding: 0 }}>
+      <div className="panel-head" style={{ padding: '12px 15px' }}>
+        <h3>Group {group}</h3>
+        <Link
+          href={`/groups/${group.toLowerCase()}`}
+          style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)', textDecoration: 'none' }}
+        >
+          Full table →
+        </Link>
+      </div>
+      <GroupMini letter={group} rows={rows} />
+    </div>
+  );
+}
+
+function WatchPanel({ match }: { match: MatchCenterData }) {
+  const { state, broadcaster, kickoffISO } = match;
+  const kickoffTime = formatKickoffTime(kickoffISO);
+
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <h3>{state === 'post' ? 'Highlights & recap' : 'Where to watch'}</h3>
+      </div>
+
+      {state === 'post' && (
+        <div className="watch-thumb">
+          <div className="play"><PlayIcon /></div>
+          <span className="cap">highlight reel</span>
+        </div>
+      )}
+
+      {broadcaster && (
+        <div className="watch-row">
+          <span className="lbl"><TvIcon /> Broadcast</span>
+          <span className="val">{broadcaster}</span>
+        </div>
+      )}
+      <div className="watch-row">
+        <span className="lbl"><TvIcon /> Streaming</span>
+        <span className="val">Peacock</span>
+      </div>
+
+      {state === 'post' ? (
+        <div className="watch-row">
+          <span className="lbl"><PeopleIcon /> Match recap</span>
+          <span className="val" style={{ color: 'var(--link)' }}>Read →</span>
+        </div>
+      ) : (
+        <div className="watch-row">
+          <span className="lbl"><PinSm /> Kick-off</span>
+          <span className="val">{kickoffTime}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Shelf({ match }: { match: MatchCenterData }) {
+  return (
+    <div className="shelf">
+      {match.state === 'post' ? (
+        <MotmPanel match={match} />
+      ) : (
+        <ProbPanel match={match} />
+      )}
+      <H2HPanel match={match} />
+      <GroupPanel match={match} />
+      <WatchPanel match={match} />
+    </div>
+  );
+}
+
+/* ==============================================================
+   ROOT CLIENT COMPONENT
+   ============================================================== */
+const TABS = ['Summary', 'Stats', 'Lineups', 'Commentary'] as const;
+type Tab = typeof TABS[number];
+
+export function MatchClient({ match }: { match: MatchCenterData }) {
+  const [activeTab, setActiveTab] = useState<Tab>('Summary');
+
+  // Event count pill on Summary tab
+  const eventCount =
+    match.state === 'in' || match.state === 'post'
+      ? match.events.filter(e => e.type !== 'whistle').length
+      : 0;
+
+  return (
+    <>
+      <MatchHero match={match} />
+
+      {/* Tab strip */}
+      <div className="mtabs">
+        {TABS.map(tab => (
+          <button
+            key={tab}
+            className={'mtab' + (tab === activeTab ? ' on' : '')}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab}
+            {tab === 'Summary' && eventCount > 0 && (
+              <span className="pill tnum">{eventCount}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Two-column layout */}
+      <div className="cols mcols">
+        <div>
+          <MainColumn tab={activeTab} match={match} />
+        </div>
+        <Shelf match={match} />
+      </div>
+    </>
+  );
+}
