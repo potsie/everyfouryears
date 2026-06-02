@@ -940,3 +940,14 @@ body.dense .tl-row { padding: 5px 0; }
   font-family: var(--display); font-weight: 700; font-size: 14px;
   margin: 0; color: var(--ink);
 }
+
+/* ── My Team card (navy, used on player shelf) ── */
+.myteam {
+  background: var(--navy); color: #fff; border-radius: var(--r-md);
+  box-shadow: var(--sh-2); padding: 16px; cursor: pointer;
+}
+.mt-h { font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.55); margin-bottom: 12px; }
+.mt-main { display: flex; align-items: center; gap: 12px; }
+.mt-code { font-family: var(--display); font-weight: 800; font-size: 22px; color: #fff; line-height: 1; }
+.mt-sub { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 4px; }
+.mt-next { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.12); font-size: 12.5px; color: rgba(255,255,255,.8); font-weight: 600; }
