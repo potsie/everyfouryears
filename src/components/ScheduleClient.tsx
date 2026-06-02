@@ -167,9 +167,10 @@ function DaySection({ day, hide }: { day: ScheduleDay; hide: boolean }) {
 interface ScheduleClientProps {
   days: ScheduleDay[];
   singleDay?: boolean;
+  groupTeams?: Record<string, string[]>;
 }
 
-export function ScheduleClient({ days, singleDay = false }: ScheduleClientProps) {
+export function ScheduleClient({ days, singleDay = false, groupTeams = {} }: ScheduleClientProps) {
   const [stage, setStage] = useState<'all' | 'group' | 'ko'>('all');
   const [grp, setGrp] = useState('all');
   const [hide, setHide] = useState(false);
@@ -186,7 +187,13 @@ export function ScheduleClient({ days, singleDay = false }: ScheduleClientProps)
       let ms = d.matches;
       if (stage === 'group') ms = ms.filter(m => m.seasonTypeId === 1);
       else if (stage === 'ko') ms = ms.filter(m => m.seasonTypeId > 1);
-      if (grp !== 'all') ms = ms.filter(m => m.groupLetter === grp);
+      if (grp !== 'all') {
+        const abbrs = new Set(groupTeams[grp] ?? []);
+        ms = ms.filter(m =>
+          (!isSeed(m.home) && abbrs.has(m.home.abbr)) ||
+          (!isSeed(m.away) && abbrs.has(m.away.abbr))
+        );
+      }
       return { ...d, matches: ms };
     })
     .filter(d => d.matches.length > 0);
