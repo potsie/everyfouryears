@@ -66,13 +66,25 @@ const STAGE_NAMES: Record<number, string> = {
   7: 'Final',
 };
 
+// ESPN stores season type on event.season.slug, not comp.season.type.id
+const ESPN_SLUG_TO_TYPE: Record<string, number> = {
+  'group-stage': 1,
+  'round-of-32': 2,
+  'round-of-16': 3,
+  'quarterfinals': 4,
+  'semifinals': 5,
+  '3rd-place-match': 6,
+  'final': 7,
+};
+
 // --- Scoreboard event normalizer (for homepage, bracket, API route) ---
 export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
   const comp = event.competitions?.[0] ?? {};
   const homeComp = comp.competitors?.find((c: any) => c.homeAway === 'home') ?? {};
   const awayComp = comp.competitors?.find((c: any) => c.homeAway === 'away') ?? {};
 
-  const seasonTypeId = Number(comp.season?.type?.id ?? 1);
+  const seasonTypeId = ESPN_SLUG_TO_TYPE[event.season?.slug ?? '']
+    ?? Number(comp.season?.type?.id ?? 1);
   const rawGroupName: string = comp.groups?.shortName ?? comp.group?.shortName ?? '';
   const groupLetter = rawGroupName.replace(/^Group\s+/i, '').trim();
 

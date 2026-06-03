@@ -68,7 +68,8 @@ export interface PathResult {
   frontier: string | null;
 }
 
-export interface WCBracketData {
+// Fully serializable — safe to pass across the RSC boundary
+export interface SerializableBracket {
   columnsL: BracketColumn[];
   columnsR: BracketColumn[];
   final: Tie;
@@ -77,10 +78,53 @@ export interface WCBracketData {
   roundMeta: RoundMeta[];
   all: Tie[];
   byId: Record<string, Tie>;
-  pathForTeam: (code: string | null) => PathResult;
   alive: string[];
   myTeam: string;
   window: string;
+}
+
+// Full client-side data (adds the pathForTeam function)
+export interface WCBracketData extends SerializableBracket {
+  pathForTeam: (code: string | null) => PathResult;
+}
+
+// Rebuild client-side: index + pathForTeam from serialized data
+export function hydrateClientBracket(s: SerializableBracket): WCBracketData {
+  const { all, byId } = s;
+  const ORDER: Record<string, number> = { R32: 0, R16: 1, QF: 2, SF: 3, F: 4 };
+
+  function pathForTeam(code: string | null): PathResult {
+    const empty: PathResult = { confirmed: new Set(), future: new Set(), conns: new Set(), futureConns: new Set(), eliminated: false, frontier: null };
+    if (!code) return empty;
+    const has = (t: Tie) => (!isTBD(t.a) && (t.a as TieTeam).code === code) || (!isTBD(t.b) && (t.b as TieTeam).code === code);
+    const inTies = all.filter(t => t.round !== '3P' && has(t)).sort((x, y) => (ORDER[x.round] ?? 0) - (ORDER[y.round] ?? 0));
+    if (!inTies.length) return empty;
+    const confirmed = new Set(inTies.map(t => t.id));
+    const conns = new Set<string>();
+    for (let i = 0; i < inTies.length - 1; i++) conns.add(`${inTies[i].id}>${inTies[i + 1].id}`);
+    const frontier = inTies[inTies.length - 1];
+    let eliminated = false;
+    let advance = true;
+    const future = new Set<string>();
+    const futureConns = new Set<string>();
+    if (frontier.state === 'post') {
+      const won = (frontier.winner === 'a' && !isTBD(frontier.a) && (frontier.a as TieTeam).code === code)
+        || (frontier.winner === 'b' && !isTBD(frontier.b) && (frontier.b as TieTeam).code === code);
+      if (!won) { eliminated = true; advance = false; }
+    }
+    if (advance) {
+      let cur: Tie = frontier;
+      while (cur.parent && byId[cur.parent]) {
+        const p = byId[cur.parent];
+        futureConns.add(`${cur.id}>${p.id}`);
+        future.add(p.id);
+        cur = p;
+      }
+    }
+    return { confirmed, future, conns, futureConns, eliminated, frontier: frontier.id };
+  }
+
+  return { ...s, pathForTeam };
 }
 
 function espnFlag(code: string): string {

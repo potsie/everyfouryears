@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, createContext, useContext } from 'react';
 import { Flag } from '@/components/Flag';
-import { buildBracketData, isTBD } from '@/lib/bracket-data';
-import type { Tie, PathResult, WCBracketData, BracketColumn } from '@/lib/bracket-data';
+import { isTBD, hydrateClientBracket } from '@/lib/bracket-data';
+import type { Tie, PathResult, WCBracketData, BracketColumn, TieTeam, SerializableBracket } from '@/lib/bracket-data';
 
-const BK: WCBracketData = buildBracketData();
+/* ---------- context ---------- */
+const BracketCtx = createContext<WCBracketData>(null as unknown as WCBracketData);
+function useBK() { return useContext(BracketCtx); }
 
 /* ---------- inline icons ---------- */
 function Pulse() {
@@ -46,6 +48,7 @@ interface BTieProps {
 }
 
 function BTie({ t, path, active, onHover }: BTieProps) {
+  const bk = useBK();
   const isPost = t.state === 'post';
   const isLive = t.state === 'in';
   const isTbd = t.state === 'tbd';
@@ -54,8 +57,8 @@ function BTie({ t, path, active, onHover }: BTieProps) {
   const faded = !!active && !onPath && !onFut;
 
   const hasMine = !isTbd && (
-    (!isTBD(t.a) && t.a.code === BK.myTeam) ||
-    (!isTBD(t.b) && t.b.code === BK.myTeam)
+    (!isTBD(t.a) && (t.a as TieTeam).code === bk.myTeam) ||
+    (!isTBD(t.b) && (t.b as TieTeam).code === bk.myTeam)
   );
 
   function TeamRow({ s }: { s: 'a' | 'b' }) {
@@ -68,10 +71,10 @@ function BTie({ t, path, active, onHover }: BTieProps) {
     return (
       <div
         className={`bt-row${win ? ' win' : ''}${lose ? ' lose' : ''}`}
-        onMouseEnter={() => onHover(team.code)}
+        onMouseEnter={() => onHover((team as TieTeam).code)}
       >
-        <Flag logo={team.flag} abbr={team.code} size={15} />
-        <span className="bt-code">{team.code}</span>
+        <Flag logo={(team as TieTeam).flag} abbr={(team as TieTeam).code} size={15} />
+        <span className="bt-code">{(team as TieTeam).code}</span>
         {(isPost || isLive) && t.score && (
           <span className="bt-sc tnum">{t.score[s === 'a' ? 0 : 1]}</span>
         )}
@@ -118,7 +121,8 @@ function BTie({ t, path, active, onHover }: BTieProps) {
 
 /* ---------- center final + third ---------- */
 function FinalCard({ path }: { path: PathResult }) {
-  const f = BK.final;
+  const bk = useBK();
+  const f = bk.final;
   const onPath = path.future.has(f.id) || path.confirmed.has(f.id);
   return (
     <div
@@ -132,10 +136,10 @@ function FinalCard({ path }: { path: PathResult }) {
       </div>
       <div className="bf-rows">
         <div className="bf-row">
-          <span className="bf-code">{isTBD(f.a) ? f.a.src : f.a.code}</span>
+          <span className="bf-code">{isTBD(f.a) ? f.a.src : (f.a as TieTeam).code}</span>
         </div>
         <div className="bf-row">
-          <span className="bf-code">{isTBD(f.b) ? f.b.src : f.b.code}</span>
+          <span className="bf-code">{isTBD(f.b) ? f.b.src : (f.b as TieTeam).code}</span>
         </div>
       </div>
       <div className="bf-when">{f.venue} · {f.when}</div>
@@ -144,12 +148,13 @@ function FinalCard({ path }: { path: PathResult }) {
 }
 
 function ThirdCard() {
-  const t = BK.third;
+  const bk = useBK();
+  const t = bk.third;
   return (
     <div data-tie={t.id} className="bk-third">
       <div className="b3-cap">Third Place</div>
-      <div className="b3-row"><span>{isTBD(t.a) ? t.a.src : t.a.code}</span></div>
-      <div className="b3-row"><span>{isTBD(t.b) ? t.b.src : t.b.code}</span></div>
+      <div className="b3-row"><span>{isTBD(t.a) ? t.a.src : (t.a as TieTeam).code}</span></div>
+      <div className="b3-row"><span>{isTBD(t.b) ? t.b.src : (t.b as TieTeam).code}</span></div>
     </div>
   );
 }
@@ -169,6 +174,7 @@ interface LineSeg {
 }
 
 function FullBracket({ path, active, onHover, onFocusRound }: FullBracketProps) {
+  const bk = useBK();
   const gridRef = useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<LineSeg[]>([]);
   const [dims, setDims] = useState({ w: 1180, h: 528 });
@@ -190,7 +196,7 @@ function FullBracket({ path, active, onHover, onFocusRound }: FullBracketProps) 
       });
 
       const segs: LineSeg[] = [];
-      BK.all.forEach((t) => {
+      bk.all.forEach((t) => {
         if (!t.parent || t.round === '3P') return;
         const c = pos[t.id], p = pos[t.parent];
         if (!c || !p) return;
@@ -209,7 +215,7 @@ function FullBracket({ path, active, onHover, onFocusRound }: FullBracketProps) 
     const ro = new ResizeObserver(measure);
     ro.observe(grid);
     return () => ro.disconnect();
-  }, []);
+  }, [bk]);
 
   function Col({ col }: { col: BracketColumn }) {
     return (
@@ -221,7 +227,7 @@ function FullBracket({ path, active, onHover, onFocusRound }: FullBracketProps) 
     );
   }
 
-  const RM = (k: string) => BK.roundMeta.find((m) => m.key === k)!;
+  const RM = (k: string) => bk.roundMeta.find((m) => m.key === k)!;
 
   return (
     <div className="bk-stage">
@@ -265,14 +271,14 @@ function FullBracket({ path, active, onHover, onFocusRound }: FullBracketProps) 
           })}
         </svg>
 
-        {BK.columnsL.map((c, i) => <Col key={`L${i}`} col={c} />)}
+        {bk.columnsL.map((c, i) => <Col key={`L${i}`} col={c} />)}
 
         <div className="bk-col center">
           <FinalCard path={path} />
           <ThirdCard />
         </div>
 
-        {BK.columnsR.map((c, i) => <Col key={`R${i}`} col={c} />)}
+        {bk.columnsR.map((c, i) => <Col key={`R${i}`} col={c} />)}
       </div>
     </div>
   );
@@ -290,6 +296,7 @@ function BigTie({ t }: { t: Tie }) {
   const isTbd = t.state === 'tbd';
   const meta = ROUND_LABELS[t.round];
   const isPens = t.clock?.includes('pens');
+  const showTag = t.tag && (t.round === 'QF' || t.round === 'SF');
 
   function Row({ s }: { s: 'a' | 'b' }) {
     const team = t[s];
@@ -300,10 +307,10 @@ function BigTie({ t }: { t: Tie }) {
     }
     return (
       <div className={`btl-row${lose ? ' lose' : ''}`}>
-        <Flag logo={team.flag} abbr={team.code} size={30} />
+        <Flag logo={(team as TieTeam).flag} abbr={(team as TieTeam).code} size={30} />
         <span className="btl-name">
-          {team.code}
-          <span className="full">{team.name}</span>
+          {(team as TieTeam).code}
+          <span className="full">{(team as TieTeam).name}</span>
         </span>
         {(isPost || isLive) && t.score && (
           <span className="btl-sc tnum" style={win ? { color: 'var(--ink)' } : undefined}>
@@ -313,8 +320,6 @@ function BigTie({ t }: { t: Tie }) {
       </div>
     );
   }
-
-  const showTag = t.tag && (t.round === 'QF' || t.round === 'SF');
 
   return (
     <div className={`btie-lg${isLive ? ' is-live' : ''}`} role="button" tabIndex={0}>
@@ -342,8 +347,9 @@ function BigTie({ t }: { t: Tie }) {
 }
 
 function ByRound({ round, setRound }: { round: string; setRound: (k: string) => void }) {
-  const meta = BK.roundMeta.find((m) => m.key === round) || BK.roundMeta[0];
-  const ties = [...BK.byRound[round], ...(round === 'F' ? BK.byRound['3P'] : [])];
+  const bk = useBK();
+  const meta = bk.roundMeta.find((m) => m.key === round) || bk.roundMeta[0];
+  const ties = [...bk.byRound[round], ...(round === 'F' ? bk.byRound['3P'] : [])];
   const narrow = round === 'SF' || round === 'F';
   const liveCount = ties.filter((t) => t.state === 'in').length;
   const doneCount = ties.filter((t) => t.state === 'post').length;
@@ -351,7 +357,7 @@ function ByRound({ round, setRound }: { round: string; setRound: (k: string) => 
   return (
     <>
       <div className="bround-tabs">
-        {BK.roundMeta.map((m) => (
+        {bk.roundMeta.map((m) => (
           <button
             key={m.key}
             className={`bround-tab${m.key === round ? ' on' : ''}`}
@@ -373,14 +379,19 @@ function ByRound({ round, setRound }: { round: string; setRound: (k: string) => 
 }
 
 /* ---------- main client component ---------- */
-export function BracketClient() {
+interface BracketClientProps {
+  data: SerializableBracket;
+}
+
+export function BracketClient({ data: serialized }: BracketClientProps) {
+  const data = useMemo(() => hydrateClientBracket(serialized), [serialized]);
   const [view, setView] = useState<'Full' | 'Round'>(() => {
     if (typeof window === 'undefined') return 'Full';
     return (localStorage.getItem('wc-bracket-view') as 'Full' | 'Round') || 'Full';
   });
   const [round, setRound] = useState(() => {
-    if (typeof window === 'undefined') return 'QF';
-    return localStorage.getItem('wc-bracket-round') || 'QF';
+    if (typeof window === 'undefined') return 'R32';
+    return localStorage.getItem('wc-bracket-round') || 'R32';
   });
   const [hover, setHover] = useState<string | null>(null);
   const [trace, setTrace] = useState<string | null>(null);
@@ -393,14 +404,14 @@ export function BracketClient() {
     try { localStorage.setItem('wc-bracket-round', round); } catch (_) {}
   }, [round]);
 
-  const pinned = trace || (myOn ? BK.myTeam : null);
+  const pinned = trace || (myOn ? data.myTeam : null);
   const active = hover || pinned;
-  const path = useMemo(() => BK.pathForTeam(active), [active]);
+  const path = useMemo(() => data.pathForTeam(active), [data, active]);
 
   const focusRound = (k: string) => { setRound(k); setView('Round'); };
 
   return (
-    <>
+    <BracketCtx.Provider value={data}>
       <div className="pagehead">
         <div className="eyebrow">2026 FIFA World Cup</div>
         <h1>Knockout Bracket</h1>
@@ -409,7 +420,7 @@ export function BracketClient() {
           <span className="sep">·</span>
           <span><span className="b tnum">31</span> matches</span>
           <span className="sep">·</span>
-          <span>{BK.window}</span>
+          <span>{data.window}</span>
         </div>
       </div>
 
@@ -442,7 +453,7 @@ export function BracketClient() {
                 onChange={(e) => { setTrace(e.target.value || null); setMyOn(false); }}
               >
                 <option value="">a team…</option>
-                {BK.alive.map((c) => <option key={c} value={c}>{c}</option>)}
+                {data.alive.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
               {trace && (
                 <button className="clear" onClick={() => setTrace(null)} aria-label="Clear">✕</button>
@@ -493,6 +504,6 @@ export function BracketClient() {
       ) : (
         <ByRound round={round} setRound={setRound} />
       )}
-    </>
+    </BracketCtx.Provider>
   );
 }
