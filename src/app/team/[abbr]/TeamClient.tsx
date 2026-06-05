@@ -26,6 +26,7 @@ interface SquadPlayer {
   pos: string;
   age: number;
   height: string;
+  photoUrl: string | null;
 }
 
 interface TeamClientProps {
@@ -308,7 +309,7 @@ export default function TeamClient({
                       <Shot
                         size={40}
                         name={p.name}
-                        headshotUrl={`https://a.espncdn.com/i/headshots/soccer/players/full/${p.id}.png`}
+                        headshotUrl={p.photoUrl ?? undefined}
                       />
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <div

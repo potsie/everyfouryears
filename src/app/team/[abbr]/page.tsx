@@ -55,6 +55,11 @@ export default async function TeamPage({
     supplemental.find(s => suppName.includes(s.team_name));
 
   const espnId = suppTeamActual?.espn_id ?? '';
+
+  const clubsRaw = fs.readFileSync(
+    path.join(process.cwd(), 'data/players-clubs.json'), 'utf-8'
+  );
+  const clubsMap: Record<string, { photoUrl: string | null }> = JSON.parse(clubsRaw);
   const { matches, teamDict } = await fetchAllMatches();
   const [allStandings, teamColors, fifaRankings, fifaCoaches] = await Promise.all([
     fetchAllGroupStandings(teamDict),
@@ -129,6 +134,7 @@ export default async function TeamPage({
     pos: p.position,
     age: p.age ?? 0,
     height: p.displayHeight ?? '',
+    photoUrl: clubsMap[p.fifaId]?.photoUrl ?? null,
   }));
 
   // Group standings for mini table
