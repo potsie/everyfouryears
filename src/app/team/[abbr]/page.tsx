@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings, fetchFifaTeamBio, fetchFifaCoaches } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
 import TeamClient from './TeamClient';
 import type { GroupMiniRow } from '@/components/GroupMini';
@@ -77,15 +77,17 @@ export default async function TeamPage({
   // ESPN data — fetch matches + standings + team colors in parallel
   const espnId = suppTeam?.espn_id ?? teamRoster.teamId;
   const { matches, teamDict } = await fetchAllMatches();
-  const [allStandings, teamColors, fifaRankings] = await Promise.all([
+  const [allStandings, teamColors, fifaRankings, fifaCoaches] = await Promise.all([
     fetchAllGroupStandings(teamDict),
     fetchTeamColors(espnId),
     fetchFifaRankings(),
+    fetchFifaCoaches(),
   ]);
 
-  // FIFA country code for this team (uppercase abbr matches IdCountry in most cases)
-  // Special cases: Ivory Coast = CIV, Congo DR = COD, South Korea = KOR, etc.
   const fifaRanking = fifaRankings[upperAbbr] ?? null;
+  const fifaBio = fifaRanking?.fifaTeamId
+    ? await fetchFifaTeamBio(fifaRanking.fifaTeamId)
+    : null;
 
   // Find team in teamDict by abbreviation
   const espnTeam = Object.values(teamDict).find(
@@ -181,8 +183,10 @@ export default async function TeamPage({
           fifaRank={fifaRanking?.rank ?? suppTeam?.fifa_ranking ?? null}
           rankingMovement={fifaRanking?.movement ?? null}
           rankingPrev={fifaRanking?.prevRank ?? null}
+          ratedMatches={fifaRanking?.ratedMatches ?? null}
+          foundationYear={fifaBio?.foundationYear ?? null}
           confederation={suppTeam?.confederation ?? ''}
-          coach={suppTeam?.head_coach ?? null}
+          coach={fifaCoaches[upperAbbr] ?? suppTeam?.head_coach ?? null}
           groupLetter={groupLetter}
           groupRank={teamStanding?.rank ?? null}
           pts={teamStanding?.points ?? 0}

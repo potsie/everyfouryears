@@ -155,6 +155,44 @@ export async function fetchFifaRankings(): Promise<Record<string, FifaRankingEnt
   return map;
 }
 
+export async function fetchFifaCoaches(): Promise<Record<string, string>> {
+  const squadsUrl = 'https://api.fifa.com/api/v3/teams/squads/all/17/285023?language=en';
+  const coachesUrl = 'https://api.fifa.com/api/v3/coaches/season/285023?language=en&count=200';
+
+  const [squadsData, coachesData] = await Promise.all([
+    espnFetch<any>(squadsUrl, 'fifa-wc2026-squads-meta', 86400),
+    espnFetch<any>(coachesUrl, 'fifa-wc2026-coaches', 86400),
+  ]);
+
+  const squads: any[] = squadsData?.Results ?? squadsData ?? [];
+  const coaches: any[] = coachesData?.Results ?? coachesData ?? [];
+
+  const teamIdToCountry: Record<string, string> = {};
+  for (const t of squads) {
+    if (t.IdTeam && t.IdCountry) teamIdToCountry[t.IdTeam] = t.IdCountry;
+  }
+
+  const result: Record<string, string> = {};
+  for (const c of coaches) {
+    if (c.Role !== 0) continue; // Role=0 is head coach
+    const country = teamIdToCountry[c.IdTeam];
+    if (!country) continue;
+    const name = c.Name?.[0]?.Description ?? '';
+    if (name) result[country] = name;
+  }
+  return result;
+}
+
+export async function fetchFifaTeamBio(fifaTeamId: string): Promise<{ foundationYear: number | null } | null> {
+  try {
+    const url = `https://api.fifa.com/api/v3/teams/${fifaTeamId}?language=en`;
+    const data = await espnFetch<any>(url, `fifa-team-bio-${fifaTeamId}`, 86400);
+    return { foundationYear: data?.FoundationYear ?? null };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchTeamColors(espnId: string): Promise<{ primary: string; alt: string } | null> {
   try {
     const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/teams/${espnId}`;

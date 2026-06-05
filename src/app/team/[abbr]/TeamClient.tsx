@@ -35,6 +35,8 @@ interface TeamClientProps {
   fifaRank: number | null;
   rankingMovement: number | null;
   rankingPrev: number | null;
+  ratedMatches: number | null;
+  foundationYear: number | null;
   confederation: string;
   coach: string | null;
   groupLetter: string;
@@ -76,6 +78,8 @@ export default function TeamClient({
   fifaRank,
   rankingMovement,
   rankingPrev,
+  ratedMatches,
+  foundationYear,
   confederation,
   coach,
   groupLetter,
@@ -404,6 +408,18 @@ export default function TeamClient({
                 <div className="fact-row">
                   <span className="k">WC appearances</span>
                   <span className="v tnum">{wcApps}</span>
+                </div>
+              )}
+              {ratedMatches != null && (
+                <div className="fact-row">
+                  <span className="k">Ranked matches</span>
+                  <span className="v tnum">{ratedMatches}</span>
+                </div>
+              )}
+              {foundationYear != null && (
+                <div className="fact-row">
+                  <span className="k">FA founded</span>
+                  <span className="v tnum">{foundationYear}</span>
                 </div>
               )}
             </div>
