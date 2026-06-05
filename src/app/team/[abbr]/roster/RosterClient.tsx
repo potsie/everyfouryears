@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Shot } from '@/components/Shot';
 
 interface SquadPlayer {
@@ -30,7 +31,7 @@ const POS_ORDER: [string, string][] = [
 
 function PCard({ p }: { p: SquadPlayer }) {
   return (
-    <div className="pcard">
+    <Link href={`/player/${p.id}`} className="pcard" style={{ textDecoration: 'none' }}>
       <Shot size={50} name={p.name} />
       <div className="pc-info">
         <div className="pc-name">{p.name}</div>
@@ -46,7 +47,7 @@ function PCard({ p }: { p: SquadPlayer }) {
           {p.preferredFoot && <span>{p.preferredFoot[0]}</span>}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
