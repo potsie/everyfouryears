@@ -155,6 +155,84 @@ export async function fetchFifaRankings(): Promise<Record<string, FifaRankingEnt
   return map;
 }
 
+export interface FifaSquadPlayer {
+  fifaId: string;
+  name: string;
+  shortName: string;
+  jerseyNum: number | null;
+  position: string;        // 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward'
+  positionCode: string;    // 'GK' | 'DEF' | 'MID' | 'FWD'
+  birthDate: string | null;
+  age: number | null;
+  heightCm: number | null;
+  weightKg: number | null;
+  displayHeight: string | null;
+  displayWeight: string | null;
+  preferredFoot: string | null;
+  nationality: string;
+  pictureUrl: string | null;
+}
+
+export interface FifaTeamSquad {
+  fifaTeamId: string;
+  countryCode: string;
+  players: FifaSquadPlayer[];
+}
+
+const FIFA_POS: Record<number, [string, string]> = {
+  0: ['Goalkeeper', 'GK'],
+  1: ['Defender', 'DEF'],
+  2: ['Midfielder', 'MID'],
+  3: ['Forward', 'FWD'],
+};
+
+const FIFA_FOOT: Record<number, string> = { 1: 'Right', 2: 'Left', 3: 'Both' };
+
+function calcAge(birthDate: string | null): number | null {
+  if (!birthDate) return null;
+  const birth = new Date(birthDate);
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+function normalizeFifaPlayer(p: any): FifaSquadPlayer {
+  const posNum: number = p.Position ?? 0;
+  const [position, positionCode] = FIFA_POS[posNum] ?? ['Unknown', '?'];
+  const hCm: number | null = p.Height ?? null;
+  const wKg: number | null = p.Weight ?? null;
+  return {
+    fifaId: String(p.IdPlayer),
+    name: p.PlayerName?.[0]?.Description ?? '',
+    shortName: p.ShortName?.[0]?.Description ?? '',
+    jerseyNum: p.JerseyNum ?? null,
+    position,
+    positionCode,
+    birthDate: p.BirthDate ?? null,
+    age: calcAge(p.BirthDate ?? null),
+    heightCm: hCm,
+    weightKg: wKg,
+    displayHeight: hCm ? `${hCm} cm` : null,
+    displayWeight: wKg ? `${wKg} kg` : null,
+    preferredFoot: p.PreferredFoot != null ? (FIFA_FOOT[p.PreferredFoot] ?? null) : null,
+    nationality: p.IdCountry ?? '',
+    pictureUrl: p.PlayerPicture?.PictureUrl ?? null,
+  };
+}
+
+export async function fetchFifaSquads(): Promise<FifaTeamSquad[]> {
+  const url = 'https://api.fifa.com/api/v3/teams/squads/all/17/285023?language=en';
+  const data = await espnFetch<any>(url, 'fifa-wc2026-squads', 86400);
+  const teams: any[] = data?.Results ?? data ?? [];
+  return teams.map((t: any) => ({
+    fifaTeamId: String(t.IdTeam),
+    countryCode: t.IdCountry ?? '',
+    players: (t.Players ?? []).map(normalizeFifaPlayer),
+  }));
+}
+
 export async function fetchFifaCoaches(): Promise<Record<string, string>> {
   const squadsUrl = 'https://api.fifa.com/api/v3/teams/squads/all/17/285023?language=en';
   const coachesUrl = 'https://api.fifa.com/api/v3/coaches/season/285023?language=en&count=200';

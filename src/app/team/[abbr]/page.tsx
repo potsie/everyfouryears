@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings, fetchFifaTeamBio, fetchFifaCoaches } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings, fetchFifaTeamBio, fetchFifaCoaches, fetchFifaSquads } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
 import TeamClient from './TeamClient';
 import type { GroupMiniRow } from '@/components/GroupMini';
@@ -19,28 +19,6 @@ interface SupplementalTeam {
   nickname: string | null;
 }
 
-interface RosterPlayer {
-  id: string;
-  displayName: string;
-  shortName: string;
-  position: string;
-  age: number;
-  height_inches: number | null;
-  displayHeight: string;
-  displayWeight: string;
-  dateOfBirth: string;
-  citizenship: string;
-  headshot_url: string | null;
-  flag_url: string | null;
-  status: string;
-}
-
-interface TeamRosterEntry {
-  teamId: string;
-  teamName: string;
-  teamAbbreviation: string;
-  roster: RosterPlayer[];
-}
 
 export default async function TeamPage({
   params,
@@ -57,25 +35,26 @@ export default async function TeamPage({
   );
   const supplemental: SupplementalTeam[] = JSON.parse(supplementalRaw);
 
-  const rostersRaw = fs.readFileSync(
-    path.join(process.cwd(), 'data/world_cup_2026_rosters.json'),
-    'utf-8'
-  );
-  const allRosters: TeamRosterEntry[] = JSON.parse(rostersRaw);
+  // FIFA squads — live, one call for all 48 teams
+  const allSquads = await fetchFifaSquads();
+  const teamSquad = allSquads.find(t => t.countryCode === upperAbbr);
+  if (!teamSquad) notFound();
 
-  const teamRoster = allRosters.find(
-    t => t.teamAbbreviation.toUpperCase() === upperAbbr
-  );
-  if (!teamRoster) notFound();
+  // Supplemental lookup — ESPN abbreviations match FIFA country codes for all 48 teams
+  // except a few edge cases handled here
+  const ABBR_TO_SUPP: Record<string, string> = {
+    USA: 'United States', ENG: 'England', GER: 'Germany', NED: 'Netherlands',
+    KOR: 'South Korea', CIV: 'Ivory Coast', COD: 'Congo DR', CPV: 'Cape Verde',
+    KSA: 'Saudi Arabia', RSA: 'South Africa', NZL: 'New Zealand',
+    BIH: 'Bosnia-Herzegovina', CUW: 'Curacao', HAI: 'Haiti',
+  };
+  const suppName = ABBR_TO_SUPP[upperAbbr] ?? upperAbbr;
+  const suppTeamActual =
+    supplemental.find(s => s.team_name === suppName) ??
+    supplemental.find(s => s.team_name.includes(suppName)) ??
+    supplemental.find(s => suppName.includes(s.team_name));
 
-  // Supplemental data — try exact match first, then partial
-  const suppTeam =
-    supplemental.find(s => s.team_name === teamRoster.teamName) ??
-    supplemental.find(s => teamRoster.teamName.includes(s.team_name)) ??
-    supplemental.find(s => s.team_name.includes(teamRoster.teamName));
-
-  // ESPN data — fetch matches + standings + team colors in parallel
-  const espnId = suppTeam?.espn_id ?? teamRoster.teamId;
+  const espnId = suppTeamActual?.espn_id ?? '';
   const { matches, teamDict } = await fetchAllMatches();
   const [allStandings, teamColors, fifaRankings, fifaCoaches] = await Promise.all([
     fetchAllGroupStandings(teamDict),
@@ -143,13 +122,13 @@ export default async function TeamPage({
       }
     : null;
 
-  // Squad
-  const squad = (teamRoster.roster ?? []).map(p => ({
-    id: p.id,
-    name: p.displayName,
+  // Squad from FIFA
+  const squad = teamSquad.players.map(p => ({
+    id: p.fifaId,
+    name: p.name,
     pos: p.position,
-    age: p.age,
-    height: p.displayHeight,
+    age: p.age ?? 0,
+    height: p.displayHeight ?? '',
   }));
 
   // Group standings for mini table
@@ -178,21 +157,21 @@ export default async function TeamPage({
       <div className="page">
         <TeamClient
           abbr={upperAbbr}
-          teamName={teamRoster.teamName}
+          teamName={suppTeamActual?.team_name ?? upperAbbr}
           logo={espnTeam?.logo ?? ''}
-          fifaRank={fifaRanking?.rank ?? suppTeam?.fifa_ranking ?? null}
+          fifaRank={fifaRanking?.rank ?? suppTeamActual?.fifa_ranking ?? null}
           rankingMovement={fifaRanking?.movement ?? null}
           rankingPrev={fifaRanking?.prevRank ?? null}
           ratedMatches={fifaRanking?.ratedMatches ?? null}
           foundationYear={fifaBio?.foundationYear ?? null}
-          confederation={suppTeam?.confederation ?? ''}
-          coach={fifaCoaches[upperAbbr] ?? suppTeam?.head_coach ?? null}
+          confederation={suppTeamActual?.confederation ?? ''}
+          coach={fifaCoaches[upperAbbr] ?? suppTeamActual?.head_coach ?? null}
           groupLetter={groupLetter}
           groupRank={teamStanding?.rank ?? null}
           pts={teamStanding?.points ?? 0}
           played={teamStanding?.gamesPlayed ?? 0}
-          wcApps={suppTeam?.world_cup_appearances ?? null}
-          nickname={suppTeam?.nickname ?? null}
+          wcApps={suppTeamActual?.world_cup_appearances ?? null}
+          nickname={suppTeamActual?.nickname ?? null}
           form={form}
           nextMatch={nextMatchData}
           squad={squad}

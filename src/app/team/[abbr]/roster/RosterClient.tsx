@@ -1,16 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { Shot } from '@/components/Shot';
 
 interface SquadPlayer {
   id: string;
   name: string;
   pos: string;
-  age: number;
-  height: string;
-  headshotUrl: string;
+  posCode: string;
+  jerseyNum: number | null;
+  age: number | null;
+  heightCm: number | null;
+  weightKg: number | null;
+  displayHeight: string | null;
+  preferredFoot: string | null;
 }
 
 interface RosterClientProps {
@@ -25,31 +28,25 @@ const POS_ORDER: [string, string][] = [
   ['Forward', 'Forwards'],
 ];
 
-function posCode(pos: string): string {
-  if (pos === 'Goalkeeper') return 'GK';
-  if (pos === 'Defender') return 'DEF';
-  if (pos === 'Midfielder') return 'MID';
-  if (pos === 'Forward') return 'FWD';
-  return pos.slice(0, 3).toUpperCase();
-}
-
 function PCard({ p }: { p: SquadPlayer }) {
   return (
-    <Link href={`/player/${p.id}`} className="pcard" style={{ textDecoration: 'none' }}>
-      <Shot size={50} name={p.name} headshotUrl={p.headshotUrl} />
+    <div className="pcard">
+      <Shot size={50} name={p.name} />
       <div className="pc-info">
         <div className="pc-name">{p.name}</div>
         <div className="pc-club">
-          <span>{posCode(p.pos)}</span>
+          <span>{p.posCode}</span>
+          {p.jerseyNum != null && (
+            <span style={{ color: 'var(--ink-3)' }}>#{p.jerseyNum}</span>
+          )}
         </div>
         <div className="pc-meta">
-          <span>
-            Age <b className="tnum">{p.age}</b>
-          </span>
-          <span>{p.height}</span>
+          {p.age != null && <span>Age <b className="tnum">{p.age}</b></span>}
+          {p.displayHeight && <span>{p.displayHeight}</span>}
+          {p.preferredFoot && <span>{p.preferredFoot[0]}</span>}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -83,9 +80,7 @@ export default function RosterClient({ abbr, squad }: RosterClientProps) {
                 <span className="cnt">{rows.length}</span>
               </div>
               <div className="squad-grid">
-                {rows.map(p => (
-                  <PCard key={p.id} p={p} />
-                ))}
+                {rows.map(p => <PCard key={p.id} p={p} />)}
               </div>
             </section>
           );
@@ -94,17 +89,15 @@ export default function RosterClient({ abbr, squad }: RosterClientProps) {
         <section className="pos-group">
           <div className="squad-grid">
             {[...squad]
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map(p => (
-                <PCard key={p.id} p={p} />
-              ))}
+              .sort((a, b) => (a.jerseyNum ?? 99) - (b.jerseyNum ?? 99))
+              .map(p => <PCard key={p.id} p={p} />)}
           </div>
         </section>
       )}
 
       <div className="foot-note">
         <span>{squad.length} players · {abbr} · 2026 FIFA World Cup</span>
-        <span>Source: ESPN</span>
+        <span>Source: FIFA</span>
       </div>
     </>
   );

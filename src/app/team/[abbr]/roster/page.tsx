@@ -1,46 +1,26 @@
 import fs from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import { fetchAllMatches } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchFifaSquads, fetchFifaCoaches } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
 import RosterClient from './RosterClient';
 
 export const revalidate = 300;
 
-interface RosterPlayer {
-  id: string;
-  displayName: string;
-  shortName: string;
-  position: string;
-  age: number;
-  height_inches: number | null;
-  displayHeight: string;
-  displayWeight: string;
-  dateOfBirth: string;
-  citizenship: string;
-  headshot_url: string | null;
-  flag_url: string | null;
-  status: string;
-}
-
-interface TeamRosterEntry {
-  teamId: string;
-  teamName: string;
-  teamAbbreviation: string;
-  roster: RosterPlayer[];
-}
-
 interface SupplementalTeam {
   espn_id: string;
   team_name: string;
-  fifa_ranking: number | null;
   confederation: string | null;
   head_coach: string | null;
-  nickname: string | null;
-  world_cup_appearances: number | null;
-  fifa_points: number | null;
 }
+
+const ABBR_TO_SUPP: Record<string, string> = {
+  USA: 'United States', ENG: 'England', GER: 'Germany', NED: 'Netherlands',
+  KOR: 'South Korea', CIV: 'Ivory Coast', COD: 'Congo DR', CPV: 'Cape Verde',
+  KSA: 'Saudi Arabia', RSA: 'South Africa', NZL: 'New Zealand',
+  BIH: 'Bosnia-Herzegovina', CUW: 'Curacao', HAI: 'Haiti',
+};
 
 export default async function RosterPage({
   params,
@@ -50,41 +30,44 @@ export default async function RosterPage({
   const { abbr } = await params;
   const upperAbbr = abbr.toUpperCase();
 
-  const rostersRaw = fs.readFileSync(
-    path.join(process.cwd(), 'data/world_cup_2026_rosters.json'),
-    'utf-8'
-  );
-  const allRosters: TeamRosterEntry[] = JSON.parse(rostersRaw);
+  const [allSquads, { teamDict }, fifaCoaches] = await Promise.all([
+    fetchFifaSquads(),
+    fetchAllMatches(),
+    fetchFifaCoaches(),
+  ]);
 
-  const teamRoster = allRosters.find(
-    t => t.teamAbbreviation.toUpperCase() === upperAbbr
-  );
-  if (!teamRoster) notFound();
+  const teamSquad = allSquads.find(t => t.countryCode === upperAbbr);
+  if (!teamSquad) notFound();
 
   const supplementalRaw = fs.readFileSync(
     path.join(process.cwd(), 'data/teams-supplemental.json'),
     'utf-8'
   );
   const supplemental: SupplementalTeam[] = JSON.parse(supplementalRaw);
+  const suppName = ABBR_TO_SUPP[upperAbbr] ?? upperAbbr;
   const suppTeam =
-    supplemental.find(s => s.team_name === teamRoster.teamName) ??
-    supplemental.find(s => teamRoster.teamName.includes(s.team_name)) ??
-    supplemental.find(s => s.team_name.includes(teamRoster.teamName));
+    supplemental.find(s => s.team_name === suppName) ??
+    supplemental.find(s => s.team_name.includes(suppName)) ??
+    supplemental.find(s => suppName.includes(s.team_name));
 
-  const { teamDict } = await fetchAllMatches();
   const espnTeam = Object.values(teamDict).find(
     t => t.abbr.toUpperCase() === upperAbbr
   );
 
-  const squad = (teamRoster.roster ?? []).map(p => ({
-    id: p.id,
-    name: p.displayName,
+  const teamName = suppTeam?.team_name ?? upperAbbr;
+  const coach = fifaCoaches[upperAbbr] ?? suppTeam?.head_coach ?? null;
+
+  const squad = teamSquad.players.map(p => ({
+    id: p.fifaId,
+    name: p.name,
     pos: p.position,
+    posCode: p.positionCode,
+    jerseyNum: p.jerseyNum,
     age: p.age,
-    height: p.displayHeight,
-    headshotUrl: p.headshot_url
-      ? p.headshot_url
-      : `https://a.espncdn.com/i/headshots/soccer/players/full/${p.id}.png`,
+    heightCm: p.heightCm,
+    weightKg: p.weightKg,
+    displayHeight: p.displayHeight,
+    preferredFoot: p.preferredFoot,
   }));
 
   return (
@@ -93,7 +76,7 @@ export default async function RosterPage({
       <div className="page">
         <div className="pagehead">
           <div className="eyebrow">{suppTeam?.confederation ?? ''} · 2026 World Cup</div>
-          <h1>{teamRoster.teamName} — Squad</h1>
+          <h1>{teamName} — Squad</h1>
           <div className="sub">
             <a
               href={`/team/${upperAbbr.toLowerCase()}`}
@@ -110,19 +93,16 @@ export default async function RosterPage({
             </a>
             <span className="sep">·</span>
             <span className="b tnum">{squad.length}</span> players
-            {suppTeam?.head_coach && (
+            {coach && (
               <>
                 <span className="sep">·</span>
-                Coach <span className="b">{suppTeam.head_coach}</span>
+                Coach <span className="b">{coach}</span>
               </>
             )}
           </div>
         </div>
 
-        <RosterClient
-          abbr={upperAbbr}
-          squad={squad}
-        />
+        <RosterClient abbr={upperAbbr} squad={squad} />
       </div>
     </>
   );
