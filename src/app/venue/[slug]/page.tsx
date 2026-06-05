@@ -12,12 +12,18 @@ const HOST_COUNTRY_ESPN_ID: Record<string, string> = {
   Mexico: '203',
 };
 
+const HOST_COUNTRY_FLAG: Record<string, string> = {
+  USA:    'https://a.espncdn.com/i/teamlogos/countries/500/usa.png',
+  Canada: 'https://a.espncdn.com/i/teamlogos/countries/500/can.png',
+  Mexico: 'https://a.espncdn.com/i/teamlogos/countries/500/mex.png',
+};
+
 export function generateStaticParams() {
   return VENUES.map(v => ({ slug: v.slug }));
 }
 
 function StatHero({ v, heroBackground }: { v: VenueData; heroBackground?: string }) {
-  const flagCode = v.country === 'USA' ? 'us' : v.country === 'Canada' ? 'ca' : 'mx';
+  const flagUrl = HOST_COUNTRY_FLAG[v.country] ?? '';
   const locale = v.country === 'USA'
     ? `${v.city}, ${v.region}, USA`
     : v.country === 'Canada'
@@ -40,7 +46,7 @@ function StatHero({ v, heroBackground }: { v: VenueData; heroBackground?: string
           </span>
         </div>
         <div className="th-id">
-          <Flag logo={`https://a.espncdn.com/i/teamlogos/countries/500/${flagCode}.png`} abbr={v.country.slice(0, 3).toUpperCase()} size={64} />
+          <Flag logo={flagUrl} abbr={v.country.slice(0, 3).toUpperCase()} size={64} />
           <div className="titles">
             <div className="eyebrow2">{locale} · 2026 World Cup</div>
             <h1>{v.name}</h1>
