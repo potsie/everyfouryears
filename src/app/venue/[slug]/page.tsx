@@ -4,12 +4,19 @@ import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
 import { VENUES, getVenueBySlug, roofLabel } from '@/lib/venues';
 import type { VenueData } from '@/lib/venues';
+import { fetchTeamColors } from '@/lib/espn/wc-fetchers';
+
+const HOST_COUNTRY_ESPN_ID: Record<string, string> = {
+  USA: '660',
+  Canada: '206',
+  Mexico: '203',
+};
 
 export function generateStaticParams() {
   return VENUES.map(v => ({ slug: v.slug }));
 }
 
-function StatHero({ v }: { v: VenueData }) {
+function StatHero({ v, heroBackground }: { v: VenueData; heroBackground?: string }) {
   const flagCode = v.country === 'USA' ? 'us' : v.country === 'Canada' ? 'ca' : 'mx';
   const locale = v.country === 'USA'
     ? `${v.city}, ${v.region}, USA`
@@ -18,7 +25,7 @@ function StatHero({ v }: { v: VenueData }) {
       : `${v.city}, ${v.region}, Mexico`;
 
   return (
-    <div className="th">
+    <div className="th" style={heroBackground ? { background: heroBackground } : undefined}>
       <div className="th-grain" />
       <div className="th-in">
         <div className="th-top">
@@ -109,11 +116,17 @@ export default async function VenueDetailPage({ params }: { params: Promise<{ sl
 
   const nearby = getNearby(v);
 
+  const espnId = HOST_COUNTRY_ESPN_ID[v.country];
+  const teamColors = espnId ? await fetchTeamColors(espnId) : null;
+  const heroBackground = teamColors?.primary
+    ? `linear-gradient(135deg, color-mix(in srgb, ${teamColors.primary} 55%, #0a2240) 0%, #0a2240 100%)`
+    : undefined;
+
   return (
     <>
       <Nav activePath="/venues" />
       <div className="page">
-        <StatHero v={v} />
+        <StatHero v={v} heroBackground={heroBackground} />
 
         <div className="cols">
           <div>
