@@ -165,12 +165,6 @@ export default async function PlayerPage({
                     <span className="v">{clubData.club}</span>
                   </div>
                 )}
-                {clubData?.league && (
-                  <div className="fact-row">
-                    <span className="k">League</span>
-                    <span className="v">{clubData.league}{clubData.leagueCountry ? ` · ${clubData.leagueCountry}` : ''}</span>
-                  </div>
-                )}
                 {player.jerseyNum != null && (
                   <div className="fact-row">
                     <span className="k">Jersey</span>

@@ -136,33 +136,57 @@ def get_player_club(player_id, season=2025):
         return None, None, None, None
 
     stats = response[0].get("statistics", [])
-    # Find club stats (not national team)
-    for s in stats:
+
+    # Keywords that identify cup/secondary competitions to deprioritize
+    CUP_KEYWORDS = (
+        "cup", "coupe", "copa", "pokal", "beker", "taca", "coppa",
+        "super cup", "supercup", "supercoupe", "shield", "trophy",
+        "league cup", "carabao", "fa cup", "dfb", "champions league",
+        "europa league", "conference league", "nations league", "friendl",
+    )
+
+    def is_cup(league_name):
+        n = (league_name or "").lower()
+        return any(k in n for k in CUP_KEYWORDS)
+
+    club_stats = [
+        s for s in stats
+        if s.get("league", {}).get("country") not in ("World", None)
+        and not s.get("team", {}).get("national", False)
+    ]
+
+    # Pass 1: prefer domestic league with appearances, skipping cups
+    for s in club_stats:
         league = s.get("league", {})
-        team = s.get("team", {})
-        # Skip national team / international competitions
-        if league.get("country") in ("World", None):
-            continue
         games = s.get("games", {})
-        if games.get("appearences", 0) or games.get("lineups", 0):
+        if not is_cup(league.get("name")) and (games.get("appearences", 0) or games.get("lineups", 0)):
             return (
-                team.get("name"),
-                team.get("logo"),
+                s["team"].get("name"),
+                s["team"].get("logo"),
                 league.get("name"),
                 league.get("country"),
             )
 
-    # Fallback: take the first club entry even with 0 appearances
-    for s in stats:
+    # Pass 2: any domestic league entry (0 appearances ok), still skipping cups
+    for s in club_stats:
         league = s.get("league", {})
-        team = s.get("team", {})
-        if league.get("country") not in ("World", None):
+        if not is_cup(league.get("name")):
             return (
-                team.get("name"),
-                team.get("logo"),
+                s["team"].get("name"),
+                s["team"].get("logo"),
                 league.get("name"),
                 league.get("country"),
             )
+
+    # Pass 3: last resort — take any club entry including cups
+    if club_stats:
+        s = club_stats[0]
+        return (
+            s["team"].get("name"),
+            s["team"].get("logo"),
+            s["league"].get("name"),
+            s["league"].get("country"),
+        )
 
     return None, None, None, None
 
