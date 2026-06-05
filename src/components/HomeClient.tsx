@@ -85,6 +85,12 @@ export function HomeClient({ allMatches, groupStandings, todayStr }: HomeClientP
     setMyTeam(localStorage.getItem('wc2026_myteam'));
   }, []);
 
+  useEffect(() => {
+    if (showAllGroups) {
+      document.getElementById('all-groups-section')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [showAllGroups]);
+
   const phase = getTournamentPhase(todayStr);
   const dateRailDays = buildDateRail(matches);
 
@@ -239,7 +245,7 @@ export function HomeClient({ allMatches, groupStandings, todayStr }: HomeClientP
 
         {/* All-12-groups section */}
         {showAllGroups && groupStandings.length > 0 && (
-          <div className="mt-8">
+          <div id="all-groups-section" className="mt-8">
             <div className="flex items-center justify-between mb-[14px]">
               <h2
                 className="font-display font-bold text-[19px] tracking-[-0.01em] m-0"

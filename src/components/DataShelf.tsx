@@ -37,16 +37,14 @@ export function DataShelf({
       .filter(Boolean),
   );
 
-  const curatedGroups = showAllGroups
-    ? groupStandings
-    : groupStandings.filter((g, i) => {
-        const letter = g.groupName.replace(/^Group\s+/i, '').trim();
-        return (
-          g === myTeamGroup ||
-          liveGroupLetters.has(letter) ||
-          i < 2
-        );
-      }).slice(0, 3);
+  const curatedGroups = groupStandings.filter((g, i) => {
+    const letter = g.groupName.replace(/^Group\s+/i, '').trim();
+    return (
+      g === myTeamGroup ||
+      liveGroupLetters.has(letter) ||
+      i < 2
+    );
+  }).slice(0, 3);
 
   return (
     <div className="flex flex-col gap-[22px]">
