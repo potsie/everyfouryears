@@ -54,13 +54,17 @@ export default async function TeamPage({
     supplemental.find(s => s.team_name.includes(suppName)) ??
     supplemental.find(s => suppName.includes(s.team_name));
 
-  const espnId = suppTeamActual?.espn_id ?? '';
-
   const clubsRaw = fs.readFileSync(
     path.join(process.cwd(), 'data/players-clubs.json'), 'utf-8'
   );
   const clubsMap: Record<string, { photoUrl: string | null }> = JSON.parse(clubsRaw);
   const { matches, teamDict } = await fetchAllMatches();
+
+  // Resolve ESPN team ID from teamDict (keyed by ESPN ID, values have abbr)
+  // Falls back to supplemental espn_id if not found in scoreboard data
+  const espnTeamEntry = Object.entries(teamDict).find(([, t]) => t.abbr.toUpperCase() === upperAbbr);
+  const espnId = espnTeamEntry?.[0] ?? suppTeamActual?.espn_id ?? '';
+
   const [allStandings, teamColors, fifaRankings, fifaCoaches] = await Promise.all([
     fetchAllGroupStandings(teamDict),
     fetchTeamColors(espnId),

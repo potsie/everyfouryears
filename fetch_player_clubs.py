@@ -31,7 +31,7 @@ BASE = "https://v3.football.api-sports.io"
 HEADERS = {"x-apisports-key": API_KEY}
 
 # Delay between requests to stay under rate limits (30 req/min on starter plan)
-DELAY = 2.2
+DELAY = 1.0
 
 # Known API-Football national team IDs from WC 2022 data
 KNOWN_TEAM_IDS = {

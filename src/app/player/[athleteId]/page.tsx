@@ -5,7 +5,7 @@ import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
 import { Shot } from '@/components/Shot';
 import Link from 'next/link';
-import { fetchFifaSquads, fetchAllMatches } from '@/lib/espn/wc-fetchers';
+import { fetchFifaSquads, fetchAllMatches, fetchTeamColors } from '@/lib/espn/wc-fetchers';
 
 interface PlayerClubEntry {
   fifaId: string;
@@ -32,6 +32,7 @@ export default async function PlayerPage({
     fetchAllMatches(),
   ]);
 
+
   const clubsRaw = fs.readFileSync(
     path.join(process.cwd(), 'data/players-clubs.json'), 'utf-8'
   );
@@ -51,11 +52,18 @@ export default async function PlayerPage({
   }
   if (!player) notFound();
 
-  const espnTeam = Object.values(teamDict).find(
-    t => t.abbr.toUpperCase() === teamCountryCode
+  const espnTeamEntry = Object.entries(teamDict).find(
+    ([, t]) => t.abbr.toUpperCase() === teamCountryCode
   );
+  const espnTeamId = espnTeamEntry?.[0] ?? null;
+  const espnTeam = espnTeamEntry?.[1] ?? null;
   const teamLogo = espnTeam?.logo ?? '';
   const teamName = espnTeam?.name ?? teamCountryCode;
+
+  const teamColors = espnTeamId ? await fetchTeamColors(espnTeamId) : null;
+  const heroBackground = teamColors?.primary
+    ? `linear-gradient(135deg, color-mix(in srgb, ${teamColors.primary} 55%, #0a2240) 0%, #0a2240 100%)`
+    : undefined;
 
   const dob = player.birthDate
     ? new Date(player.birthDate).toLocaleDateString('en-US', {
@@ -67,7 +75,7 @@ export default async function PlayerPage({
     <>
       <Nav activePath="/teams" />
       <div className="page">
-        <div className="th">
+        <div className="th" style={heroBackground ? { background: heroBackground } : undefined}>
           <div className="th-grain" />
           <div className="th-in">
             <div className="th-top">
@@ -163,6 +171,12 @@ export default async function PlayerPage({
                   <div className="fact-row">
                     <span className="k">Club</span>
                     <span className="v">{clubData.club}</span>
+                  </div>
+                )}
+                {clubData?.league && (
+                  <div className="fact-row">
+                    <span className="k">League</span>
+                    <span className="v">{clubData.league}</span>
                   </div>
                 )}
                 {player.jerseyNum != null && (
