@@ -358,11 +358,12 @@ def main():
         total_matched += matched
         print(f"  Matched {matched}/{len(fifa_players)} players")
 
-    # Step 5: Write output
-    out_path = Path("data/players-clubs.json")
-    out_path.parent.mkdir(exist_ok=True)
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2, ensure_ascii=False)
+        # Checkpoint after each team
+        out_path = Path("data/players-clubs.json")
+        out_path.parent.mkdir(exist_ok=True)
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(output, f, indent=2, ensure_ascii=False)
+        print(f"  Checkpoint saved ({len(output)} players so far)")
 
     print(f"\n=== Done ===")
     print(f"Total players: {len(output)}")

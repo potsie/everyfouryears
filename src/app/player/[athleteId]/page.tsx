@@ -1,9 +1,22 @@
+import fs from 'fs';
+import path from 'path';
 import { notFound } from 'next/navigation';
 import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
 import { Shot } from '@/components/Shot';
 import Link from 'next/link';
 import { fetchFifaSquads, fetchAllMatches } from '@/lib/espn/wc-fetchers';
+
+interface PlayerClubEntry {
+  fifaId: string;
+  name: string;
+  apifId?: number;
+  club: string | null;
+  clubLogo: string | null;
+  league: string | null;
+  leagueCountry: string | null;
+  photoUrl: string | null;
+}
 
 export const revalidate = 3600;
 
@@ -18,6 +31,12 @@ export default async function PlayerPage({
     fetchFifaSquads(),
     fetchAllMatches(),
   ]);
+
+  const clubsRaw = fs.readFileSync(
+    path.join(process.cwd(), 'data/players-clubs.json'), 'utf-8'
+  );
+  const clubsMap: Record<string, PlayerClubEntry> = JSON.parse(clubsRaw);
+  const clubData = clubsMap[athleteId] ?? null;
 
   // Find player across all teams
   let player = null;
@@ -63,7 +82,7 @@ export default async function PlayerPage({
 
             <div className="ph-id">
               <div className="ph-shot">
-                <Shot size={88} name={player.name} dark />
+                <Shot size={88} name={player.name} headshotUrl={clubData?.photoUrl ?? undefined} dark />
               </div>
               <div className="ph-titles">
                 <div className="num2">{player.positionCode} · {teamCountryCode}</div>
@@ -72,6 +91,9 @@ export default async function PlayerPage({
                   <span className="chip">{player.position}</span>
                   {player.jerseyNum != null && (
                     <span className="chip">#{player.jerseyNum}</span>
+                  )}
+                  {clubData?.club && (
+                    <span className="chip"><b>{clubData.club}</b></span>
                   )}
                   <span className="chip">
                     <Flag logo={teamLogo} abbr={teamCountryCode} size={15} />
@@ -137,6 +159,18 @@ export default async function PlayerPage({
                   <span className="k">Position</span>
                   <span className="v">{player.position}</span>
                 </div>
+                {clubData?.club && (
+                  <div className="fact-row">
+                    <span className="k">Club</span>
+                    <span className="v">{clubData.club}</span>
+                  </div>
+                )}
+                {clubData?.league && (
+                  <div className="fact-row">
+                    <span className="k">League</span>
+                    <span className="v">{clubData.league}{clubData.leagueCountry ? ` · ${clubData.leagueCountry}` : ''}</span>
+                  </div>
+                )}
                 {player.jerseyNum != null && (
                   <div className="fact-row">
                     <span className="k">Jersey</span>

@@ -15,6 +15,8 @@ interface SquadPlayer {
   weightKg: number | null;
   displayHeight: string | null;
   preferredFoot: string | null;
+  club: string | null;
+  photoUrl: string | null;
 }
 
 interface RosterClientProps {
@@ -32,13 +34,16 @@ const POS_ORDER: [string, string][] = [
 function PCard({ p }: { p: SquadPlayer }) {
   return (
     <Link href={`/player/${p.id}`} className="pcard" style={{ textDecoration: 'none' }}>
-      <Shot size={50} name={p.name} />
+      <Shot size={50} name={p.name} headshotUrl={p.photoUrl ?? undefined} />
       <div className="pc-info">
         <div className="pc-name">{p.name}</div>
         <div className="pc-club">
           <span>{p.posCode}</span>
           {p.jerseyNum != null && (
             <span style={{ color: 'var(--ink-3)' }}>#{p.jerseyNum}</span>
+          )}
+          {p.club && (
+            <span style={{ color: 'var(--ink-2)', fontWeight: 500 }}>{p.club}</span>
           )}
         </div>
         <div className="pc-meta">

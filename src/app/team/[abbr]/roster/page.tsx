@@ -2,6 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
 import { fetchAllMatches, fetchFifaSquads, fetchFifaCoaches } from '@/lib/espn/wc-fetchers';
+
+interface PlayerClubEntry {
+  club: string | null;
+  photoUrl: string | null;
+}
 import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
 import RosterClient from './RosterClient';
@@ -57,6 +62,11 @@ export default async function RosterPage({
   const teamName = suppTeam?.team_name ?? upperAbbr;
   const coach = fifaCoaches[upperAbbr] ?? suppTeam?.head_coach ?? null;
 
+  const clubsRaw = fs.readFileSync(
+    path.join(process.cwd(), 'data/players-clubs.json'), 'utf-8'
+  );
+  const clubsMap: Record<string, PlayerClubEntry> = JSON.parse(clubsRaw);
+
   const squad = teamSquad.players.map(p => ({
     id: p.fifaId,
     name: p.name,
@@ -68,6 +78,8 @@ export default async function RosterPage({
     weightKg: p.weightKg,
     displayHeight: p.displayHeight,
     preferredFoot: p.preferredFoot,
+    club: clubsMap[p.fifaId]?.club ?? null,
+    photoUrl: clubsMap[p.fifaId]?.photoUrl ?? null,
   }));
 
   return (
