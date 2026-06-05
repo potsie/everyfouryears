@@ -114,7 +114,7 @@ export default async function RosterPage({
           </div>
         </div>
 
-        <RosterClient abbr={upperAbbr} squad={squad} />
+        <RosterClient abbr={upperAbbr} teamName={teamName} squad={squad} />
       </div>
     </>
   );

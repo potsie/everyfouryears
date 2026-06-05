@@ -21,6 +21,7 @@ interface SquadPlayer {
 
 interface RosterClientProps {
   abbr: string;
+  teamName: string;
   squad: SquadPlayer[];
 }
 
@@ -56,7 +57,7 @@ function PCard({ p }: { p: SquadPlayer }) {
   );
 }
 
-export default function RosterClient({ abbr, squad }: RosterClientProps) {
+export default function RosterClient({ abbr, teamName, squad }: RosterClientProps) {
   const [sort, setSort] = useState<'Position' | 'Number'>('Position');
 
   return (
@@ -102,7 +103,7 @@ export default function RosterClient({ abbr, squad }: RosterClientProps) {
       )}
 
       <div className="foot-note">
-        <span>{squad.length} players · {abbr} · 2026 FIFA World Cup</span>
+        <span>{squad.length} players · {teamName} · 2026 FIFA World Cup</span>
         <span>Source: FIFA</span>
       </div>
     </>
