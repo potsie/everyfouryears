@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: '/teams', label: 'Teams' },
   { href: '/venues', label: 'Venues' },
   { href: '/stats', label: 'Stats' },
+  { href: '/news', label: 'News' },
 ];
 
 export function Nav({ activePath = '/' }: { activePath?: string }) {

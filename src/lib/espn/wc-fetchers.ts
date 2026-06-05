@@ -89,6 +89,60 @@ export async function fetchAllGroupStandings(
   return results.filter((g): g is WorldCupGroupTable => g !== null);
 }
 
+export interface NewsArticle {
+  id: string;
+  headline: string;
+  description: string;
+  published: string;
+  premium: boolean;
+  section: string;
+  byline: string;
+  imageUrl: string | null;
+  href: string;
+}
+
+const SECTION_MAP: Record<string, string> = {
+  'match-recap': 'Match Report',
+  'recap': 'Match Report',
+  'analysis': 'Analysis',
+  'feature': 'Feature',
+  'opinion': 'Opinion',
+  'team-news': 'Team News',
+  'preview': 'Preview',
+  'video': 'Video',
+};
+
+function deriveSection(categories: any[]): string {
+  if (!Array.isArray(categories)) return 'News';
+  for (const cat of categories) {
+    const slug = (cat.slug ?? cat.name ?? '').toLowerCase().replace(/\s+/g, '-');
+    if (SECTION_MAP[slug]) return SECTION_MAP[slug];
+    const desc = (cat.description ?? '').toLowerCase();
+    for (const [key, label] of Object.entries(SECTION_MAP)) {
+      if (desc.includes(key.replace('-', ' '))) return label;
+    }
+  }
+  return 'News';
+}
+
+export async function fetchNews(): Promise<NewsArticle[]> {
+  const url = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news?limit=20';
+  const data = await espnFetch<any>(url, 'wc-news', 600);
+  const articles: any[] = data.articles ?? [];
+
+  return articles.map((a: any, i: number) => ({
+    id: String(a.id ?? a.dataSourceIdentifier ?? i),
+    headline: a.headline ?? '',
+    description: a.description ?? '',
+    published: a.published ?? new Date().toISOString(),
+    premium: a.premium ?? false,
+    section: deriveSection(a.categories ?? []),
+    byline: a.byline ?? 'ESPN Staff',
+    imageUrl: a.images?.[0]?.url ?? null,
+    href: a.links?.web?.href ?? 'https://www.espn.com/soccer/fifa-world-cup/',
+  }));
+}
+
 export async function fetchMatchSummary(eventId: string): Promise<MatchCenterData> {
   const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${eventId}`;
   const data = await espnFetch<ESPNMatchSummaryFull>(url, `wc-match-${eventId}`, 60);
