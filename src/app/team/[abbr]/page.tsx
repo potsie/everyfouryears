@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import { fetchAllMatches, fetchAllGroupStandings } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
 import TeamClient from './TeamClient';
 import type { GroupMiniRow } from '@/components/GroupMini';
@@ -68,20 +68,29 @@ export default async function TeamPage({
   );
   if (!teamRoster) notFound();
 
-  // ESPN data
-  const { matches, teamDict } = await fetchAllMatches();
-  const allStandings = await fetchAllGroupStandings(teamDict);
-
-  // Find team in teamDict by abbreviation
-  const espnTeam = Object.values(teamDict).find(
-    t => t.abbr.toUpperCase() === upperAbbr
-  );
-
   // Supplemental data — try exact match first, then partial
   const suppTeam =
     supplemental.find(s => s.team_name === teamRoster.teamName) ??
     supplemental.find(s => teamRoster.teamName.includes(s.team_name)) ??
     supplemental.find(s => s.team_name.includes(teamRoster.teamName));
+
+  // ESPN data — fetch matches + standings + team colors in parallel
+  const espnId = suppTeam?.espn_id ?? teamRoster.teamId;
+  const { matches, teamDict } = await fetchAllMatches();
+  const [allStandings, teamColors, fifaRankings] = await Promise.all([
+    fetchAllGroupStandings(teamDict),
+    fetchTeamColors(espnId),
+    fetchFifaRankings(),
+  ]);
+
+  // FIFA country code for this team (uppercase abbr matches IdCountry in most cases)
+  // Special cases: Ivory Coast = CIV, Congo DR = COD, South Korea = KOR, etc.
+  const fifaRanking = fifaRankings[upperAbbr] ?? null;
+
+  // Find team in teamDict by abbreviation
+  const espnTeam = Object.values(teamDict).find(
+    t => t.abbr.toUpperCase() === upperAbbr
+  );
 
   // Find group standings for this team
   const teamStanding = allStandings
@@ -169,7 +178,9 @@ export default async function TeamPage({
           abbr={upperAbbr}
           teamName={teamRoster.teamName}
           logo={espnTeam?.logo ?? ''}
-          fifaRank={suppTeam?.fifa_ranking ?? null}
+          fifaRank={fifaRanking?.rank ?? suppTeam?.fifa_ranking ?? null}
+          rankingMovement={fifaRanking?.movement ?? null}
+          rankingPrev={fifaRanking?.prevRank ?? null}
           confederation={suppTeam?.confederation ?? ''}
           coach={suppTeam?.head_coach ?? null}
           groupLetter={groupLetter}
@@ -177,10 +188,13 @@ export default async function TeamPage({
           pts={teamStanding?.points ?? 0}
           played={teamStanding?.gamesPlayed ?? 0}
           wcApps={suppTeam?.world_cup_appearances ?? null}
+          nickname={suppTeam?.nickname ?? null}
           form={form}
           nextMatch={nextMatchData}
           squad={squad}
           groupStandings={groupStandings}
+          teamColorPrimary={teamColors?.primary ?? null}
+          teamColorAlt={teamColors?.alt ?? null}
         />
       </div>
     </>

@@ -125,6 +125,51 @@ function deriveSection(categories: any[]): string {
   return 'News';
 }
 
+export interface FifaRankingEntry {
+  rank: number;
+  prevRank: number;
+  movement: number;
+  points: number;
+  ratedMatches: number;
+  fifaTeamId: string;
+}
+
+export async function fetchFifaRankings(): Promise<Record<string, FifaRankingEntry>> {
+  const url =
+    'https://api.fifa.com/api/v3/fifarankings/rankings/rankingsbyschedule' +
+    '?rankingScheduleId=FRS_Male_Football_20260119&language=en';
+  const data = await espnFetch<any>(url, 'fifa-rankings', 86400);
+  const results: any[] = data?.Results ?? [];
+  const map: Record<string, FifaRankingEntry> = {};
+  for (const r of results) {
+    if (!r.IdCountry) continue;
+    map[r.IdCountry] = {
+      rank: r.Rank,
+      prevRank: r.PrevRank,
+      movement: r.RankingMovement,
+      points: r.TotalPoints,
+      ratedMatches: r.RatedMatches,
+      fifaTeamId: r.IdTeam,
+    };
+  }
+  return map;
+}
+
+export async function fetchTeamColors(espnId: string): Promise<{ primary: string; alt: string } | null> {
+  try {
+    const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/teams/${espnId}`;
+    const data = await espnFetch<any>(url, `wc-team-colors-${espnId}`, 86400);
+    const team = data?.team;
+    if (!team?.color) return null;
+    return {
+      primary: `#${team.color}`,
+      alt: team.alternateColor ? `#${team.alternateColor}` : `#${team.color}`,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchNews(): Promise<NewsArticle[]> {
   const url = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news?limit=20';
   const data = await espnFetch<any>(url, 'wc-news', 600);

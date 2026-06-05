@@ -33,6 +33,8 @@ interface TeamClientProps {
   teamName: string;
   logo: string;
   fifaRank: number | null;
+  rankingMovement: number | null;
+  rankingPrev: number | null;
   confederation: string;
   coach: string | null;
   groupLetter: string;
@@ -40,10 +42,13 @@ interface TeamClientProps {
   pts: number;
   played: number;
   wcApps: number | null;
+  nickname: string | null;
   form: FormEntry[];
   nextMatch: NextMatch | null;
   squad: SquadPlayer[];
   groupStandings: GroupMiniRow[];
+  teamColorPrimary: string | null;
+  teamColorAlt: string | null;
 }
 
 function ordinal(n: number): string {
@@ -69,6 +74,8 @@ export default function TeamClient({
   teamName,
   logo,
   fifaRank,
+  rankingMovement,
+  rankingPrev,
   confederation,
   coach,
   groupLetter,
@@ -76,17 +83,25 @@ export default function TeamClient({
   pts,
   played,
   wcApps,
+  nickname,
   form,
   nextMatch,
   squad,
   groupStandings,
+  teamColorPrimary,
+  teamColorAlt,
 }: TeamClientProps) {
   const previewSquad = squad.slice(0, 6);
 
+  // Build hero background: blend team color into navy when available
+  const heroBackground = teamColorPrimary
+    ? `linear-gradient(135deg, color-mix(in srgb, ${teamColorPrimary} 55%, #0a2240) 0%, #0a2240 100%)`
+    : undefined;
+
   return (
     <>
-      {/* Navy Hero */}
-      <div className="th">
+      {/* Hero — team color tinted when available */}
+      <div className="th" style={heroBackground ? { background: heroBackground } : undefined}>
         <div className="th-grain" />
         <div className="th-in">
           <div className="th-top">
@@ -99,6 +114,19 @@ export default function TeamClient({
             {fifaRank != null && (
               <span className="th-rankpill">
                 FIFA World Ranking <b className="tnum">#{fifaRank}</b>
+                {rankingMovement != null && rankingMovement !== 0 && (
+                  <span
+                    className="tnum"
+                    style={{
+                      marginLeft: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: rankingMovement > 0 ? '#7ee2a8' : '#f87171',
+                    }}
+                  >
+                    {rankingMovement > 0 ? '▲' : '▼'}{Math.abs(rankingMovement)}
+                  </span>
+                )}
               </span>
             )}
           </div>
@@ -111,6 +139,12 @@ export default function TeamClient({
               <div className="eyebrow2">{confederation} · 2026 World Cup</div>
               <h1>{teamName}</h1>
               <div className="subline">
+                {nickname && (
+                  <>
+                    <span>{nickname}</span>
+                    <span className="sep">·</span>
+                  </>
+                )}
                 {coach && (
                   <>
                     <span>Coach <b>{coach}</b></span>
@@ -127,7 +161,14 @@ export default function TeamClient({
           <div className="th-strip">
             {fifaRank != null && (
               <div className="cell">
-                <div className="v tnum">#{fifaRank}</div>
+                <div className="v tnum" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  #{fifaRank}
+                  {rankingMovement != null && rankingMovement !== 0 && (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: rankingMovement > 0 ? '#7ee2a8' : '#f87171' }}>
+                      {rankingMovement > 0 ? '▲' : '▼'}{Math.abs(rankingMovement)}
+                    </span>
+                  )}
+                </div>
                 <div className="k">World rank</div>
               </div>
             )}
@@ -346,7 +387,17 @@ export default function TeamClient({
               {fifaRank != null && (
                 <div className="fact-row">
                   <span className="k">FIFA Ranking</span>
-                  <span className="v tnum">#{fifaRank}</span>
+                  <span className="v tnum" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    #{fifaRank}
+                    {rankingMovement != null && rankingMovement !== 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 700, color: rankingMovement > 0 ? '#16a34a' : '#dc2626' }}>
+                        {rankingMovement > 0 ? '▲' : '▼'}{Math.abs(rankingMovement)}
+                      </span>
+                    )}
+                    {rankingMovement === 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink-3)' }}>—</span>
+                    )}
+                  </span>
                 </div>
               )}
               {wcApps != null && (

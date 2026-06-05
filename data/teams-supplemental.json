@@ -5,9 +5,9 @@
     "fifa_ranking": 1,
     "fifa_points": 1877.32,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 16,
+    "head_coach": "Didier Deschamps",
+    "nickname": "Les Bleus"
   },
   {
     "espn_id": "164",
@@ -15,9 +15,9 @@
     "fifa_ranking": 2,
     "fifa_points": 1876.4,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 16,
+    "head_coach": "Luis de la Fuente",
+    "nickname": "La Roja"
   },
   {
     "espn_id": "202",
@@ -25,9 +25,9 @@
     "fifa_ranking": 3,
     "fifa_points": 1874.81,
     "confederation": "CONMEBOL",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 18,
+    "head_coach": "Lionel Scaloni",
+    "nickname": "La Albiceleste"
   },
   {
     "espn_id": "448",
@@ -35,9 +35,9 @@
     "fifa_ranking": 4,
     "fifa_points": 1825.97,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 16,
+    "head_coach": "Thomas Tuchel",
+    "nickname": "The Three Lions"
   },
   {
     "espn_id": "482",
@@ -45,9 +45,9 @@
     "fifa_ranking": 5,
     "fifa_points": 1763.83,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 8,
+    "head_coach": "Roberto Martínez",
+    "nickname": "A Seleção"
   },
   {
     "espn_id": "205",
@@ -55,9 +55,9 @@
     "fifa_ranking": 6,
     "fifa_points": 1761.16,
     "confederation": "CONMEBOL",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 22,
+    "head_coach": "Dorival Júnior",
+    "nickname": "Canarinha"
   },
   {
     "espn_id": "449",
@@ -65,9 +65,9 @@
     "fifa_ranking": 7,
     "fifa_points": 1757.87,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 11,
+    "head_coach": "Ronald Koeman",
+    "nickname": "Oranje"
   },
   {
     "espn_id": "2869",
@@ -75,9 +75,9 @@
     "fifa_ranking": 8,
     "fifa_points": 1755.87,
     "confederation": "CAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 6,
+    "head_coach": "Walid Regragui",
+    "nickname": "Atlas Lions"
   },
   {
     "espn_id": "459",
@@ -85,9 +85,9 @@
     "fifa_ranking": 9,
     "fifa_points": 1734.71,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 14,
+    "head_coach": "Domenico Tedesco",
+    "nickname": "Red Devils"
   },
   {
     "espn_id": "481",
@@ -95,9 +95,9 @@
     "fifa_ranking": 10,
     "fifa_points": 1730.37,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 20,
+    "head_coach": "Julian Nagelsmann",
+    "nickname": "Die Mannschaft"
   },
   {
     "espn_id": "477",
@@ -105,9 +105,9 @@
     "fifa_ranking": 11,
     "fifa_points": 1717.07,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 6,
+    "head_coach": "Zlatko Dalić",
+    "nickname": "Vatreni"
   },
   {
     "espn_id": "208",
@@ -115,9 +115,9 @@
     "fifa_ranking": 13,
     "fifa_points": 1693.09,
     "confederation": "CONMEBOL",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 6,
+    "head_coach": "Néstor Lorenzo",
+    "nickname": "Los Cafeteros"
   },
   {
     "espn_id": "654",
@@ -125,9 +125,9 @@
     "fifa_ranking": 14,
     "fifa_points": 1688.99,
     "confederation": "CAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 3,
+    "head_coach": "Aliou Cissé",
+    "nickname": "Lions of Teranga"
   },
   {
     "espn_id": "203",
@@ -135,9 +135,9 @@
     "fifa_ranking": 15,
     "fifa_points": 1681.03,
     "confederation": "CONCACAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 17,
+    "head_coach": "Javier Aguirre",
+    "nickname": "El Tri"
   },
   {
     "espn_id": "660",
@@ -145,9 +145,9 @@
     "fifa_ranking": 16,
     "fifa_points": 1673.13,
     "confederation": "CONCACAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 11,
+    "head_coach": "Mauricio Pochettino",
+    "nickname": "Stars and Stripes"
   },
   {
     "espn_id": "212",
@@ -155,9 +155,9 @@
     "fifa_ranking": 17,
     "fifa_points": 1673.07,
     "confederation": "CONMEBOL",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 14,
+    "head_coach": "Marcelo Bielsa",
+    "nickname": "La Celeste"
   },
   {
     "espn_id": "627",
@@ -165,9 +165,9 @@
     "fifa_ranking": 18,
     "fifa_points": 1660.43,
     "confederation": "AFC",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 7,
+    "head_coach": "Hajime Moriyasu",
+    "nickname": "Samurai Blue"
   },
   {
     "espn_id": "475",
@@ -175,9 +175,9 @@
     "fifa_ranking": 19,
     "fifa_points": 1649.4,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 12,
+    "head_coach": "Murat Yakin",
+    "nickname": "Nati"
   },
   {
     "espn_id": "469",
@@ -185,9 +185,9 @@
     "fifa_ranking": 21,
     "fifa_points": 1615.3,
     "confederation": "AFC",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 6,
+    "head_coach": "Amir Ghalenoei",
+    "nickname": "Team Melli"
   },
   {
     "espn_id": "465",
@@ -195,9 +195,9 @@
     "fifa_ranking": 22,
     "fifa_points": 1599.04,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 2,
+    "head_coach": "Vincenzo Montella",
+    "nickname": "Ay-Yıldızlılar"
   },
   {
     "espn_id": "209",
@@ -205,9 +205,9 @@
     "fifa_ranking": 23,
     "fifa_points": 1594.78,
     "confederation": "CONMEBOL",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 4,
+    "head_coach": "Sebastián Beccacece",
+    "nickname": "La Tri"
   },
   {
     "espn_id": "474",
@@ -215,9 +215,9 @@
     "fifa_ranking": 24,
     "fifa_points": 1593.45,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 7,
+    "head_coach": "Ralf Rangnick",
+    "nickname": "Das Team"
   },
   {
     "espn_id": "451",
@@ -225,9 +225,9 @@
     "fifa_ranking": 25,
     "fifa_points": 1588.66,
     "confederation": "AFC",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 11,
+    "head_coach": "Hong Myung-bo",
+    "nickname": "Taeguk Warriors"
   },
   {
     "espn_id": "628",
@@ -235,9 +235,9 @@
     "fifa_ranking": 27,
     "fifa_points": 1580.67,
     "confederation": "AFC",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 6,
+    "head_coach": "Tony Popovic",
+    "nickname": "Socceroos"
   },
   {
     "espn_id": "624",
@@ -245,9 +245,9 @@
     "fifa_ranking": 28,
     "fifa_points": 1564.26,
     "confederation": "CAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 4,
+    "head_coach": "Vladimir Petković",
+    "nickname": "Les Fennecs"
   },
   {
     "espn_id": "2620",
@@ -255,9 +255,9 @@
     "fifa_ranking": 29,
     "fifa_points": 1563.24,
     "confederation": "CAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 3,
+    "head_coach": "Hossam Hassan",
+    "nickname": "The Pharaohs"
   },
   {
     "espn_id": "206",
@@ -265,9 +265,9 @@
     "fifa_ranking": 30,
     "fifa_points": 1556.48,
     "confederation": "CONCACAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 2,
+    "head_coach": "Jesse Marsch",
+    "nickname": "Les Rouges"
   },
   {
     "espn_id": "464",
@@ -275,9 +275,9 @@
     "fifa_ranking": 31,
     "fifa_points": 1550.94,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 3,
+    "head_coach": "Ståle Solbakken",
+    "nickname": "Ulvene"
   },
   {
     "espn_id": "2659",
@@ -285,9 +285,9 @@
     "fifa_ranking": 33,
     "fifa_points": 1540.64,
     "confederation": "CONCACAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 1,
+    "head_coach": "Thomas Christiansen",
+    "nickname": "Los Canaleros"
   },
   {
     "espn_id": "4789",
@@ -295,9 +295,9 @@
     "fifa_ranking": 34,
     "fifa_points": 1532.98,
     "confederation": "CAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 3,
+    "head_coach": "Emerse Faé",
+    "nickname": "Les Éléphants"
   },
   {
     "espn_id": "466",
@@ -305,9 +305,9 @@
     "fifa_ranking": 38,
     "fifa_points": 1514.77,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 12,
+    "head_coach": "Jon Dahl Tomasson",
+    "nickname": "Blågult"
   },
   {
     "espn_id": "210",
@@ -315,9 +315,9 @@
     "fifa_ranking": 40,
     "fifa_points": 1503.5,
     "confederation": "CONMEBOL",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 8,
+    "head_coach": "Gustavo Alfaro",
+    "nickname": "Albirroja"
   },
   {
     "espn_id": "450",
@@ -325,9 +325,9 @@
     "fifa_ranking": 41,
     "fifa_points": 1501.38,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 0,
+    "head_coach": "Ivan Hašek",
+    "nickname": "Národní tým"
   },
   {
     "espn_id": "580",
@@ -335,9 +335,9 @@
     "fifa_ranking": 43,
     "fifa_points": 1498.35,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 8,
+    "head_coach": "Steve Clarke",
+    "nickname": "The Bravehearts"
   },
   {
     "espn_id": "659",
@@ -345,9 +345,9 @@
     "fifa_ranking": 44,
     "fifa_points": 1483.05,
     "confederation": "CAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 6,
+    "head_coach": "Jalel Kadri",
+    "nickname": "Eagles of Carthage"
   },
   {
     "espn_id": "2850",
@@ -355,9 +355,9 @@
     "fifa_ranking": 46,
     "fifa_points": 1478.35,
     "confederation": "CAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 1,
+    "head_coach": "Sébastien Desabre",
+    "nickname": "Les Léopards"
   },
   {
     "espn_id": "2570",
@@ -365,9 +365,9 @@
     "fifa_ranking": 50,
     "fifa_points": 1465.34,
     "confederation": "AFC",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 0,
+    "head_coach": "Srecko Katanec",
+    "nickname": "White Wolves"
   },
   {
     "espn_id": "4398",
@@ -375,9 +375,9 @@
     "fifa_ranking": 55,
     "fifa_points": 1454.96,
     "confederation": "AFC",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 1,
+    "head_coach": "Martín López",
+    "nickname": "Al-Annabi"
   },
   {
     "espn_id": "4375",
@@ -385,9 +385,9 @@
     "fifa_ranking": 57,
     "fifa_points": 1447.14,
     "confederation": "AFC",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 1,
+    "head_coach": "Jesús Casas",
+    "nickname": "Lions of Mesopotamia"
   },
   {
     "espn_id": "467",
@@ -395,9 +395,9 @@
     "fifa_ranking": 60,
     "fifa_points": 1429.73,
     "confederation": "CAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 3,
+    "head_coach": "Hugo Broos",
+    "nickname": "Bafana Bafana"
   },
   {
     "espn_id": "655",
@@ -405,9 +405,9 @@
     "fifa_ranking": 61,
     "fifa_points": 1421.43,
     "confederation": "AFC",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 6,
+    "head_coach": "Roberto Mancini",
+    "nickname": "Green Falcons"
   },
   {
     "espn_id": "2917",
@@ -415,9 +415,9 @@
     "fifa_ranking": 63,
     "fifa_points": 1391.45,
     "confederation": "AFC",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 0,
+    "head_coach": "Hussein Ammouta",
+    "nickname": "Al-Nashama"
   },
   {
     "espn_id": "452",
@@ -425,9 +425,9 @@
     "fifa_ranking": 65,
     "fifa_points": 1385.84,
     "confederation": "UEFA",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 1,
+    "head_coach": "Sergej Barbarez",
+    "nickname": "Zmajevi"
   },
   {
     "espn_id": "2597",
@@ -435,9 +435,9 @@
     "fifa_ranking": 69,
     "fifa_points": 1366.13,
     "confederation": "CAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 0,
+    "head_coach": "Pedro Brito",
+    "nickname": "Tubarões Azuis"
   },
   {
     "espn_id": "4469",
@@ -445,9 +445,9 @@
     "fifa_ranking": 74,
     "fifa_points": 1346.31,
     "confederation": "CAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 4,
+    "head_coach": "Otto Addo",
+    "nickname": "Black Stars"
   },
   {
     "espn_id": "11678",
@@ -455,9 +455,9 @@
     "fifa_ranking": 82,
     "fifa_points": 1294.65,
     "confederation": "CONCACAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 0,
+    "head_coach": "Remko Bicentini",
+    "nickname": "Marshi di Awa"
   },
   {
     "espn_id": "2654",
@@ -465,9 +465,9 @@
     "fifa_ranking": 83,
     "fifa_points": 1291.71,
     "confederation": "CONCACAF",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 1,
+    "head_coach": "Marc Collat",
+    "nickname": "Les Grenadiers"
   },
   {
     "espn_id": "2666",
@@ -475,8 +475,8 @@
     "fifa_ranking": 85,
     "fifa_points": 1281.57,
     "confederation": "OFC",
-    "world_cup_appearances": null,
-    "head_coach": null,
-    "nickname": null
+    "world_cup_appearances": 2,
+    "head_coach": "Darren Bazeley",
+    "nickname": "All Whites"
   }
 ]
