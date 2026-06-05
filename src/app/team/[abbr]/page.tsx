@@ -157,7 +157,7 @@ export default async function TeamPage({
       <div className="page">
         <TeamClient
           abbr={upperAbbr}
-          teamName={suppTeamActual?.team_name ?? upperAbbr}
+          teamName={suppTeamActual?.team_name ?? espnTeam?.name ?? upperAbbr}
           logo={espnTeam?.logo ?? ''}
           fifaRank={fifaRanking?.rank ?? suppTeamActual?.fifa_ranking ?? null}
           rankingMovement={fifaRanking?.movement ?? null}
