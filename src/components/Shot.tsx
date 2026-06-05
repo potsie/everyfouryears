@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 interface ShotProps {
   size: number;       // diameter in px: 50 (roster card), 58 (key player), 88 (player hero)
   num?: number;       // jersey number — shown in bottom-right badge
@@ -17,6 +19,9 @@ function initials(name: string): string {
 export function Shot({ size, num, name, headshotUrl, dark = false }: ShotProps) {
   const darkStripe = 'repeating-linear-gradient(135deg, #1e2d40 0 7px, #172336 7px 14px)';
   const lightStripe = 'repeating-linear-gradient(135deg, #e9edf4 0 7px, #e2e8f1 7px 14px)';
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const showImage = headshotUrl && !imgFailed;
 
   return (
     <div
@@ -24,14 +29,15 @@ export function Shot({ size, num, name, headshotUrl, dark = false }: ShotProps) 
       style={{
         width: size,
         height: size,
-        background: headshotUrl ? undefined : (dark ? darkStripe : lightStripe),
+        background: showImage ? undefined : (dark ? darkStripe : lightStripe),
       }}
     >
-      {headshotUrl ? (
+      {showImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={headshotUrl}
           alt={name}
+          onError={() => setImgFailed(true)}
           style={{
             width: '100%',
             height: '100%',
