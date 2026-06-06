@@ -3,16 +3,58 @@
 import { useState, useEffect } from 'react';
 import { Flag } from '@/components/Flag';
 import { Shot } from '@/components/Shot';
-import {
-  TALLIES, GOLDEN_BOOT, ASSISTS, CLEAN_SHEETS, SAVES, DISCIPLINE, YOUNG, TEAM_STATS,
-} from '@/lib/stats-mock';
-import type { ScorerEntry, LeadEntry, DisciplineEntry, YoungEntry, TeamStatEntry } from '@/lib/stats-mock';
+import type {
+  TournamentStats,
+  ScorerEntry,
+  LeadEntry,
+  DisciplineEntry,
+  YoungEntry,
+  TeamStatEntry,
+  TallyItem,
+} from '@/lib/stats-live';
 
 function teamFlagUrl(abbr: string) {
   return `https://a.espncdn.com/i/teamlogos/countries/500/${abbr.toLowerCase()}.png`;
 }
 
+const COUNTRY_NAMES: Record<string, string> = {
+  ALG: 'Algeria', ARG: 'Argentina', AUS: 'Australia', AUT: 'Austria',
+  BEL: 'Belgium', BIH: 'Bosnia-Herzegovina', BRA: 'Brazil', CAN: 'Canada',
+  CIV: 'Ivory Coast', COD: 'Congo DR', COL: 'Colombia', CPV: 'Cape Verde',
+  CRO: 'Croatia', CUW: 'Curaçao', CZE: 'Czechia', ECU: 'Ecuador',
+  EGY: 'Egypt', ENG: 'England', ESP: 'Spain', FRA: 'France',
+  GER: 'Germany', GHA: 'Ghana', HAI: 'Haiti', IRN: 'Iran',
+  IRQ: 'Iraq', JOR: 'Jordan', JPN: 'Japan', KOR: 'South Korea',
+  KSA: 'Saudi Arabia', MAR: 'Morocco', MEX: 'Mexico', NED: 'Netherlands',
+  NOR: 'Norway', NZL: 'New Zealand', PAN: 'Panama', PAR: 'Paraguay',
+  POR: 'Portugal', QAT: 'Qatar', RSA: 'South Africa', SCO: 'Scotland',
+  SEN: 'Senegal', SUI: 'Switzerland', SWE: 'Sweden', TUN: 'Tunisia',
+  TUR: 'Türkiye', URU: 'Uruguay', USA: 'United States', UZB: 'Uzbekistan',
+};
+
+function countryName(abbr: string): string {
+  return COUNTRY_NAMES[abbr] ?? abbr;
+}
+
 const MEDALS = ['Golden Boot', 'Silver', 'Bronze'];
+
+const EMPTY_STATS: TournamentStats = {
+  tallies: [
+    { k: 'Goals scored',  v: '—', sub: 'this tournament' },
+    { k: 'Goals / match', v: '—', sub: 'avg' },
+    { k: 'Penalties',     v: '—', sub: 'scored' },
+    { k: 'Clean sheets',  v: '—', sub: 'by goalkeepers' },
+    { k: 'Red cards',     v: '—', sub: 'this tournament' },
+    { k: 'Hat-tricks',    v: '—', sub: 'this tournament' },
+  ],
+  goldenBoot: [],
+  assists: [],
+  cleanSheets: [],
+  saves: [],
+  discipline: [],
+  young: [],
+  teamStats: [],
+};
 
 function Podium({ p, rank }: { p: ScorerEntry; rank: 1 | 2 | 3 }) {
   return (
@@ -23,7 +65,7 @@ function Podium({ p, rank }: { p: ScorerEntry; rank: 1 | 2 | 3 }) {
       <div className="pd-name">{p.p}</div>
       <div className="pd-team">
         <Flag logo={teamFlagUrl(p.t)} abbr={p.t} size={16} />
-        {p.t}
+        {countryName(p.t)}
       </div>
       <div className="pd-goals tnum">{p.g}<span className="u">goals</span></div>
       <div className="pd-line">
@@ -36,6 +78,7 @@ function Podium({ p, rank }: { p: ScorerEntry; rank: 1 | 2 | 3 }) {
 }
 
 function GoldenBootTable({ rows }: { rows: ScorerEntry[] }) {
+  if (rows.length === 0) return null;
   return (
     <div className="lead-table" style={{ marginTop: 16 }}>
       <div className="lt-row head">
@@ -54,7 +97,7 @@ function GoldenBootTable({ rows }: { rows: ScorerEntry[] }) {
               <span className="lt-name">{p.p}</span>
               <span className="lt-club">
                 <Flag logo={teamFlagUrl(p.t)} abbr={p.t} size={14} />
-                <span>{p.club}</span>
+                <span>{countryName(p.t)}</span>
               </span>
             </span>
           </span>
@@ -67,7 +110,16 @@ function GoldenBootTable({ rows }: { rows: ScorerEntry[] }) {
   );
 }
 
+function EmptyLeaders({ label }: { label: string }) {
+  return (
+    <div className="lead-card" style={{ color: 'var(--ink-3)', fontStyle: 'italic', fontSize: 13 }}>
+      No {label} yet
+    </div>
+  );
+}
+
 function LeaderList({ rows, green }: { rows: LeadEntry[]; green?: boolean }) {
+  if (rows.length === 0) return <EmptyLeaders label="leaders" />;
   return (
     <>
       {rows.slice(0, 6).map((r, i) => (
@@ -77,7 +129,7 @@ function LeaderList({ rows, green }: { rows: LeadEntry[]; green?: boolean }) {
             <div className="lc-name">{r.p}</div>
             <div className="lc-meta">
               <Flag logo={teamFlagUrl(r.t)} abbr={r.t} size={13} />
-              {r.club}
+              {countryName(r.t)}
             </div>
           </div>
           <span className={`lc-val tnum${green ? ' green' : ''}`}>{r.v}</span>
@@ -88,14 +140,14 @@ function LeaderList({ rows, green }: { rows: LeadEntry[]; green?: boolean }) {
 }
 
 type CatKey = 'Assists' | 'Clean sheets' | 'Saves';
-const CATS: Array<{ key: CatKey; rows: LeadEntry[] }> = [
-  { key: 'Assists',      rows: ASSISTS },
-  { key: 'Clean sheets', rows: CLEAN_SHEETS },
-  { key: 'Saves',        rows: SAVES },
-];
 
-function CatPanel() {
+function CatPanel({ assists, cleanSheets, saves }: { assists: LeadEntry[]; cleanSheets: LeadEntry[]; saves: LeadEntry[] }) {
   const [cat, setCat] = useState<CatKey>('Assists');
+  const CATS: Array<{ key: CatKey; rows: LeadEntry[] }> = [
+    { key: 'Assists',      rows: assists },
+    { key: 'Clean sheets', rows: cleanSheets },
+    { key: 'Saves',        rows: saves },
+  ];
   const active = CATS.find(c => c.key === cat)!;
   return (
     <div className="panel">
@@ -112,21 +164,21 @@ function CatPanel() {
   );
 }
 
-function DisciplinePanel() {
+function DisciplinePanel({ rows }: { rows: DisciplineEntry[] }) {
   return (
     <div className="panel">
       <div className="panel-head">
         <h3>Discipline</h3>
         <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>Most booked</span>
       </div>
-      {DISCIPLINE.map((d: DisciplineEntry, i) => (
+      {rows.length === 0 ? <EmptyLeaders label="bookings" /> : rows.map((d, i) => (
         <div className="lead-card" key={d.p}>
           <span className="lc-rank tnum">{i + 1}</span>
           <div className="lc-info">
             <div className="lc-name">{d.p}</div>
             <div className="lc-meta">
               <Flag logo={teamFlagUrl(d.t)} abbr={d.t} size={13} />
-              {d.club}
+              {countryName(d.t)}
             </div>
           </div>
           <span className="disc-badges">
@@ -139,14 +191,14 @@ function DisciplinePanel() {
   );
 }
 
-function YoungPanel() {
+function YoungPanel({ rows }: { rows: YoungEntry[] }) {
   return (
     <div className="panel">
       <div className="panel-head">
         <h3>Best young player</h3>
         <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>Under 21</span>
       </div>
-      {YOUNG.map((y: YoungEntry, i) => (
+      {rows.length === 0 ? <EmptyLeaders label="young scorers" /> : rows.map((y, i) => (
         <div className="lead-card" key={y.p}>
           <span className="lc-rank tnum">{i + 1}</span>
           <div className="lc-info">
@@ -165,8 +217,8 @@ function YoungPanel() {
   );
 }
 
-function TeamStatsCard() {
-  const maxGoals = Math.max(...TEAM_STATS.map(t => t.gf));
+function TeamStatsCard({ rows }: { rows: TeamStatEntry[] }) {
+  const maxGoals = rows.length > 0 ? Math.max(...rows.map(t => t.gf)) : 1;
   return (
     <div className="t-card" style={{ marginTop: 18 }}>
       <div className="t-card-head">
@@ -179,12 +231,16 @@ function TeamStatsCard() {
         <span className="ts-num">Goals</span>
         <span className="ts-num" style={{ textAlign: 'right' }}>Poss</span>
       </div>
-      {TEAM_STATS.map((t: TeamStatEntry, i) => (
+      {rows.length === 0 ? (
+        <div style={{ padding: '12px 16px', color: 'var(--ink-3)', fontStyle: 'italic', fontSize: 13 }}>
+          No matches played yet
+        </div>
+      ) : rows.map((t, i) => (
         <div className="tstat-row" key={t.t}>
           <span className="ts-rank tnum">{i + 1}</span>
           <span className="ts-team">
             <Flag logo={teamFlagUrl(t.t)} abbr={t.t} size={18} />
-            {t.t}
+            {countryName(t.t)}
           </span>
           <span className="ts-num" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span className="ts-bar" style={{ flex: 1 }}>
@@ -199,8 +255,8 @@ function TeamStatsCard() {
   );
 }
 
-function GBHero() {
-  const top = GOLDEN_BOOT.slice(0, 3);
+function GBHero({ rows }: { rows: ScorerEntry[] }) {
+  const top = rows.slice(0, 3);
   return (
     <div className="gb-hero">
       <div className="gh-grain" />
@@ -219,9 +275,7 @@ function GBHero() {
               <div className="gp-name">{p.p}</div>
               <div className="gp-meta">
                 <Flag logo={teamFlagUrl(p.t)} abbr={p.t} size={14} />
-                {p.t}
-                <span className="sep">·</span>
-                {p.club}
+                {countryName(p.t)}
               </div>
               <div className="gp-goals tnum">
                 {p.g}<span className="u">goals</span>
@@ -234,7 +288,12 @@ function GBHero() {
   );
 }
 
-function FullScorerList() {
+function FullScorerList({ rows }: { rows: ScorerEntry[] }) {
+  if (rows.length === 0) return (
+    <div style={{ padding: '16px', color: 'var(--ink-3)', fontStyle: 'italic', fontSize: 13 }}>
+      No goals scored yet
+    </div>
+  );
   return (
     <div className="lead-table" style={{ marginTop: 18 }}>
       <div className="lt-row head">
@@ -244,7 +303,7 @@ function FullScorerList() {
         <span className="lt-num head lt-hide">A</span>
         <span className="lt-num head" style={{ textAlign: 'center' }}>Goals</span>
       </div>
-      {GOLDEN_BOOT.map((p, i) => (
+      {rows.map((p, i) => (
         <div className="lt-row" key={p.p}>
           <span className="lt-rank tnum">{i + 1}</span>
           <span className="lt-player">
@@ -253,7 +312,7 @@ function FullScorerList() {
               <span className="lt-name">{p.p}</span>
               <span className="lt-club">
                 <Flag logo={teamFlagUrl(p.t)} abbr={p.t} size={14} />
-                <span>{p.club}</span>
+                <span>{countryName(p.t)}</span>
               </span>
             </span>
           </span>
@@ -267,6 +326,7 @@ function FullScorerList() {
 }
 
 export function StatsClient() {
+  const [stats, setStats] = useState<TournamentStats>(EMPTY_STATS);
   const [view, setView] = useState<'Leaderboard' | 'Spotlight'>('Leaderboard');
 
   useEffect(() => {
@@ -276,10 +336,20 @@ export function StatsClient() {
     } catch {}
   }, []);
 
+  useEffect(() => {
+    fetch('/api/stats')
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then((data: TournamentStats) => setStats(data))
+      .catch(() => {}); // keep empty/dash state on error
+  }, []);
+
   const handleView = (v: 'Leaderboard' | 'Spotlight') => {
     setView(v);
     try { localStorage.setItem('wc-stats-view', v); } catch {}
   };
+
+  const { tallies, goldenBoot, assists, cleanSheets, saves, discipline, young, teamStats } = stats;
+  const hasScorerPodium = goldenBoot.length >= 3;
 
   return (
     <>
@@ -306,9 +376,8 @@ export function StatsClient() {
         </div>
       </div>
 
-      {/* tournament tally strip */}
       <div className="tally-strip">
-        {TALLIES.map((t, i) => (
+        {(tallies as TallyItem[]).map((t, i) => (
           <div className="ts-cell" key={i}>
             <div className="v tnum">{t.v}</div>
             <div className="k">{t.k}</div>
@@ -323,31 +392,37 @@ export function StatsClient() {
             <h2>Golden Boot</h2>
             <span className="eyebrow">Top scorers</span>
           </div>
-          <div className="gb-podium" style={{ marginTop: 14 }}>
-            <Podium p={GOLDEN_BOOT[0]} rank={1} />
-            <Podium p={GOLDEN_BOOT[1]} rank={2} />
-            <Podium p={GOLDEN_BOOT[2]} rank={3} />
-          </div>
-          <GoldenBootTable rows={GOLDEN_BOOT.slice(3)} />
-          <TeamStatsCard />
+          {hasScorerPodium ? (
+            <div className="gb-podium" style={{ marginTop: 14 }}>
+              <Podium p={goldenBoot[0]} rank={1} />
+              <Podium p={goldenBoot[1]} rank={2} />
+              <Podium p={goldenBoot[2]} rank={3} />
+            </div>
+          ) : (
+            <div style={{ padding: '20px 0', color: 'var(--ink-3)', fontStyle: 'italic', fontSize: 14 }}>
+              No goals scored yet — check back after the first match
+            </div>
+          )}
+          <GoldenBootTable rows={goldenBoot.slice(3)} />
+          <TeamStatsCard rows={teamStats} />
           <div className="stats-duo">
-            <CatPanel />
+            <CatPanel assists={assists} cleanSheets={cleanSheets} saves={saves} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <DisciplinePanel />
-              <YoungPanel />
+              <DisciplinePanel rows={discipline} />
+              <YoungPanel rows={young} />
             </div>
           </div>
         </>
       ) : (
         <>
-          <GBHero />
-          <FullScorerList />
-          <TeamStatsCard />
+          {hasScorerPodium ? <GBHero rows={goldenBoot} /> : null}
+          <FullScorerList rows={goldenBoot} />
+          <TeamStatsCard rows={teamStats} />
           <div className="stats-duo">
-            <CatPanel />
+            <CatPanel assists={assists} cleanSheets={cleanSheets} saves={saves} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <DisciplinePanel />
-              <YoungPanel />
+              <DisciplinePanel rows={discipline} />
+              <YoungPanel rows={young} />
             </div>
           </div>
         </>
