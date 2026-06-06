@@ -210,7 +210,10 @@ export default function TeamClient({
         <div>
           {/* At the tournament */}
           <div className="t-card">
-            <div className="t-card-head">
+            <div
+              className="t-card-head"
+              style={teamColorPrimary ? { background: `color-mix(in srgb, ${teamColorPrimary} 10%, var(--surface))` } : undefined}
+            >
               <h3>At the 2026 World Cup</h3>
               {groupLetter && (
                 <Link href={`/groups/${groupLetter.toLowerCase()}`} className="lnk">
@@ -250,7 +253,10 @@ export default function TeamClient({
           {/* Recent form */}
           {form.length > 0 && (
             <div className="t-card">
-              <div className="t-card-head">
+              <div
+                className="t-card-head"
+                style={teamColorPrimary ? { background: `color-mix(in srgb, ${teamColorPrimary} 10%, var(--surface))` } : undefined}
+              >
                 <h3>Recent form</h3>
                 <span
                   style={{
@@ -277,7 +283,10 @@ export default function TeamClient({
           {/* Squad preview */}
           {previewSquad.length > 0 && (
             <div className="t-card">
-              <div className="t-card-head">
+              <div
+                className="t-card-head"
+                style={teamColorPrimary ? { background: `color-mix(in srgb, ${teamColorPrimary} 10%, var(--surface))` } : undefined}
+              >
                 <h3>Squad</h3>
                 <Link href={`/team/${abbr.toLowerCase()}/roster`} className="lnk">
                   Full squad{' '}
