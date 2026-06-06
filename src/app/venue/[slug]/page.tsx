@@ -1,3 +1,4 @@
+import '@/app/venues/venues.css';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Nav } from '@/components/Nav';

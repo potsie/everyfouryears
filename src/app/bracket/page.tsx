@@ -1,3 +1,4 @@
+import './bracket.css';
 import { Nav } from '@/components/Nav';
 import { fetchAllMatches } from '@/lib/espn/wc-fetchers';
 import { buildBracketFromMatches } from '@/lib/bracket-builder';

@@ -1,3 +1,4 @@
+import './player.css';
 import fs from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';

@@ -1,3 +1,4 @@
+import './venues.css';
 import { Nav } from '@/components/Nav';
 import { VenuesClient } from './VenuesClient';
 

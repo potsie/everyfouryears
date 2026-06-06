@@ -1,3 +1,4 @@
+import './stats.css';
 import { Nav } from '@/components/Nav';
 import { StatsClient } from './StatsClient';
 

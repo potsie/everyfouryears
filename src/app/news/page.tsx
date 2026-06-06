@@ -1,3 +1,4 @@
+import './news.css';
 import { Nav } from '@/components/Nav';
 import { NewsClient } from './NewsClient';
 import { fetchNews, type NewsArticle } from '@/lib/espn/wc-fetchers';
