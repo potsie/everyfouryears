@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import type { WorldCupGroupTable } from '@/types/standings-types';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 import { GroupTable } from './GroupTable';
@@ -31,12 +32,23 @@ export function DataShelf({
 }: DataShelfProps) {
   const { openPicker } = useMyTeam();
 
+  const [teamColors, setTeamColors] = useState<{ primary: string; alt: string } | null>(null);
+
   const myTeamUpper = myTeam?.toUpperCase() ?? null;
 
   const myTeamGroup = myTeamUpper
     ? groupStandings.find(g => g.standings.some(t => t.teamAbbr.toUpperCase() === myTeamUpper))
     : null;
   const myTeamStanding = myTeamGroup?.standings.find(t => t.teamAbbr.toUpperCase() === myTeamUpper);
+
+  useEffect(() => {
+    const espnId = myTeamStanding?.teamId;
+    if (!espnId) { setTeamColors(null); return; }
+    fetch(`/api/team-colors?espnId=${espnId}`)
+      .then(r => r.json())
+      .then(setTeamColors)
+      .catch(() => setTeamColors(null));
+  }, [myTeamStanding?.teamId]);
 
   const nextMatch = myTeamUpper
     ? [...allMatches]
@@ -84,10 +96,13 @@ export function DataShelf({
         <div
           className="text-white"
           style={{
-            background: 'linear-gradient(120deg,var(--navy),var(--navy-700))',
+            background: teamColors
+              ? `linear-gradient(135deg, color-mix(in srgb, ${teamColors.primary} 55%, #0a2240) 0%, #0a2240 100%)`
+              : 'linear-gradient(120deg,var(--navy),var(--navy-700))',
             borderRadius: 'var(--r-md)',
             padding: '15px 16px',
             boxShadow: 'var(--sh-1)',
+            transition: 'background 0.4s ease',
           }}
         >
           {/* Header row: label + change button */}
