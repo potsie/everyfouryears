@@ -203,8 +203,7 @@ export function HomeClient({ allMatches, groupStandings, todayStr }: HomeClientP
 
         {/* Two-column body */}
         <div
-          className="grid gap-[26px] items-start"
-          style={{ gridTemplateColumns: '1fr 340px' }}
+          className="grid gap-[26px] items-start [grid-template-columns:1fr_340px] [@media(max-width:980px)]:[grid-template-columns:1fr]"
         >
           {/* Match cards */}
           <div>
@@ -230,7 +229,7 @@ export function HomeClient({ allMatches, groupStandings, todayStr }: HomeClientP
           </div>
 
           {/* Data shelf */}
-          <div className="[@media(max-width:980px)]:hidden">
+          <div>
             <DataShelf
               groupStandings={groupStandings}
               todayMatches={todayMatches}
