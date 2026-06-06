@@ -2,7 +2,7 @@ import './roster.css';
 import fs from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import { fetchAllMatches, fetchFifaSquads, fetchFifaCoaches } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchFifaSquads, fetchFifaCoaches, fetchTeamColors } from '@/lib/espn/wc-fetchers';
 
 interface PlayerClubEntry {
   club: string | null;
@@ -63,6 +63,12 @@ export default async function RosterPage({
   const teamName = suppTeam?.team_name ?? upperAbbr;
   const coach = fifaCoaches[upperAbbr] ?? suppTeam?.head_coach ?? null;
 
+  const espnId = Object.entries(teamDict).find(([, t]) => t.abbr.toUpperCase() === upperAbbr)?.[0] ?? suppTeam?.espn_id ?? '';
+  const teamColors = espnId ? await fetchTeamColors(espnId) : null;
+  const heroBackground = teamColors
+    ? `linear-gradient(135deg, color-mix(in srgb, ${teamColors.primary} 55%, #0a2240) 0%, #0a2240 100%)`
+    : undefined;
+
   const clubsRaw = fs.readFileSync(
     path.join(process.cwd(), 'data/players-clubs.json'), 'utf-8'
   );
@@ -87,31 +93,35 @@ export default async function RosterPage({
     <>
       <Nav activePath="/teams" />
       <div className="page">
-        <div className="pagehead">
-          <div className="eyebrow">{suppTeam?.confederation ?? ''} · 2026 World Cup</div>
-          <h1>{teamName} — Squad</h1>
-          <div className="sub">
-            <a
-              href={`/team/${upperAbbr.toLowerCase()}`}
-              style={{
-                color: 'var(--ink-2)',
-                fontWeight: 600,
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              <Flag logo={espnTeam?.logo ?? ''} abbr={upperAbbr} size={18} /> Team profile
-            </a>
-            <span className="sep">·</span>
-            <span className="b tnum">{squad.length}</span> players
-            {coach && (
-              <>
-                <span className="sep">·</span>
-                Coach <span className="b">{coach}</span>
-              </>
-            )}
+        <div className="th" style={heroBackground ? { background: heroBackground } : undefined}>
+          <div className="th-grain" />
+          <div className="th-in">
+            <div className="th-top">
+              <a href={`/team/${upperAbbr.toLowerCase()}`} className="th-back">
+                ← Team profile
+              </a>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)' }}>
+                {suppTeam?.confederation ?? ''} · 2026 World Cup
+              </span>
+            </div>
+            <div className="th-id">
+              <div className="flagwrap">
+                <Flag logo={espnTeam?.logo ?? ''} abbr={upperAbbr} size={64} />
+              </div>
+              <div className="titles">
+                <div className="eyebrow2">{upperAbbr} — Squad</div>
+                <h1 style={{ fontSize: 32 }}>{teamName}</h1>
+                <div className="subline">
+                  <span><b className="tnum">{squad.length}</b> players</span>
+                  {coach && (
+                    <>
+                      <span className="sep">·</span>
+                      <span>Coach <b>{coach}</b></span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
