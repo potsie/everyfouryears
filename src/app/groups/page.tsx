@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { fetchAllMatches, fetchAllGroupStandings } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
-import { Flag } from '@/components/Flag';
-import type { WorldCupGroupTable, WorldCupTeamStanding } from '@/types/standings-types';
+import type { WorldCupGroupTable } from '@/types/standings-types';
+import { GroupCardRows } from './GroupCardRows';
 
 export const revalidate = 300;
 
@@ -13,13 +13,6 @@ export const metadata = {
 
 function groupLetter(g: WorldCupGroupTable): string {
   return g.groupName.replace('Group ', '').trim();
-}
-
-function rowClass(s: WorldCupTeamStanding): string {
-  const base = 'gfrow';
-  if (s.status === 'advancing') return `${base} adv`;
-  if (s.status === 'bubble') return `${base} best3`;
-  return base;
 }
 
 function GroupCard({ group }: { group: WorldCupGroupTable }) {
@@ -36,7 +29,6 @@ function GroupCard({ group }: { group: WorldCupGroupTable }) {
         </span>
       </div>
 
-      {/* Header row */}
       <div className="gfrow head">
         <span className="rk">#</span>
         <span className="tm">Team</span>
@@ -48,22 +40,7 @@ function GroupCard({ group }: { group: WorldCupGroupTable }) {
         <span className="pts">Pts</span>
       </div>
 
-      {group.standings.map(s => (
-        <div key={s.teamId} className={rowClass(s)}>
-          <span className="rk tnum">{s.rank}</span>
-          <span className="tm">
-            <Flag logo={s.logo} abbr={s.teamAbbr} size={18} />
-            <span className="c">{s.teamAbbr}</span>
-            <span className="n">{s.teamName}</span>
-          </span>
-          <span className="num tnum">{s.gamesPlayed}</span>
-          <span className="num tnum">{s.wins}</span>
-          <span className="num tnum">{s.draws}</span>
-          <span className="num tnum">{s.losses}</span>
-          <span className="num tnum">{s.goalDiff > 0 ? '+' : ''}{s.goalDiff}</span>
-          <span className="pts tnum">{s.points}</span>
-        </div>
-      ))}
+      <GroupCardRows standings={group.standings} />
     </Link>
   );
 }

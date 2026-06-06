@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { fetchAllMatches } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
+import { MyTeamTeamCard } from '@/components/MyTeamTeamCard';
 
 export const revalidate = 300;
 
@@ -145,10 +146,10 @@ export default async function TeamsPage() {
                 }}
               >
                 {teams.map(team => (
-                  <Link
+                  <MyTeamTeamCard
                     key={team.espnId}
+                    abbr={team.abbr}
                     href={`/team/${team.abbr.toLowerCase()}`}
-                    className="team-flag-card"
                   >
                     <Flag logo={team.logo} abbr={team.abbr} size={32} />
                     <div style={{ minWidth: 0, flex: 1 }}>
@@ -178,7 +179,7 @@ export default async function TeamsPage() {
                         </div>
                       )}
                     </div>
-                  </Link>
+                  </MyTeamTeamCard>
                 ))}
               </div>
             </section>
