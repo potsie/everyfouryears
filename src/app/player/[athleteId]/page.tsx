@@ -146,7 +146,7 @@ export default async function PlayerPage({
           </div>
 
           <div className="shelf">
-            <Link href={`/team/${teamCountryCode.toLowerCase()}`} className="myteam" style={{ textDecoration: 'none', display: 'block' }}>
+            <Link href={`/team/${teamCountryCode.toLowerCase()}`} className="myteam" style={{ textDecoration: 'none', display: 'block', ...(heroBackground && { background: heroBackground }) }}>
               <div className="mt-h">Country</div>
               <div className="mt-main">
                 <Flag logo={teamLogo} abbr={teamCountryCode} size={36} />
