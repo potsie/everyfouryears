@@ -89,6 +89,33 @@ export function Nav({ activePath = '/' }: { activePath?: string }) {
           <MyTeamNavButton />
         </div>
       </div>
+
+      {/* Mobile nav strip — visible below 880px */}
+      <div
+        className="scrollbar-none [@media(min-width:880px)]:hidden flex gap-1 overflow-x-auto"
+        style={{
+          padding: '6px 14px 7px',
+          borderTop: '1px solid var(--line)',
+        }}
+      >
+        {NAV_LINKS.map(link => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="font-semibold text-[13px] whitespace-nowrap no-underline"
+            style={{
+              padding: '6px 11px',
+              borderRadius: 8,
+              color: activePath === link.href ? 'var(--navy)' : 'var(--ink-2)',
+              background: activePath === link.href ? 'var(--inset)' : 'transparent',
+              textDecoration: 'none',
+              flexShrink: 0,
+            }}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
     </nav>
   );
 }
