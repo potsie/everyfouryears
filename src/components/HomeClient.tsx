@@ -9,6 +9,7 @@ import { DateRail } from '@/components/DateRail';
 import { MatchCard } from '@/components/MatchCard';
 import { DataShelf } from '@/components/DataShelf';
 import { GroupTable } from '@/components/GroupTable';
+import { useMyTeam } from '@/contexts/my-team-context';
 
 interface HomeClientProps {
   allMatches: WorldCupMatchNormalized[];
@@ -76,14 +77,10 @@ export function HomeClient({ allMatches, groupStandings, todayStr }: HomeClientP
   const defaultDate = getDefaultDate(todayStr);
   const [matches, setMatches] = useState(allMatches);
   const [selectedDate, setSelectedDate] = useState(defaultDate);
-  const [myTeam, setMyTeam] = useState<string | null>(null);
   const [showAllGroups, setShowAllGroups] = useState(false);
   const [statCategory, setStatCategory] = useState('Goals');
 
-  // Restore my team from localStorage
-  useEffect(() => {
-    setMyTeam(localStorage.getItem('wc2026_myteam'));
-  }, []);
+  const { myTeam } = useMyTeam();
 
   useEffect(() => {
     if (showAllGroups) {
@@ -233,6 +230,7 @@ export function HomeClient({ allMatches, groupStandings, todayStr }: HomeClientP
             <DataShelf
               groupStandings={groupStandings}
               todayMatches={todayMatches}
+              allMatches={matches}
               myTeam={myTeam}
               showAllGroups={showAllGroups}
               onToggleAllGroups={() => setShowAllGroups(v => !v)}

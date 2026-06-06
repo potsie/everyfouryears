@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation';
 import { fetchAllMatches, fetchAllGroupStandings } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
+import { GroupStandingsTable } from './GroupStandingsTable';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
-import type { WorldCupTeamStanding } from '@/types/standings-types';
 
 export const revalidate = 300;
 
@@ -59,23 +59,6 @@ function assignMatchdays(matches: WorldCupMatchNormalized[]) {
   }));
 }
 
-function rowClass(s: WorldCupTeamStanding): string {
-  const base = 'gw-row';
-  if (s.status === 'advancing') return `${base} adv`;
-  if (s.status === 'bubble') return `${base} best3`;
-  return base;
-}
-
-function FormDots({ dots }: { dots: Array<'w' | 'd' | 'l'> }) {
-  if (!dots.length) return <span style={{ color: 'var(--ink-3)', fontSize: 11 }}>—</span>;
-  return (
-    <>
-      {dots.slice(-4).map((r, i) => (
-        <span key={i} className={`fdot ${r}`}>{r.toUpperCase()}</span>
-      ))}
-    </>
-  );
-}
 
 function FixtureRow({ m }: { m: WorldCupMatchNormalized }) {
   const post = m.status.state === 'post';
@@ -240,29 +223,7 @@ export default async function GroupDetailPage({
                 <span className="pts">Pts</span>
               </div>
 
-              {groupStanding.standings.map(s => (
-                <div key={s.teamId} className={rowClass(s)}>
-                  <span className="rk tnum">{s.rank}</span>
-                  <span className="tm">
-                    <Flag logo={s.logo} abbr={s.teamAbbr} size={26} />
-                    <span>
-                      <span className="c">{s.teamAbbr}</span>
-                      <span className="n">{s.teamName}</span>
-                    </span>
-                  </span>
-                  <span className="num tnum">{s.gamesPlayed}</span>
-                  <span className="num tnum">{s.wins}</span>
-                  <span className="num tnum">{s.draws}</span>
-                  <span className="num tnum">{s.losses}</span>
-                  <span className="num tnum hide-s">{s.goalsFor}</span>
-                  <span className="num tnum hide-s">{s.goalsAgainst}</span>
-                  <span className="num tnum">{s.goalDiff > 0 ? '+' : ''}{s.goalDiff}</span>
-                  <span className="form hide-s">
-                    <FormDots dots={form[s.teamAbbr] ?? []} />
-                  </span>
-                  <span className="pts tnum">{s.points}</span>
-                </div>
-              ))}
+              <GroupStandingsTable standings={groupStanding.standings} form={form} />
             </div>
 
             {/* Legend */}

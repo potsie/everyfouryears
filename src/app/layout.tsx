@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Archivo } from 'next/font/google';
+import { MyTeamProvider } from '@/contexts/my-team-context';
 import './globals.css';
 
 const archivo = Archivo({
@@ -24,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={archivo.variable}
         style={{ fontFamily: 'var(--font-archivo), system-ui, sans-serif' }}
       >
-        {children}
+        <MyTeamProvider>{children}</MyTeamProvider>
       </body>
     </html>
   );

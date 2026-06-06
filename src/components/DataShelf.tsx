@@ -1,11 +1,15 @@
+'use client';
+
 import type { WorldCupGroupTable } from '@/types/standings-types';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 import { GroupTable } from './GroupTable';
 import Link from 'next/link';
+import { useMyTeam, espnFlagUrl } from '@/contexts/my-team-context';
 
 interface DataShelfProps {
   groupStandings: WorldCupGroupTable[];
   todayMatches: WorldCupMatchNormalized[];
+  allMatches: WorldCupMatchNormalized[];
   myTeam: string | null;
   showAllGroups: boolean;
   onToggleAllGroups: () => void;
@@ -18,16 +22,43 @@ const STAT_TABS = ['Goals', 'Assists', 'Clean sheets', 'Saves'];
 export function DataShelf({
   groupStandings,
   todayMatches,
+  allMatches,
   myTeam,
   showAllGroups,
   onToggleAllGroups,
   statCategory,
   onStatCategory,
 }: DataShelfProps) {
-  const myTeamGroup = myTeam
-    ? groupStandings.find(g => g.standings.some(t => t.teamAbbr === myTeam))
+  const { openPicker } = useMyTeam();
+
+  const myTeamUpper = myTeam?.toUpperCase() ?? null;
+
+  const myTeamGroup = myTeamUpper
+    ? groupStandings.find(g => g.standings.some(t => t.teamAbbr.toUpperCase() === myTeamUpper))
     : null;
-  const myTeamStanding = myTeamGroup?.standings.find(t => t.teamAbbr === myTeam);
+  const myTeamStanding = myTeamGroup?.standings.find(t => t.teamAbbr.toUpperCase() === myTeamUpper);
+
+  const nextMatch = myTeamUpper
+    ? [...allMatches]
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .find(
+          m =>
+            m.status.state === 'pre' &&
+            (m.home.abbr.toUpperCase() === myTeamUpper || m.away.abbr.toUpperCase() === myTeamUpper),
+        )
+    : null;
+  const nextMatchOpp = nextMatch
+    ? nextMatch.home.abbr.toUpperCase() === myTeamUpper
+      ? nextMatch.away.abbr
+      : nextMatch.home.abbr
+    : null;
+  const nextMatchDate = nextMatch ? new Date(nextMatch.date) : null;
+  const nextMatchDay = nextMatchDate
+    ? nextMatchDate.toLocaleDateString([], { weekday: 'short' })
+    : null;
+  const nextMatchTime = nextMatchDate
+    ? nextMatchDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    : null;
 
   // For curated view: user's group + groups with live matches
   const liveGroupLetters = new Set(
@@ -59,18 +90,54 @@ export function DataShelf({
             boxShadow: 'var(--sh-1)',
           }}
         >
+          {/* Header row: label + change button */}
           <div
-            className="font-bold text-[11px] tracking-[.12em] uppercase mb-[10px]"
+            className="flex items-center font-bold text-[11px] tracking-[.12em] uppercase mb-[10px]"
             style={{ color: 'rgba(255,255,255,.6)' }}
           >
             ★ My Team
+            <button
+              onClick={openPicker}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'rgba(255,255,255,.45)',
+                fontSize: 11,
+                cursor: 'pointer',
+                padding: 0,
+                marginLeft: 'auto',
+                fontWeight: 400,
+                letterSpacing: 0,
+                textTransform: 'none',
+              }}
+            >
+              change
+            </button>
           </div>
+
+          {/* Main row: flag + abbr + subtitle */}
           <div className="flex items-center gap-3">
+            <img
+              src={espnFlagUrl(myTeam)}
+              alt={myTeam}
+              style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
             <span className="font-display font-black text-[22px]">{myTeamStanding.teamAbbr}</span>
             <div className="text-[12px]" style={{ color: 'rgba(255,255,255,.72)' }}>
               {myTeamGroup?.groupName} · {ordinal(myTeamStanding.rank)} · {myTeamStanding.points} pts
             </div>
           </div>
+
+          {/* Next match row */}
+          {nextMatch && nextMatchOpp && nextMatchDay && nextMatchTime && (
+            <div
+              className="mt-[8px] text-[11px]"
+              style={{ color: 'rgba(255,255,255,.6)' }}
+            >
+              Next · vs {nextMatchOpp} · {nextMatchDay} {nextMatchTime}
+            </div>
+          )}
         </div>
       )}
 

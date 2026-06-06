@@ -5,6 +5,7 @@ import { Flag } from '@/components/Flag';
 import { Shot } from '@/components/Shot';
 import { GroupMini } from '@/components/GroupMini';
 import type { GroupMiniRow } from '@/components/GroupMini';
+import PinMyTeamButton from '@/components/PinMyTeamButton';
 
 interface FormEntry {
   res: 'W' | 'D' | 'L';
@@ -159,6 +160,9 @@ export default function TeamClient({
                 {groupLetter && (
                   <span>Group <b>{groupLetter}</b></span>
                 )}
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <PinMyTeamButton abbr={abbr} />
               </div>
             </div>
           </div>
