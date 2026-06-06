@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Archivo } from 'next/font/google';
 import { MyTeamProvider } from '@/contexts/my-team-context';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 import './globals.css';
 
 const archivo = Archivo({
@@ -26,6 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         style={{ fontFamily: 'var(--font-archivo), system-ui, sans-serif' }}
       >
         <MyTeamProvider>{children}</MyTeamProvider>
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        )}
       </body>
     </html>
   );
