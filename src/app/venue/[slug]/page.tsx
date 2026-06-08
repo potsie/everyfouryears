@@ -75,18 +75,35 @@ function StatHero({ v, heroBackground }: { v: VenueData; heroBackground?: string
   );
 }
 
-function Locator({ lat, lng }: { lat: number; lng: number }) {
-  const isWest = lng < 0;
+function VenueMap({ lat, lng, name }: { lat: number; lng: number; name: string }) {
+  const pad = 0.012;
+  const bbox = `${lng - pad},${lat - pad},${lng + pad},${lat + pad}`;
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
+  const osmLink = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}`;
   return (
-    <div className="locator">
-      <div className="loc-grid" />
-      <div className="loc-grain" />
-      <div className="loc-pin" style={{ left: '54%', top: '46%' }}>
-        <span className="dot" />
-      </div>
-      <div className="loc-coord">
-        {Math.abs(lat).toFixed(3)}°{lat >= 0 ? 'N' : 'S'} · {Math.abs(lng).toFixed(3)}°{isWest ? 'W' : 'E'}
-      </div>
+    <div style={{ position: 'relative' }}>
+      <iframe
+        src={src}
+        title={`Map of ${name}`}
+        width="100%"
+        height="240"
+        style={{ display: 'block', border: 0, borderRadius: 0 }}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+      <a
+        href={osmLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: 'absolute', bottom: 8, right: 8,
+          fontSize: 10, color: 'var(--ink-3)', background: 'var(--surface)',
+          padding: '2px 6px', borderRadius: 4, textDecoration: 'none',
+          border: '1px solid var(--line)',
+        }}
+      >
+        Open in OSM ↗
+      </a>
     </div>
   );
 }
@@ -191,14 +208,14 @@ export default async function VenueDetailPage({ params }: { params: Promise<{ sl
                 <h3>Location</h3>
                 <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>{v.city}</span>
               </div>
-              <Locator lat={v.lat} lng={v.lng} />
+              <VenueMap lat={v.lat} lng={v.lng} name={v.name} />
               <div className="facts">
-                <div className="fact-row">
-                  <span className="k">Coordinates</span>
-                  <span className="v tnum" style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 12 }}>
-                    {v.lat.toFixed(3)}, {v.lng.toFixed(3)}
-                  </span>
-                </div>
+                {v.address && (
+                  <div className="fact-row">
+                    <span className="k">Address</span>
+                    <span className="v" style={{ textAlign: 'right' }}>{v.address}</span>
+                  </div>
+                )}
                 <div className="fact-row">
                   <span className="k">Country</span>
                   <span className="v">{v.country}</span>
