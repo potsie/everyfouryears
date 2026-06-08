@@ -85,7 +85,6 @@ function FixtureRow({ m }: { m: ScheduleMatch }) {
       <TeamCell team={m.away} side="b" lose={loseAway} />
       <span className="s-meta">
         {badge && <span className="s-grp">{badge}</span>}
-        {m.broadcaster && <span className="s-tv tv">{m.broadcaster}</span>}
       </span>
       <span className="s-tv tv" style={{ justifySelf: 'end' }}>{m.broadcaster}</span>
     </Link>
