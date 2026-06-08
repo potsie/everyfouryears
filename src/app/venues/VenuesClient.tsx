@@ -41,7 +41,13 @@ function VenueCard({ v }: { v: VenueData }) {
           : <div className="vshot" style={{ height: '100%' }} />
         }
         <span className="vc-flag">
-          <Flag logo={`https://a.espncdn.com/i/teamlogos/countries/500/${flagCode}.png`} abbr={v.country.slice(0, 3).toUpperCase()} size={26} />
+          <img
+            src={`https://flagcdn.com/w80/${flagCode}.png`}
+            alt={v.country}
+            width={32}
+            height={24}
+            style={{ borderRadius: 4, objectFit: 'cover', display: 'block', boxShadow: '0 1px 4px rgba(0,0,0,.35)' }}
+          />
         </span>
         {v.role && (
           <span className="vc-role">
