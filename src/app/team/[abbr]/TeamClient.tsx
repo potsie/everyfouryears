@@ -6,6 +6,7 @@ import { Shot } from '@/components/Shot';
 import { GroupMini } from '@/components/GroupMini';
 import type { GroupMiniRow } from '@/components/GroupMini';
 import PinMyTeamButton from '@/components/PinMyTeamButton';
+import type { NewsArticle } from '@/lib/espn/wc-fetchers';
 
 interface FormEntry {
   res: 'W' | 'D' | 'L';
@@ -53,6 +54,7 @@ interface TeamClientProps {
   groupStandings: GroupMiniRow[];
   teamColorPrimary: string | null;
   teamColorAlt: string | null;
+  teamNews: NewsArticle[];
 }
 
 function ordinal(n: number): string {
@@ -96,6 +98,7 @@ export default function TeamClient({
   groupStandings,
   teamColorPrimary,
   teamColorAlt,
+  teamNews,
 }: TeamClientProps) {
   const previewSquad = squad.slice(0, 6);
 
@@ -389,6 +392,38 @@ export default function TeamClient({
 
         {/* Shelf */}
         <div className="shelf">
+          {teamNews.length > 0 && (
+            <div className="panel">
+              <div className="panel-head">
+                <h3>Latest news</h3>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {teamNews.map((article, i) => (
+                  <a
+                    key={article.id}
+                    href={article.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'block',
+                      padding: '11px 16px',
+                      borderTop: i === 0 ? 'none' : '1px solid var(--line)',
+                      textDecoration: 'none',
+                      color: 'inherit',
+                    }}
+                  >
+                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 4 }}>
+                      {article.section}
+                    </div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.35 }}>
+                      {article.headline}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="panel">
             <div className="panel-head">
               <h3>Quick facts</h3>

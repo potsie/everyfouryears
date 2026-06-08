@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings, fetchFifaTeamBio, fetchFifaCoaches, fetchFifaSquads } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings, fetchFifaTeamBio, fetchFifaCoaches, fetchFifaSquads, fetchTeamNews } from '@/lib/espn/wc-fetchers';
+import type { NewsArticle } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
 import TeamClient from './TeamClient';
 import type { GroupMiniRow } from '@/components/GroupMini';
@@ -65,11 +66,12 @@ export default async function TeamPage({
   const espnTeamEntry = Object.entries(teamDict).find(([, t]) => t.abbr.toUpperCase() === upperAbbr);
   const espnId = espnTeamEntry?.[0] ?? suppTeamActual?.espn_id ?? '';
 
-  const [allStandings, teamColors, fifaRankings, fifaCoaches] = await Promise.all([
+  const [allStandings, teamColors, fifaRankings, fifaCoaches, teamNews] = await Promise.all([
     fetchAllGroupStandings(teamDict),
     fetchTeamColors(espnId),
     fetchFifaRankings(),
     fetchFifaCoaches(),
+    fetchTeamNews(espnId),
   ]);
 
   const fifaRanking = fifaRankings[upperAbbr] ?? null;
@@ -188,6 +190,7 @@ export default async function TeamPage({
           groupStandings={groupStandings}
           teamColorPrimary={teamColors?.primary ?? null}
           teamColorAlt={teamColors?.alt ?? null}
+          teamNews={teamNews}
         />
       </div>
     </>

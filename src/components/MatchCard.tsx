@@ -67,21 +67,20 @@ export function MatchCard({ match }: MatchCardProps) {
         <div
           className="flex items-center justify-between px-[14px] py-[9px] text-[11.5px] font-bold"
           style={{
-            background: 'var(--inset)',
-            borderBottom: '1px solid var(--line)',
-            color: 'var(--ink-2)',
+            background: 'var(--navy)',
+            color: 'rgba(255,255,255,.7)',
           }}
         >
           <span style={{ letterSpacing: '.04em' }}>{stageLabel(match)}</span>
 
           {isLive && (
-            <span className="flex items-center gap-[6px]" style={{ color: 'var(--live-ink)' }}>
-              <span className="pulse-dot" style={{ width: 6, height: 6 }} />
+            <span className="flex items-center gap-[6px]" style={{ color: '#7ee2a8' }}>
+              <span className="pulse-dot on-dark" style={{ width: 6, height: 6 }} />
               {match.status.clock}
             </span>
           )}
           {isPost && (
-            <span style={{ color: 'var(--ink-3)' }}>FULL TIME</span>
+            <span style={{ color: 'rgba(255,255,255,.45)' }}>FULL TIME</span>
           )}
           {isPre && (
             <span>{formatKickoff(match.date)}</span>

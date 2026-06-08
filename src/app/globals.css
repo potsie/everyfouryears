@@ -305,17 +305,17 @@ body {
 .gcard:hover { box-shadow: var(--sh-2); transform: translateY(-1px); }
 .gcard-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 11px 15px; background: var(--inset); border-bottom: 1px solid var(--line);
+  padding: 11px 15px; background: var(--navy); border-bottom: none;
 }
 .gcard-head .gl {
   font-family: var(--display); font-weight: 800; font-size: 15px;
-  color: var(--ink); letter-spacing: .02em; white-space: nowrap;
+  color: #fff; letter-spacing: .02em; white-space: nowrap;
 }
 .gcard-head .go {
-  font-size: 12px; font-weight: 600; color: var(--ink-2);
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,.55);
   display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
 }
-.gcard:hover .gcard-head .go { color: var(--accent); }
+.gcard:hover .gcard-head .go { color: rgba(255,255,255,.9); }
 
 .gfrow {
   display: grid;

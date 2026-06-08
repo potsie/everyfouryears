@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Flag } from '@/components/Flag';
+import { PageHero } from '@/components/PageHero';
 import type { ScheduleDay, ScheduleMatch, ScheduleTeam, SeedTeam } from '@/lib/schedule-utils';
 
 // ── Icons ──────────────────────────────────────────────────────────────────
@@ -202,17 +203,17 @@ export function ScheduleClient({ days, singleDay = false, groupTeams = {} }: Sch
     <div className="page">
       {!singleDay && (
         <>
-          <div className="pagehead">
-            <div className="eyebrow">2026 FIFA World Cup</div>
-            <h1>Match Schedule</h1>
-            <div className="sub">
-              <span className="b tnum">104</span> matches
-              <span className="sep">·</span>
-              <span className="b tnum">16</span> venues
-              <span className="sep">·</span>
+          <PageHero
+            eyebrow="2026 FIFA World Cup"
+            title="Match Schedule"
+            sub={<>
+              <span style={{ color: '#fff', fontWeight: 700 }}>104</span> matches
+              <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+              <span style={{ color: '#fff', fontWeight: 700 }}>16</span> venues
+              <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
               Jun 11 – Jul 19, 2026
-            </div>
-          </div>
+            </>}
+          />
 
           <div className="filters">
             <div className="seg">
@@ -254,15 +255,15 @@ export function ScheduleClient({ days, singleDay = false, groupTeams = {} }: Sch
       )}
 
       {singleDay && filteredDays[0] && (
-        <div className="pagehead">
-          <div className="eyebrow">2026 FIFA World Cup · Schedule</div>
-          <h1>{filteredDays[0].dateLabel}</h1>
-          <div className="sub">
-            <span className="b tnum">{filteredDays[0].matches.length}</span> match{filteredDays[0].matches.length !== 1 ? 'es' : ''}
-            <span className="sep">·</span>
+        <PageHero
+          eyebrow="2026 FIFA World Cup · Schedule"
+          title={filteredDays[0].dateLabel}
+          sub={<>
+            <span style={{ color: '#fff', fontWeight: 700 }}>{filteredDays[0].matches.length}</span> match{filteredDays[0].matches.length !== 1 ? 'es' : ''}
+            <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
             {filteredDays[0].stageLabel}
-          </div>
-        </div>
+          </>}
+        />
       )}
 
       {filteredDays.length === 0 ? (

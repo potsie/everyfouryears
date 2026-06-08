@@ -15,7 +15,7 @@ export function GroupTable({ group, myTeamId, compact = false }: GroupTableProps
       {/* Title */}
       <div
         className="font-display font-bold text-[13px] tracking-[.06em]"
-        style={{ padding: compact ? '8px 15px 4px' : '10px 15px 6px', color: 'var(--ink-2)' }}
+        style={{ padding: compact ? '8px 15px' : '10px 15px', background: 'var(--navy)', color: '#fff' }}
       >
         GROUP {letter}
       </div>

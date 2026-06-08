@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Flag } from '@/components/Flag';
+import { PageHero } from '@/components/PageHero';
 import { Shot } from '@/components/Shot';
 import type {
   TournamentStats,
@@ -353,28 +354,45 @@ export function StatsClient() {
 
   return (
     <>
-      <div className="stats-head-row">
-        <div>
-          <div className="eyebrow">2026 FIFA World Cup</div>
-          <h1>Tournament Stats</h1>
-        </div>
-        <div className="seg" role="tablist">
-          <button role="tab" aria-selected={view === 'Leaderboard'} className={view === 'Leaderboard' ? 'on' : ''} onClick={() => handleView('Leaderboard')}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="3" y="5" width="18" height="3.2" rx="1.6" />
-              <rect x="3" y="10.4" width="13" height="3.2" rx="1.6" />
-              <rect x="3" y="15.8" width="8" height="3.2" rx="1.6" />
-            </svg>
-            Leaderboard
-          </button>
-          <button role="tab" aria-selected={view === 'Spotlight'} className={view === 'Spotlight' ? 'on' : ''} onClick={() => handleView('Spotlight')}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="m12 3 2.5 5.6 6.1.6-4.6 4 1.4 6L12 18.7 6.6 22l1.4-6-4.6-4 6.1-.6z" />
-            </svg>
-            Spotlight
-          </button>
-        </div>
-      </div>
+      <PageHero
+        eyebrow="2026 FIFA World Cup"
+        title="Tournament Stats"
+        titleRight={
+          <div
+            role="tablist"
+            style={{
+              display: 'flex',
+              background: 'rgba(255,255,255,.10)',
+              border: '1px solid rgba(255,255,255,.16)',
+              borderRadius: 'var(--r-sm)',
+              padding: 3,
+              gap: 2,
+            }}
+          >
+            {([
+              { v: 'Leaderboard' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="5" width="18" height="3.2" rx="1.6" /><rect x="3" y="10.4" width="13" height="3.2" rx="1.6" /><rect x="3" y="15.8" width="8" height="3.2" rx="1.6" /></svg> },
+              { v: 'Spotlight' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.5 5.6 6.1.6-4.6 4 1.4 6L12 18.7 6.6 22l1.4-6-4.6-4 6.1-.6z" /></svg> },
+            ]).map(({ v, icon }) => (
+              <button
+                key={v}
+                role="tab"
+                aria-selected={view === v}
+                onClick={() => handleView(v)}
+                style={{
+                  fontFamily: 'var(--ui)', fontWeight: 600, fontSize: 12.5,
+                  border: 'none', cursor: 'pointer', borderRadius: 7,
+                  padding: '6px 13px', display: 'flex', alignItems: 'center', gap: 5,
+                  background: view === v ? 'rgba(255,255,255,.18)' : 'none',
+                  color: view === v ? '#fff' : 'rgba(255,255,255,.6)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {icon} {v}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       <div className="tally-strip">
         {(tallies as TallyItem[]).map((t, i) => (

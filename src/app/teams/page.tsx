@@ -3,6 +3,7 @@ import path from 'path';
 import Link from 'next/link';
 import { fetchAllMatches } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
+import { PageHero } from '@/components/PageHero';
 import { Flag } from '@/components/Flag';
 import { MyTeamTeamCard } from '@/components/MyTeamTeamCard';
 
@@ -89,17 +90,17 @@ export default async function TeamsPage() {
     <>
       <Nav activePath="/teams" />
       <div className="page">
-        <div className="pagehead">
-          <div className="eyebrow">2026 FIFA World Cup</div>
-          <h1>48 Teams</h1>
-          <div className="sub">
-            <span>6 confederations</span>
-            <span className="sep">·</span>
-            <span>48 nations</span>
-            <span className="sep">·</span>
-            <span>12 groups</span>
-          </div>
-        </div>
+        <PageHero
+          eyebrow="2026 FIFA World Cup"
+          title="48 Teams"
+          sub={<>
+            <span style={{ color: '#fff', fontWeight: 700 }}>6</span> confederations
+            <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+            <span style={{ color: '#fff', fontWeight: 700 }}>48</span> nations
+            <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+            <span style={{ color: '#fff', fontWeight: 700 }}>12</span> groups
+          </>}
+        />
 
         {CONFEDERATION_ORDER.map(conf => {
           const teams = byConf[conf];

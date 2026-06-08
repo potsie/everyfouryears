@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { fetchAllMatches, fetchAllGroupStandings } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
+import { PageHero } from '@/components/PageHero';
 import type { WorldCupGroupTable } from '@/types/standings-types';
 import { GroupCardRows } from './GroupCardRows';
 
@@ -73,17 +74,17 @@ export default async function GroupsPage() {
     <>
       <Nav activePath="/groups" />
       <div className="page">
-        <div className="pagehead">
-          <div className="eyebrow">2026 FIFA World Cup</div>
-          <h1>Group Stage</h1>
-          <div className="sub">
-            <span className="b tnum">12</span> groups
-            <span className="sep">·</span>
-            <span className="b tnum">48</span> teams
-            <span className="sep">·</span>
+        <PageHero
+          eyebrow="2026 FIFA World Cup"
+          title="Group Stage"
+          sub={<>
+            <span style={{ color: '#fff', fontWeight: 700 }}>12</span> groups
+            <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+            <span style={{ color: '#fff', fontWeight: 700 }}>48</span> teams
+            <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
             Top two of each group advance, plus the eight best third-placed teams
-          </div>
-        </div>
+          </>}
+        />
 
         <div className="groups-wall">
           {sorted.map(g => <GroupCard key={g.groupId} group={g} />)}

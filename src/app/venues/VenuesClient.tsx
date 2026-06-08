@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Flag } from '@/components/Flag';
+import { PageHero } from '@/components/PageHero';
 import { VENUES, roofLabel, venuesByCountry } from '@/lib/venues';
 import type { VenueData } from '@/lib/venues';
 
@@ -184,19 +185,19 @@ export function VenuesClient() {
 
   return (
     <>
-      <div className="pagehead">
-        <div className="eyebrow">2026 FIFA World Cup</div>
-        <h1>Host Venues</h1>
-        <div className="sub">
-          <span><span className="b tnum">16</span> stadiums</span>
-          <span className="sep">·</span>
-          <span><span className="b tnum">3</span> nations</span>
-          <span className="sep">·</span>
-          <span><span className="b tnum">{(totalCap / 1e6).toFixed(2)}M</span> total seats</span>
-          <span className="sep">·</span>
-          <span><span className="b tnum">104</span> matches</span>
-        </div>
-      </div>
+      <PageHero
+        eyebrow="2026 FIFA World Cup"
+        title="Host Venues"
+        sub={<>
+          <span style={{ color: '#fff', fontWeight: 700 }}>16</span> stadiums
+          <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+          <span style={{ color: '#fff', fontWeight: 700 }}>3</span> nations
+          <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+          <span style={{ color: '#fff', fontWeight: 700 }}>{(totalCap / 1e6).toFixed(2)}M</span> total seats
+          <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+          <span style={{ color: '#fff', fontWeight: 700 }}>104</span> matches
+        </>}
+      />
 
       <div style={{ marginTop: 18 }}>
         <HostMap />

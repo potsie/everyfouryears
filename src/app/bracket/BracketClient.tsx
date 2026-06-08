@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, createContext, useContext } from 'react';
 import { Flag } from '@/components/Flag';
+import { PageHero } from '@/components/PageHero';
 import { isTBD, hydrateClientBracket } from '@/lib/bracket-data';
 import type { Tie, PathResult, WCBracketData, BracketColumn, TieTeam, SerializableBracket } from '@/lib/bracket-data';
 
@@ -412,17 +413,17 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
 
   return (
     <BracketCtx.Provider value={data}>
-      <div className="pagehead">
-        <div className="eyebrow">2026 FIFA World Cup</div>
-        <h1>Knockout Bracket</h1>
-        <div className="sub">
-          <span><span className="b tnum">32</span> teams</span>
-          <span className="sep">·</span>
-          <span><span className="b tnum">31</span> matches</span>
-          <span className="sep">·</span>
+      <PageHero
+        eyebrow="2026 FIFA World Cup"
+        title="Knockout Bracket"
+        sub={<>
+          <span style={{ color: '#fff', fontWeight: 700 }}>32</span> teams
+          <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+          <span style={{ color: '#fff', fontWeight: 700 }}>31</span> matches
+          <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
           <span>{data.window}</span>
-        </div>
-      </div>
+        </>}
+      />
 
       <div className="bk-controls">
         <div className="seg" role="tablist" aria-label="Bracket view">

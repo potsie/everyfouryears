@@ -286,6 +286,24 @@ export async function fetchTeamColors(espnId: string): Promise<{ primary: string
   }
 }
 
+export async function fetchTeamNews(espnId: string): Promise<NewsArticle[]> {
+  if (!espnId) return [];
+  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news?team=${espnId}&limit=5`;
+  const data = await espnFetch<any>(url, `wc-team-news-${espnId}`, 600);
+  const articles: any[] = data.articles ?? [];
+  return articles.map((a: any, i: number) => ({
+    id: String(a.id ?? a.dataSourceIdentifier ?? i),
+    headline: a.headline ?? '',
+    description: a.description ?? '',
+    published: a.published ?? new Date().toISOString(),
+    premium: a.premium ?? false,
+    section: deriveSection(a.categories ?? []),
+    byline: a.byline ?? 'ESPN Staff',
+    imageUrl: a.images?.[0]?.url ?? null,
+    href: a.links?.web?.href ?? 'https://www.espn.com/soccer/fifa-world-cup/',
+  }));
+}
+
 export async function fetchNews(): Promise<NewsArticle[]> {
   const url = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news?limit=20';
   const data = await espnFetch<any>(url, 'wc-news', 600);

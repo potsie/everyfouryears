@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { NewsArticle } from '@/lib/espn/wc-fetchers';
+import { PageHero } from '@/components/PageHero';
 
 /* ---------- icons ---------- */
 function FeedIco() {
@@ -229,35 +230,51 @@ export function NewsClient({ articles }: { articles: NewsArticle[] }) {
 
   return (
     <>
-      <div className="pagehead">
-        <div className="eyebrow">2026 FIFA World Cup</div>
-        <div className="news-head-row">
-          <h1>News</h1>
-          <div className="seg" role="tablist" aria-label="News layout">
-            <button
-              role="tab"
-              aria-selected={view === 'Feed'}
-              className={view === 'Feed' ? 'on' : ''}
-              onClick={() => switchView('Feed')}
-            >
-              <FeedIco /> Feed
-            </button>
-            <button
-              role="tab"
-              aria-selected={view === 'Grid'}
-              className={view === 'Grid' ? 'on' : ''}
-              onClick={() => switchView('Grid')}
-            >
-              <GridIco /> Grid
-            </button>
+      <PageHero
+        eyebrow="2026 FIFA World Cup"
+        title="News"
+        titleRight={
+          <div
+            role="tablist"
+            aria-label="News layout"
+            style={{
+              display: 'flex',
+              background: 'rgba(255,255,255,.10)',
+              border: '1px solid rgba(255,255,255,.16)',
+              borderRadius: 'var(--r-sm)',
+              padding: 3,
+              gap: 2,
+            }}
+          >
+            {([
+              { v: 'Feed', icon: <FeedIco /> },
+              { v: 'Grid', icon: <GridIco /> },
+            ] as const).map(({ v, icon }) => (
+              <button
+                key={v}
+                role="tab"
+                aria-selected={view === v}
+                onClick={() => switchView(v)}
+                style={{
+                  fontFamily: 'var(--ui)', fontWeight: 600, fontSize: 12.5,
+                  border: 'none', cursor: 'pointer', borderRadius: 7,
+                  padding: '6px 13px', display: 'flex', alignItems: 'center', gap: 5,
+                  background: view === v ? 'rgba(255,255,255,.18)' : 'none',
+                  color: view === v ? '#fff' : 'rgba(255,255,255,.6)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {icon} {v}
+              </button>
+            ))}
           </div>
-        </div>
-        <div className="sub">
-          <span>Latest from the tournament</span>
-          <span className="sep">·</span>
-          <span>updated continuously · <strong>{articles.length} stories</strong></span>
-        </div>
-      </div>
+        }
+        sub={<>
+          Latest from the tournament
+          <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+          updated continuously · <strong style={{ color: '#fff', fontWeight: 700 }}>{articles.length} stories</strong>
+        </>}
+      />
 
       {view === 'Feed' ? (
         <div className="news-feed-cols">
