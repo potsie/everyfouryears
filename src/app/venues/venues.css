@@ -153,3 +153,81 @@
 .section-head .seg button { display: inline-flex; align-items: center; gap: 6px; }
 .section-head .seg button svg { opacity: .8; }
 @media (max-width: 480px) { .section-head .seg button svg { display: none; } }
+
+/* ── Weather widget ─────────────────────────────────────── */
+.wx-chip {
+  display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+  border-radius: 999px; padding: 5px 5px 5px 12px;
+  font-size: 12.5px; color: rgba(255,255,255,.85); white-space: nowrap;
+}
+.wx-symbol { font-size: 16px; line-height: 1; flex: 0 0 auto; }
+.wx-temp { font-family: var(--display); font-weight: 800; font-size: 15px; color: #fff; }
+.wx-cond { font-weight: 600; color: rgba(255,255,255,.7); }
+.wx-roof-note {
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,.45);
+  background: rgba(255,255,255,.07); border-radius: 999px; padding: 2px 8px;
+}
+.wx-divider { width: 1px; height: 14px; background: rgba(255,255,255,.2); flex: 0 0 auto; }
+.wx-toggle { display: inline-flex; gap: 2px; }
+.wx-unit {
+  font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.18); background: transparent;
+  color: rgba(255,255,255,.5); cursor: pointer; transition: background .12s, color .12s, border-color .12s;
+}
+.wx-unit.on { background: rgba(255,255,255,.22); color: #fff; border-color: rgba(255,255,255,.4); }
+.wx-unit.dark { border-color: var(--line); color: var(--ink-3); background: transparent; }
+.wx-unit.dark.on { background: var(--inset); color: var(--ink); border-color: var(--line-2); }
+.wx-forecast-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11.5px; font-weight: 700; color: rgba(255,255,255,.75);
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px; padding: 4px 10px; cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.wx-forecast-btn:hover { background: rgba(255,255,255,.2); color: #fff; }
+
+/* popup */
+.wx-popup {
+  z-index: 91;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); box-shadow: var(--sh-2);
+  width: 420px; max-width: calc(100vw - 24px);
+  overflow: hidden;
+}
+.wx-popup-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-bottom: 1px solid var(--line);
+  font-family: var(--display); font-weight: 700; font-size: 14px; color: var(--ink);
+}
+.wx-close {
+  background: none; border: none; cursor: pointer;
+  font-size: 13px; color: var(--ink-3); padding: 3px 7px;
+  border-radius: 7px; line-height: 1;
+}
+.wx-close:hover { background: var(--inset); color: var(--ink); }
+.wx-days {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 1px; background: var(--line);
+}
+.wx-day {
+  background: var(--surface); padding: 13px 8px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  text-align: center;
+}
+.wx-day-name { font-family: var(--display); font-weight: 800; font-size: 11.5px; color: var(--ink); }
+.wx-day-date { font-size: 10px; color: var(--ink-3); font-weight: 600; }
+.wx-day-symbol { font-size: 26px; line-height: 1; margin: 5px 0 3px; }
+.wx-day-cond { font-size: 10.5px; font-weight: 600; color: var(--ink-2); min-height: 28px; display: flex; align-items: center; }
+.wx-day-temps { display: flex; gap: 7px; margin-top: 5px; }
+.wx-hi { font-family: var(--display); font-weight: 800; font-size: 15px; color: var(--ink); }
+.wx-lo { font-family: var(--display); font-weight: 600; font-size: 14px; color: var(--ink-3); }
+.wx-precip { font-size: 10.5px; font-weight: 700; color: #2563eb; margin-top: 3px; }
+.wx-popup-note {
+  padding: 9px 14px; font-size: 11px; color: var(--ink-3); font-weight: 500;
+  border-top: 1px solid var(--line); background: var(--inset);
+}
+
+@media (max-width: 560px) {
+  .wx-chip .wx-cond, .wx-chip .wx-roof-note, .wx-chip .wx-divider { display: none; }
+}

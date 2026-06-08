@@ -7,7 +7,118 @@ import { Flag } from '@/components/Flag';
 import { VENUES, getVenueBySlug, roofLabel } from '@/lib/venues';
 import { VenueMapLeaflet } from '@/components/VenueMapLeaflet';
 import type { VenueData } from '@/lib/venues';
-import { fetchTeamColors } from '@/lib/espn/wc-fetchers';
+import { fetchTeamColors, fetchAllMatches } from '@/lib/espn/wc-fetchers';
+import { groupMatchesByDay } from '@/lib/schedule-utils';
+import type { ScheduleMatch, ScheduleDay, ScheduleTeam, SeedTeam } from '@/lib/schedule-utils';
+import { fetchVenueWeather } from '@/lib/weather';
+import { VenueWeather } from '@/components/VenueWeather';
+import React from 'react';
+
+// ESPN fullName → our VenueData.name for known mismatches
+const ESPN_VENUE_ALIASES: Record<string, string> = {
+  'GEHA Field at Arrowhead Stadium': 'Arrowhead Stadium',
+  'Estadio Azteca': 'Estadio Banorte',
+};
+
+function matchesVenue(espnName: string, venueName: string): boolean {
+  return (ESPN_VENUE_ALIASES[espnName] ?? espnName) === venueName;
+}
+
+function isSeed(t: ScheduleTeam | SeedTeam): t is SeedTeam {
+  return (t as SeedTeam).tbd === true;
+}
+
+function formatKickoff(dateISO: string): string {
+  return new Date(dateISO).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+
+function MatchStatusCell({ m }: { m: ScheduleMatch }) {
+  if (m.state === 'in') {
+    return <span className="s-status s-live"><span className="pulse-dot" />{m.clock}</span>;
+  }
+  if (m.state === 'post') {
+    return <span className="s-status s-ft">FULL TIME</span>;
+  }
+  return <span className="s-status s-time tnum">{formatKickoff(m.dateISO)}</span>;
+}
+
+function TeamCell({ team, side, lose }: { team: ScheduleTeam | SeedTeam; side: 'a' | 'b'; lose: boolean }) {
+  const cls = `s-team ${side}${lose ? ' lose' : ''}`;
+  if (isSeed(team)) {
+    return <span className={cls}><span className="s-seed">{team.seed}</span></span>;
+  }
+  if (side === 'a') {
+    return (
+      <span className={cls}>
+        <span className="s-code">{team.abbr}</span>
+        <Flag logo={team.logo} abbr={team.abbr} size={22} />
+      </span>
+    );
+  }
+  return (
+    <span className={cls}>
+      <Flag logo={team.logo} abbr={team.abbr} size={22} />
+      <span className="s-code">{team.abbr}</span>
+    </span>
+  );
+}
+
+function ScoreCell({ m }: { m: ScheduleMatch }) {
+  if (m.state === 'pre') return <span className="s-score pre">vs</span>;
+  if (!m.score) return <span className="s-score pre">—</span>;
+  const [hs, as_] = m.score;
+  return <span className="s-score tnum">{hs}<span className="x">–</span>{as_}</span>;
+}
+
+function FixtureRow({ m }: { m: ScheduleMatch }) {
+  const post = m.state === 'post';
+  const [hs, as_] = m.score ?? [0, 0];
+  const loseHome = post && !!m.score && hs < as_;
+  const loseAway = post && !!m.score && as_ < hs;
+  const badge = m.groupLetter ? `GRP ${m.groupLetter}` : m.koAbbr ?? '';
+
+  return (
+    <Link href={`/match/${m.id}`} className="srow" style={{ textDecoration: 'none', color: 'inherit' }}>
+      <MatchStatusCell m={m} />
+      <TeamCell team={m.home} side="a" lose={loseHome} />
+      <ScoreCell m={m} />
+      <TeamCell team={m.away} side="b" lose={loseAway} />
+      <span className="s-meta">
+        {badge && <span className="s-grp">{badge}</span>}
+        {m.broadcaster && <span className="s-tv tv">{m.broadcaster}</span>}
+      </span>
+      <span className="s-tv tv" style={{ justifySelf: 'end' }}>{m.broadcaster}</span>
+    </Link>
+  );
+}
+
+function VenueFixtures({ days }: { days: ScheduleDay[] }) {
+  if (days.length === 0) return null;
+  return (
+    <div className="t-card" style={{ marginBottom: 0 }}>
+      <div className="t-card-head">
+        <h3>Match schedule</h3>
+        <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>
+          {days.reduce((n, d) => n + d.matches.length, 0)} matches
+        </span>
+      </div>
+      <div style={{ padding: '4px 16px 16px' }}>
+        {days.map(day => (
+          <section key={day.key} className={`sday${day.isToday ? ' is-today' : ''}`} style={{ marginTop: 16 }}>
+            <div className="sday-head">
+              <h3>{day.dateLabel}</h3>
+              <span className="stage">{day.stageLabel}</span>
+              {day.isToday && <span className="todaytag">● Today</span>}
+            </div>
+            <div className="slist">
+              {day.matches.map(m => <FixtureRow key={m.id} m={m} />)}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const HOST_COUNTRY_ESPN_ID: Record<string, string> = {
   USA: '660',
@@ -25,7 +136,7 @@ export function generateStaticParams() {
   return VENUES.map(v => ({ slug: v.slug }));
 }
 
-function StatHero({ v, heroBackground }: { v: VenueData; heroBackground?: string }) {
+function StatHero({ v, heroBackground, weatherNode }: { v: VenueData; heroBackground?: string; weatherNode?: React.ReactNode }) {
   const flagUrl = HOST_COUNTRY_FLAG[v.country] ?? '';
   const locale = v.country === 'USA'
     ? `${v.city}, ${v.region}, USA`
@@ -44,9 +155,11 @@ function StatHero({ v, heroBackground }: { v: VenueData; heroBackground?: string
             </svg>
             All venues
           </Link>
-          <span className="th-rankpill">
-            <b className="tnum">{v.matches}</b> matches hosted
-          </span>
+          {weatherNode ?? (
+            <span className="th-rankpill">
+              <b className="tnum">{v.matches}</b> matches hosted
+            </span>
+          )}
         </div>
         <div className="th-id">
           <Flag logo={flagUrl} abbr={v.country.slice(0, 3).toUpperCase()} size={64} />
@@ -116,16 +229,26 @@ export default async function VenueDetailPage({ params }: { params: Promise<{ sl
   const nearby = getNearby(v);
 
   const espnId = HOST_COUNTRY_ESPN_ID[v.country];
-  const teamColors = espnId ? await fetchTeamColors(espnId) : null;
+  const [teamColors, { matches: allMatches }, weatherData] = await Promise.all([
+    espnId ? fetchTeamColors(espnId) : Promise.resolve(null),
+    fetchAllMatches(),
+    fetchVenueWeather(v.lat, v.lng),
+  ]);
   const heroBackground = teamColors?.primary
     ? `linear-gradient(135deg, color-mix(in srgb, ${teamColors.primary} 55%, #0a2240) 0%, #0a2240 100%)`
+    : undefined;
+
+  const venueMatches = allMatches.filter(m => matchesVenue(m.venue, v.name));
+  const fixtureDays = groupMatchesByDay(venueMatches);
+  const weatherNode = weatherData
+    ? <VenueWeather data={weatherData} roofType={v.roof} />
     : undefined;
 
   return (
     <>
       <Nav activePath="/venues" />
       <div className="page">
-        <StatHero v={v} heroBackground={heroBackground} />
+        <StatHero v={v} heroBackground={heroBackground} weatherNode={weatherNode} />
 
         <div className="cols">
           <div>
@@ -139,8 +262,32 @@ export default async function VenueDetailPage({ params }: { params: Promise<{ sl
               </div>
             )}
 
-            <div className="t-card">
-              <div className="t-card-head">
+            <VenueFixtures days={fixtureDays} />
+          </div>
+
+          <div className="shelf">
+            <div className="panel">
+              <div className="panel-head">
+                <h3>Location</h3>
+                <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>{v.city}</span>
+              </div>
+              <VenueMapLeaflet lat={v.lat} lng={v.lng} name={v.name} />
+              <div className="facts">
+                {v.address && (
+                  <div className="fact-row">
+                    <span className="k">Address</span>
+                    <span className="v" style={{ textAlign: 'right' }}>{v.address}</span>
+                  </div>
+                )}
+                <div className="fact-row">
+                  <span className="k">Country</span>
+                  <span className="v">{v.country}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="panel">
+              <div className="panel-head">
                 <h3>About the stadium</h3>
                 <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>{roofLabel(v.roof)}</span>
               </div>
@@ -168,28 +315,6 @@ export default async function VenueDetailPage({ params }: { params: Promise<{ sl
                     <span className="v">{f.v}</span>
                   </div>
                 ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="shelf">
-            <div className="panel">
-              <div className="panel-head">
-                <h3>Location</h3>
-                <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>{v.city}</span>
-              </div>
-              <VenueMapLeaflet lat={v.lat} lng={v.lng} name={v.name} />
-              <div className="facts">
-                {v.address && (
-                  <div className="fact-row">
-                    <span className="k">Address</span>
-                    <span className="v" style={{ textAlign: 'right' }}>{v.address}</span>
-                  </div>
-                )}
-                <div className="fact-row">
-                  <span className="k">Country</span>
-                  <span className="v">{v.country}</span>
-                </div>
               </div>
             </div>
 
