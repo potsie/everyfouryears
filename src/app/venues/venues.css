@@ -83,9 +83,9 @@
 .ac-body.two .vrow:nth-child(-n+2) { border-top: none; }
 .ac-body.two .vrow:nth-child(even) { box-shadow: inset 1px 0 0 var(--line); }
 @media (max-width: 560px) { .ac-body.two { grid-template-columns: 1fr; } .ac-body.two .vrow:nth-child(2) { border-top: 1px solid var(--line); } .ac-body.two .vrow:nth-child(even) { box-shadow: none; } }
-.atlas-col .ac-head { display: flex; align-items: center; gap: 10px; padding: 13px 15px; background: var(--inset); border-bottom: 1px solid var(--line); }
-.atlas-col .ac-head .ac-name { font-family: var(--display); font-weight: 800; font-size: 15px; color: var(--ink); }
-.atlas-col .ac-head .ac-cnt { margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+.atlas-col .ac-head { display: flex; align-items: center; gap: 10px; padding: 13px 15px; background: var(--navy); }
+.atlas-col .ac-head .ac-name { font-family: var(--display); font-weight: 800; font-size: 15px; color: #fff; }
+.atlas-col .ac-head .ac-cnt { margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: rgba(255,255,255,.55); }
 .vrow { display: grid; grid-template-columns: 46px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 12px 15px; border-top: 1px solid var(--line); text-decoration: none; color: inherit; transition: background .12s; }
 .vrow:first-of-type { border-top: none; }
 .vrow:hover { background: var(--inset); }

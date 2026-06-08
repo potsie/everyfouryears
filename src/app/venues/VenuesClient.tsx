@@ -107,7 +107,13 @@ function AtlasColumn({ country, rows, cols = 1 }: { country: string; rows: Venue
   return (
     <div className="atlas-col">
       <div className="ac-head">
-        <Flag logo={`https://a.espncdn.com/i/teamlogos/countries/500/${flagCode}.png`} abbr={country.slice(0, 3).toUpperCase()} size={24} />
+        <img
+          src={`https://flagcdn.com/w80/${flagCode}.png`}
+          alt={country}
+          width={36}
+          height={27}
+          style={{ borderRadius: 5, objectFit: 'cover', flexShrink: 0, boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.15)' }}
+        />
         <span className="ac-name">{country === 'USA' ? 'United States' : country}</span>
         <span className="ac-cnt">{rows.length} {rows.length === 1 ? 'venue' : 'venues'}</span>
       </div>
