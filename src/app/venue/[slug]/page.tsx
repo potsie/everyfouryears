@@ -91,10 +91,15 @@ function Locator({ lat, lng }: { lat: number; lng: number }) {
   );
 }
 
-function NearbyVenue({ slug, name, city, dist }: { slug: string; name: string; city: string; dist: string }) {
+function NearbyVenue({ slug, name, city, dist, photoUrl }: { slug: string; name: string; city: string; dist: string; photoUrl: string | null }) {
   return (
     <Link href={`/venue/${slug}`} className="nearby-row">
-      <div className="nb-shot vshot" data-label="" style={{ width: 40, height: 40, borderRadius: 8, flexShrink: 0 }} />
+      <div style={{ width: 40, height: 40, borderRadius: 8, flexShrink: 0, overflow: 'hidden' }}>
+        {photoUrl
+          ? <img src={photoUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          : <div className="nb-shot vshot" style={{ width: '100%', height: '100%' }} />
+        }
+      </div>
       <div className="nb-info">
         <div className="nb-name">{name}</div>
         <div className="nb-city">{city}</div>
@@ -104,12 +109,12 @@ function NearbyVenue({ slug, name, city, dist }: { slug: string; name: string; c
   );
 }
 
-function getNearby(v: VenueData): Array<{ slug: string; name: string; city: string; dist: string }> {
+function getNearby(v: VenueData): Array<{ slug: string; name: string; city: string; dist: string; photoUrl: string | null }> {
   const nearby = VENUES.filter(u => u.slug !== v.slug && u.country === v.country)
     .map(u => {
       const dlat = u.lat - v.lat, dlng = u.lng - v.lng;
       const km = Math.round(Math.sqrt(dlat * dlat + dlng * dlng) * 111);
-      return { slug: u.slug, name: u.name, city: u.city, dist: `${km} km`, km };
+      return { slug: u.slug, name: u.name, city: u.city, dist: `${km} km`, km, photoUrl: u.photoUrl };
     })
     .sort((a, b) => a.km - b.km)
     .slice(0, 3);
@@ -137,6 +142,16 @@ export default async function VenueDetailPage({ params }: { params: Promise<{ sl
 
         <div className="cols">
           <div>
+            {v.photoUrl && (
+              <div style={{ borderRadius: 'var(--r-md)', overflow: 'hidden', marginBottom: 16, boxShadow: 'var(--sh-1)', aspectRatio: '16/9' }}>
+                <img
+                  src={v.photoUrl}
+                  alt={v.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              </div>
+            )}
+
             <div className="t-card">
               <div className="t-card-head">
                 <h3>About the stadium</h3>
@@ -194,7 +209,7 @@ export default async function VenueDetailPage({ params }: { params: Promise<{ sl
             {nearby.length > 0 && (
               <div className="panel">
                 <div className="panel-head"><h3>Nearby venues</h3></div>
-                {nearby.map(n => <NearbyVenue key={n.slug} {...n} />)}
+                {nearby.map(n => <NearbyVenue key={n.slug} slug={n.slug} name={n.name} city={n.city} dist={n.dist} photoUrl={n.photoUrl} />)}
               </div>
             )}
           </div>

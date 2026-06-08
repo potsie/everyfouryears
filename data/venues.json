@@ -16,7 +16,8 @@
     "elevation_m": 2,
     "matches": 8,
     "keyMatch": "Final (Jul 19)",
-    "timezone": "America/New_York"
+    "timezone": "America/New_York",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Metlife_stadium_%28Aerial_view%29.jpg/1280px-Metlife_stadium_%28Aerial_view%29.jpg"
   },
   {
     "espnId": 3871,
@@ -35,7 +36,8 @@
     "elevation_m": 184,
     "matches": 9,
     "keyMatch": "Semifinal (Jul 14)",
-    "timezone": "America/Chicago"
+    "timezone": "America/Chicago",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/AT%26T_Stadium_Aerial.jpeg/1280px-AT%26T_Stadium_Aerial.jpeg"
   },
   {
     "espnId": 7485,
@@ -54,7 +56,8 @@
     "elevation_m": 308,
     "matches": 8,
     "keyMatch": "Semifinal (Jul 15)",
-    "timezone": "America/New_York"
+    "timezone": "America/New_York",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Mercedes-Benz_Stadium_in_Atlanta_three_days_prior_to_the_2019_Super_Bowl.jpg/1280px-Mercedes-Benz_Stadium_in_Atlanta_three_days_prior_to_the_2019_Super_Bowl.jpg"
   },
   {
     "espnId": 9115,
@@ -73,7 +76,8 @@
     "elevation_m": 25,
     "matches": 8,
     "keyMatch": "Quarterfinal",
-    "timezone": "America/Los_Angeles"
+    "timezone": "America/Los_Angeles",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Aerial_view_of_SoFi_Stadium_%28July_2022%29.jpg/1280px-Aerial_view_of_SoFi_Stadium_%28July_2022%29.jpg"
   },
   {
     "espnId": 4643,
@@ -93,7 +97,8 @@
     "elevation_m": 3,
     "matches": 7,
     "keyMatch": "Third-place match (Jul 18)",
-    "timezone": "America/New_York"
+    "timezone": "America/New_York",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Hard_Rock_Stadium.jpg/1280px-Hard_Rock_Stadium.jpg"
   },
   {
     "espnId": 10660,
@@ -112,7 +117,8 @@
     "elevation_m": 58,
     "matches": 7,
     "keyMatch": "Quarterfinal",
-    "timezone": "America/New_York"
+    "timezone": "America/New_York",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Gillette_Stadium.JPG/1280px-Gillette_Stadium.JPG"
   },
   {
     "espnId": 6262,
@@ -131,7 +137,8 @@
     "elevation_m": 14,
     "matches": 7,
     "keyMatch": "Quarterfinal",
-    "timezone": "America/Chicago"
+    "timezone": "America/Chicago",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Reliant_Stadium_Aerial.JPG/1280px-Reliant_Stadium_Aerial.JPG"
   },
   {
     "espnId": 10897,
@@ -151,7 +158,8 @@
     "elevation_m": 272,
     "matches": 6,
     "keyMatch": "Round of 16",
-    "timezone": "America/Chicago"
+    "timezone": "America/Chicago",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Aerial_view_of_Arrowhead_Stadium_08-31-2013.jpg/1280px-Aerial_view_of_Arrowhead_Stadium_08-31-2013.jpg"
   },
   {
     "espnId": 5960,
@@ -170,7 +178,8 @@
     "elevation_m": 11,
     "matches": 6,
     "keyMatch": "Round of 32",
-    "timezone": "America/Los_Angeles"
+    "timezone": "America/Los_Angeles",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Levi%27s_Stadium_from_air.jpg/1280px-Levi%27s_Stadium_from_air.jpg"
   },
   {
     "espnId": 1421,
@@ -189,7 +198,8 @@
     "elevation_m": 5,
     "matches": 6,
     "keyMatch": "Round of 16",
-    "timezone": "America/New_York"
+    "timezone": "America/New_York",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Lincoln_Financial_Field_%28Aerial_view%29.jpg/1280px-Lincoln_Financial_Field_%28Aerial_view%29.jpg"
   },
   {
     "espnId": 4485,
@@ -208,7 +218,8 @@
     "elevation_m": 4,
     "matches": 6,
     "keyMatch": "Round of 32",
-    "timezone": "America/Los_Angeles"
+    "timezone": "America/Los_Angeles",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Lumen_Field_exterior%2C_July_2023.jpg/1280px-Lumen_Field_exterior%2C_July_2023.jpg"
   },
   {
     "espnId": 4370,
@@ -228,7 +239,8 @@
     "elevation_m": 3,
     "matches": 7,
     "keyMatch": "Quarterfinal",
-    "timezone": "America/Vancouver"
+    "timezone": "America/Vancouver",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/False_Creek_and_BC_Place.jpg/1280px-False_Creek_and_BC_Place.jpg"
   },
   {
     "espnId": 10143,
@@ -248,7 +260,8 @@
     "elevation_m": 77,
     "matches": 6,
     "keyMatch": "Round of 32",
-    "timezone": "America/Toronto"
+    "timezone": "America/Toronto",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Toronto_-_ON_-_BMO_Field.jpg/1280px-Toronto_-_ON_-_BMO_Field.jpg"
   },
   {
     "espnId": 1672,
@@ -268,7 +281,8 @@
     "elevation_m": 2200,
     "matches": 5,
     "keyMatch": "Opening match (Jun 11)",
-    "timezone": "America/Mexico_City"
+    "timezone": "America/Mexico_City",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Estadio_Azteca_desde_el_aire_1.jpg/1280px-Estadio_Azteca_desde_el_aire_1.jpg"
   },
   {
     "espnId": 5009,
@@ -287,7 +301,8 @@
     "elevation_m": 1560,
     "matches": 4,
     "keyMatch": "Group stage only",
-    "timezone": "America/Mexico_City"
+    "timezone": "America/Mexico_City",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Estadio_Akron_02-07-2022_cabecera_sur_lado_derecho.jpg/1280px-Estadio_Akron_02-07-2022_cabecera_sur_lado_derecho.jpg"
   },
   {
     "espnId": 6351,
@@ -306,6 +321,7 @@
     "elevation_m": 500,
     "matches": 4,
     "keyMatch": "Round of 32",
-    "timezone": "America/Monterrey"
+    "timezone": "America/Monterrey",
+    "photoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Estadio_BBVA_Bancomer.jpg/1280px-Estadio_BBVA_Bancomer.jpg"
   }
 ]

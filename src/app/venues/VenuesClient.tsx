@@ -35,7 +35,11 @@ function VenueCard({ v }: { v: VenueData }) {
   const flagCode = COUNTRY_FLAGS[v.country] ?? 'us';
   return (
     <Link href={`/venue/${v.slug}`} className="vcard">
-      <div className="vc-photo vshot" data-label="Stadium photo">
+      <div className="vc-photo" style={v.photoUrl ? undefined : undefined}>
+        {v.photoUrl
+          ? <img src={v.photoUrl} alt={v.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          : <div className="vshot" style={{ height: '100%' }} />
+        }
         <span className="vc-flag">
           <Flag logo={`https://a.espncdn.com/i/teamlogos/countries/500/${flagCode}.png`} abbr={v.country.slice(0, 3).toUpperCase()} size={26} />
         </span>
@@ -76,7 +80,12 @@ function VenueCard({ v }: { v: VenueData }) {
 function VenueRow({ v }: { v: VenueData }) {
   return (
     <Link href={`/venue/${v.slug}`} className="vrow">
-      <div className="vr-shot vshot" data-label="" />
+      <div className="vr-shot" style={{ overflow: 'hidden', flexShrink: 0 }}>
+        {v.photoUrl
+          ? <img src={v.photoUrl} alt={v.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          : <div className="vshot" style={{ width: '100%', height: '100%' }} />
+        }
+      </div>
       <div className="vr-info">
         <div className="vr-name">{v.name}</div>
         <div className="vr-meta">
