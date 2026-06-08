@@ -241,7 +241,7 @@ export default async function VenueDetailPage({ params }: { params: Promise<{ sl
   const venueMatches = allMatches.filter(m => matchesVenue(m.venue, v.name));
   const fixtureDays = groupMatchesByDay(venueMatches);
   const weatherNode = weatherData
-    ? <VenueWeather data={weatherData} roofType={v.roof} />
+    ? <VenueWeather data={weatherData} roofType={v.roof} lat={v.lat} lng={v.lng} />
     : undefined;
 
   return (

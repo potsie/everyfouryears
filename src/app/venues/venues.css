@@ -189,7 +189,7 @@
 
 /* popup */
 .wx-popup {
-  z-index: 91;
+  z-index: 1001;
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--r-lg); box-shadow: var(--sh-2);
   width: 420px; max-width: calc(100vw - 24px);
@@ -213,8 +213,11 @@
 .wx-day {
   background: var(--surface); padding: 13px 8px 12px;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  text-align: center;
+  text-align: center; cursor: pointer; border: none;
+  transition: background .12s; width: 100%;
 }
+.wx-day:hover { background: var(--inset); }
+.wx-day.expanded { background: var(--inset); }
 .wx-day-name { font-family: var(--display); font-weight: 800; font-size: 11.5px; color: var(--ink); }
 .wx-day-date { font-size: 10px; color: var(--ink-3); font-weight: 600; }
 .wx-day-symbol { font-size: 26px; line-height: 1; margin: 5px 0 3px; }
@@ -223,6 +226,39 @@
 .wx-hi { font-family: var(--display); font-weight: 800; font-size: 15px; color: var(--ink); }
 .wx-lo { font-family: var(--display); font-weight: 600; font-size: 14px; color: var(--ink-3); }
 .wx-precip { font-size: 10.5px; font-weight: 700; color: #2563eb; margin-top: 3px; }
+.wx-day-tap { margin-top: 4px; color: var(--ink-3); opacity: .5; }
+
+/* hourly detail panel */
+.wx-detail { border-top: 1px solid var(--line); }
+.wx-detail-head {
+  padding: 10px 14px 9px; font-family: var(--display); font-weight: 700;
+  font-size: 12.5px; color: var(--ink-2); background: var(--inset);
+  border-bottom: 1px solid var(--line);
+}
+.wx-detail-loading {
+  padding: 18px 14px; text-align: center; font-size: 12.5px; color: var(--ink-3);
+}
+.wx-periods { display: flex; flex-direction: column; }
+.wx-period {
+  display: grid; grid-template-columns: 110px 28px 1fr auto;
+  align-items: center; gap: 10px; padding: 11px 14px;
+  border-top: 1px solid var(--line);
+}
+.wx-period:first-child { border-top: none; }
+.wx-period-left { display: flex; flex-direction: column; gap: 2px; }
+.wx-period-name { font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--ink); }
+.wx-period-hours { font-size: 10.5px; color: var(--ink-3); font-weight: 600; }
+.wx-period-symbol { font-size: 22px; line-height: 1; text-align: center; }
+.wx-period-center { display: flex; align-items: baseline; gap: 7px; }
+.wx-period-temp { font-family: var(--display); font-weight: 800; font-size: 17px; color: var(--ink); }
+.wx-period-cond { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.wx-period-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 3px;
+  font-size: 11px; font-weight: 600; color: var(--ink-3);
+}
+.wx-period-wind { display: flex; align-items: center; gap: 4px; }
+.wx-period-precip { color: #2563eb; }
+
 .wx-popup-note {
   padding: 9px 14px; font-size: 11px; color: var(--ink-3); font-weight: 500;
   border-top: 1px solid var(--line); background: var(--inset);
