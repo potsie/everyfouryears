@@ -1,9 +1,11 @@
 import '@/app/venues/venues.css';
+import 'leaflet/dist/leaflet.css';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
 import { VENUES, getVenueBySlug, roofLabel } from '@/lib/venues';
+import { VenueMapLeaflet } from '@/components/VenueMapLeaflet';
 import type { VenueData } from '@/lib/venues';
 import { fetchTeamColors } from '@/lib/espn/wc-fetchers';
 
@@ -75,38 +77,6 @@ function StatHero({ v, heroBackground }: { v: VenueData; heroBackground?: string
   );
 }
 
-function VenueMap({ lat, lng, name }: { lat: number; lng: number; name: string }) {
-  const pad = 0.012;
-  const bbox = `${lng - pad},${lat - pad},${lng + pad},${lat + pad}`;
-  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
-  const osmLink = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}`;
-  return (
-    <div style={{ position: 'relative' }}>
-      <iframe
-        src={src}
-        title={`Map of ${name}`}
-        width="100%"
-        height="240"
-        style={{ display: 'block', border: 0, borderRadius: 0 }}
-        loading="lazy"
-        referrerPolicy="no-referrer"
-      />
-      <a
-        href={osmLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          position: 'absolute', bottom: 8, right: 8,
-          fontSize: 10, color: 'var(--ink-3)', background: 'var(--surface)',
-          padding: '2px 6px', borderRadius: 4, textDecoration: 'none',
-          border: '1px solid var(--line)',
-        }}
-      >
-        Open in OSM ↗
-      </a>
-    </div>
-  );
-}
 
 function NearbyVenue({ slug, name, city, dist, photoUrl }: { slug: string; name: string; city: string; dist: string; photoUrl: string | null }) {
   return (
@@ -208,7 +178,7 @@ export default async function VenueDetailPage({ params }: { params: Promise<{ sl
                 <h3>Location</h3>
                 <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>{v.city}</span>
               </div>
-              <VenueMap lat={v.lat} lng={v.lng} name={v.name} />
+              <VenueMapLeaflet lat={v.lat} lng={v.lng} name={v.name} />
               <div className="facts">
                 {v.address && (
                   <div className="fact-row">
