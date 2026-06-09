@@ -215,7 +215,7 @@ export default function TeamClient({
           <div className="t-card">
             <div
               className="t-card-head"
-              style={teamColorPrimary ? { background: `color-mix(in srgb, ${teamColorPrimary} 10%, var(--surface))` } : undefined}
+              style={teamColorPrimary ? { background: `color-mix(in srgb, ${teamColorPrimary} 25%, var(--navy))` } : undefined}
             >
               <h3>At the 2026 World Cup</h3>
               {groupLetter && (
@@ -258,7 +258,7 @@ export default function TeamClient({
             <div className="t-card">
               <div
                 className="t-card-head"
-                style={teamColorPrimary ? { background: `color-mix(in srgb, ${teamColorPrimary} 10%, var(--surface))` } : undefined}
+                style={teamColorPrimary ? { background: `color-mix(in srgb, ${teamColorPrimary} 25%, var(--navy))` } : undefined}
               >
                 <h3>Recent form</h3>
                 <span
@@ -288,7 +288,7 @@ export default function TeamClient({
             <div className="t-card">
               <div
                 className="t-card-head"
-                style={teamColorPrimary ? { background: `color-mix(in srgb, ${teamColorPrimary} 10%, var(--surface))` } : undefined}
+                style={teamColorPrimary ? { background: `color-mix(in srgb, ${teamColorPrimary} 25%, var(--navy))` } : undefined}
               >
                 <h3>Squad</h3>
                 <Link href={`/team/${abbr.toLowerCase()}/roster`} className="lnk">
