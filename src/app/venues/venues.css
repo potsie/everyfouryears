@@ -189,10 +189,11 @@
 
 /* popup */
 .wx-popup {
+  z-index: 1001;
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--r-lg); box-shadow: var(--sh-2);
-  width: 100%; margin-top: 12px;
-  overflow: hidden;
+  width: 420px; max-width: calc(100vw - 24px);
+  overflow-y: auto; overflow-x: hidden;
 }
 .wx-popup-head {
   display: flex; align-items: center; justify-content: space-between;
