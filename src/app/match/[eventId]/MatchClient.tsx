@@ -837,7 +837,7 @@ interface WeatherPanelProps {
 
 function WeatherPanel({ weatherData, roofType, lat, lng, venue }: WeatherPanelProps) {
   return (
-    <div className="panel" style={{ overflow: 'hidden' }}>
+    <div className="panel">
       <div className="panel-head">
         <h3>Match weather</h3>
         <span style={{ fontSize: 12, color: 'var(--ink-3)', fontWeight: 600 }}>{venue}</span>

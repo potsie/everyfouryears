@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { WeatherData } from '@/lib/weather';
 
 // ── WMO weather code helpers ──────────────────────────────────────────────────
@@ -138,11 +138,9 @@ interface Props {
 export function VenueWeather({ data, roofType, lat, lng }: Props) {
   const [unit, setUnit]             = useState<'F' | 'C'>('F');
   const [open, setOpen]             = useState(false);
-  const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({});
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [loadingDay, setLoadingDay]   = useState<string | null>(null);
   const [hourlyCache, setHourlyCache] = useState<Map<string, Period[]>>(new Map());
-  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     try {
@@ -156,31 +154,10 @@ export function VenueWeather({ data, roofType, lat, lng }: Props) {
     try { localStorage.setItem('wc-temp-unit', u); } catch {}
   };
 
-  const openPopup = useCallback(() => {
-    if (triggerRef.current) {
-      const r = triggerRef.current.getBoundingClientRect();
-      setPopupStyle({
-        position: 'fixed',
-        top: r.bottom + 8,
-        right: Math.max(8, window.innerWidth - r.right),
-      });
-    }
-    setOpen(true);
-  }, []);
-
   const closePopup = useCallback(() => {
     setOpen(false);
     setExpandedDay(null);
   }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = () => { setOpen(false); setExpandedDay(null); };
-    window.addEventListener('resize', handler);
-    return () => {
-      window.removeEventListener('resize', handler);
-    };
-  }, [open]);
 
   const handleDayClick = useCallback(async (date: string) => {
     // Toggle collapse
@@ -233,18 +210,16 @@ export function VenueWeather({ data, roofType, lat, lng }: Props) {
           <button className={`wx-unit${unit === 'F' ? ' on' : ''}`} onClick={() => toggleUnit('F')}>F°</button>
           <button className={`wx-unit${unit === 'C' ? ' on' : ''}`} onClick={() => toggleUnit('C')}>C°</button>
         </span>
-        <button ref={triggerRef} className="wx-forecast-btn" onClick={openPopup}>
+        <button className="wx-forecast-btn" onClick={() => setOpen(o => !o)}>
           5-day
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m6 9 6 6 6-6" />
+            <path d={open ? 'm18 15-6-6-6 6' : 'm6 9 6 6 6-6'} />
           </svg>
         </button>
       </div>
 
       {open && (
-        <>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 1000 }} onClick={closePopup} />
-          <div className="wx-popup" style={popupStyle}>
+        <div className="wx-popup">
 
             <div className="wx-popup-head">
               <span>5-day forecast</span>
@@ -351,8 +326,7 @@ export function VenueWeather({ data, roofType, lat, lng }: Props) {
                 This venue has a {roofType} roof — weather may not affect play.
               </div>
             )}
-          </div>
-        </>
+        </div>
       )}
     </>
   );
