@@ -201,26 +201,13 @@ export function DataShelf({
       )}
 
       {/* Stat leaders panel */}
-      <div
-        style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--line)',
-          borderRadius: 'var(--r-md)',
-          boxShadow: 'var(--sh-1)',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          className="flex items-center justify-between px-[15px] py-3"
-          style={{ borderBottom: '1px solid var(--line)' }}
-        >
-          <h3 className="font-display font-bold text-[14px] m-0 tracking-[.01em]">
-            Stat Leaders
-          </h3>
+      <div className="panel">
+        <div className="panel-head">
+          <h3>Stat Leaders</h3>
           <Link
             href="/stats"
             className="text-[12px] font-semibold no-underline"
-            style={{ color: 'var(--ink-2)' }}
+            style={{ color: 'rgba(255,255,255,.55)' }}
           >
             Full stats →
           </Link>

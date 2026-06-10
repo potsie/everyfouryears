@@ -28,13 +28,6 @@ function CheckIco() {
     </svg>
   );
 }
-function StarIco() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z" />
-    </svg>
-  );
-}
 
 function short(w: string | null): string {
   return (w || '').replace(/^\w+ · /, '').replace(':00', '');
@@ -396,7 +389,6 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
   });
   const [hover, setHover] = useState<string | null>(null);
   const [trace, setTrace] = useState<string | null>(null);
-  const [myOn, setMyOn] = useState(false);
 
   useEffect(() => {
     try { localStorage.setItem('wc-bracket-view', view); } catch (_) {}
@@ -405,7 +397,7 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
     try { localStorage.setItem('wc-bracket-round', round); } catch (_) {}
   }, [round]);
 
-  const pinned = trace || (myOn ? data.myTeam : null);
+  const pinned = trace;
   const active = hover || pinned;
   const path = useMemo(() => data.pathForTeam(active), [data, active]);
 
@@ -460,13 +452,6 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
                 <button className="clear" onClick={() => setTrace(null)} aria-label="Clear">✕</button>
               )}
             </div>
-            <button
-              className={`chk${myOn ? ' on' : ''}`}
-              onClick={() => { setMyOn((v) => !v); setTrace(null); }}
-            >
-              <span className="box">{myOn && <CheckIco />}</span>
-              <StarIco /> USA path
-            </button>
           </>
         )}
 
@@ -483,12 +468,6 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
             <span className="k"><span className="sw" style={{ background: 'var(--inset)', border: '1px dashed var(--line-2)' }} /> Awaiting teams</span>
             <span className="k"><span className="ln" /> Confirmed path</span>
             <span className="k"><span className="ln dash" /> Possible route</span>
-            <span className="k">
-              <span className="bt-mine" style={{ position: 'static', width: 13, height: 13 }}>
-                <CheckIco />
-              </span>{' '}
-              Your team (USA)
-            </span>
           </div>
           <div className="bk-view-note">
             <p style={{ color: 'var(--ink-2)', fontSize: 13, padding: '20px 4px', textAlign: 'center' }}>
