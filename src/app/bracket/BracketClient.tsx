@@ -342,8 +342,8 @@ function BigTie({ t }: { t: Tie }) {
           : isPost
             ? <span className="st ft">{isPens ? t.clock!.toUpperCase() : 'FULL TIME'}</span>
             : isTbd
-              ? <span className="st" style={{ color: 'var(--ink-3)' }}>{bracketWhen(t)}</span>
-              : <span className="st" style={{ fontWeight: 700, color: 'var(--ink-2)' }}>{bracketWhen(t)}</span>
+              ? <span className="st">{bracketWhen(t)}</span>
+              : <span className="st">{bracketWhen(t)}</span>
         }
       </div>
       <div className="btl-body"><Row s="a" /><Row s="b" /></div>
