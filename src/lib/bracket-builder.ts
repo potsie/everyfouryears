@@ -124,6 +124,7 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
     let state: Tie['state'] = 'tbd';
     let clock: string | null = null;
     let when: string | null = null;
+    let dateISO: string | null = null;
     let venue: string | null = null;
     let city: string | null = null;
     let tv: string | null = null;
@@ -152,29 +153,8 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
         // For now, leave winner null on draw — will need summary endpoint for shootouts
       }
 
-      if (state === 'pre' && !bothTbd) {
-        // Format kickoff: "Mon · 3:00 PM" from ISO date
-        try {
-          const d = new Date(m.date);
-          const day = d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/New_York' });
-          const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' });
-          when = `${day} · ${time} ET`;
-        } catch {
-          when = null;
-        }
-      }
-
-      if (state === 'tbd') {
-        // Show scheduled date even for TBD slots
-        try {
-          const d = new Date(m.date);
-          const mo = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' });
-          const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' });
-          when = `${mo} · ${time} ET`;
-        } catch {
-          when = null;
-        }
-      }
+      // Raw ISO stored; BracketClient formats in visitor's local timezone
+      dateISO = m.date || null;
     } else {
       // Slot not in fetched matches — fully TBD
       a = { tbd: true, src: 'TBD' };
@@ -187,7 +167,7 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
       side: slot.side,
       rk: slot.rk,
       tag: slot.tag,
-      a, b, score, winner, state, clock, when, venue, city, tv,
+      a, b, score, winner, state, clock, when, dateISO, venue, city, tv,
       feeders: slot.feeders,
       parent: null,
     };
@@ -233,7 +213,7 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
   const lastDate = koMatches[koMatches.length - 1]?.date;
   function fmtDate(iso: string) {
     try {
-      return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' });
+      return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
     } catch { return ''; }
   }
   const window = firstDate && lastDate

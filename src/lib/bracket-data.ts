@@ -39,6 +39,7 @@ export interface Tie {
   state: TieState;
   clock: string | null;
   when: string | null;
+  dateISO: string | null;
   venue: string | null;
   city: string | null;
   tv: string | null;
@@ -202,6 +203,7 @@ function T(round: TieRound, side: TieSide, rk: number, a: AnyTeam, b: AnyTeam, o
     state: o.state || 'pre',
     clock: o.clock || null,
     when: o.when || null,
+    dateISO: null,
     venue: o.venue || null,
     city: o.city || null,
     tv: o.tv || null,

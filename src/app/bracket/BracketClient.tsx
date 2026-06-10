@@ -33,6 +33,24 @@ function short(w: string | null): string {
   return (w || '').replace(/^\w+ · /, '').replace(':00', '');
 }
 
+function localTime(iso: string | null): string {
+  if (!iso) return '';
+  return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(':00', '');
+}
+
+function localDate(iso: string | null): string {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function bracketWhen(t: Tie): string {
+  if (t.dateISO) {
+    if (t.state === 'tbd') return `${localDate(t.dateISO)} · ${localTime(t.dateISO)}`;
+    return localTime(t.dateISO);
+  }
+  return short(t.when);
+}
+
 /* ---------- compact tie (full bracket) ---------- */
 interface BTieProps {
   t: Tie;
@@ -83,7 +101,7 @@ function BTie({ t, path, active, onHover }: BTieProps) {
     foot = (
       <div className="bt-foot">
         <span className="tg">{t.tag}</span>
-        {t.state === 'pre' && t.when && <> · {short(t.when)}</>}
+        {t.state === 'pre' && (t.dateISO || t.when) && <> · {bracketWhen(t)}</>}
       </div>
     );
   }
@@ -136,7 +154,7 @@ function FinalCard({ path }: { path: PathResult }) {
           <span className="bf-code">{isTBD(f.b) ? f.b.src : (f.b as TieTeam).code}</span>
         </div>
       </div>
-      <div className="bf-when">{f.venue} · {f.when}</div>
+      <div className="bf-when">{f.venue} · {bracketWhen(f)}</div>
     </div>
   );
 }
@@ -324,8 +342,8 @@ function BigTie({ t }: { t: Tie }) {
           : isPost
             ? <span className="st ft">{isPens ? t.clock!.toUpperCase() : 'FULL TIME'}</span>
             : isTbd
-              ? <span className="st" style={{ color: 'var(--ink-3)' }}>{short(t.when)}</span>
-              : <span className="st" style={{ fontWeight: 700, color: 'var(--ink-2)' }}>{short(t.when)}</span>
+              ? <span className="st" style={{ color: 'var(--ink-3)' }}>{bracketWhen(t)}</span>
+              : <span className="st" style={{ fontWeight: 700, color: 'var(--ink-2)' }}>{bracketWhen(t)}</span>
         }
       </div>
       <div className="btl-body"><Row s="a" /><Row s="b" /></div>
