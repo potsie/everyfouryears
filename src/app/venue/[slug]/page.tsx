@@ -12,6 +12,7 @@ import { groupMatchesByDay } from '@/lib/schedule-utils';
 import type { ScheduleMatch, ScheduleDay, ScheduleTeam, SeedTeam } from '@/lib/schedule-utils';
 import { fetchVenueWeather } from '@/lib/weather';
 import { VenueWeather } from '@/components/VenueWeather';
+import { LocalTime } from '@/components/LocalTime';
 import React from 'react';
 
 // ESPN fullName → our VenueData.name for known mismatches
@@ -28,10 +29,6 @@ function isSeed(t: ScheduleTeam | SeedTeam): t is SeedTeam {
   return (t as SeedTeam).tbd === true;
 }
 
-function formatKickoff(dateISO: string): string {
-  return new Date(dateISO).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-}
-
 function MatchStatusCell({ m }: { m: ScheduleMatch }) {
   if (m.state === 'in') {
     return <span className="s-status s-live"><span className="pulse-dot" />{m.clock}</span>;
@@ -39,7 +36,7 @@ function MatchStatusCell({ m }: { m: ScheduleMatch }) {
   if (m.state === 'post') {
     return <span className="s-status s-ft">FULL TIME</span>;
   }
-  return <span className="s-status s-time tnum">{formatKickoff(m.dateISO)}</span>;
+  return <span className="s-status s-time tnum"><LocalTime iso={m.dateISO} /></span>;
 }
 
 function TeamCell({ team, side, lose }: { team: ScheduleTeam | SeedTeam; side: 'a' | 'b'; lose: boolean }) {

@@ -4,6 +4,7 @@ import { fetchAllMatches, fetchAllGroupStandings } from '@/lib/espn/wc-fetchers'
 import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
 import { GroupStandingsTable } from './GroupStandingsTable';
+import { LocalTime } from '@/components/LocalTime';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 
 export const revalidate = 300;
@@ -82,7 +83,7 @@ function FixtureRow({ m }: { m: WorldCupMatchNormalized }) {
         <span className="s-status s-ft">FULL TIME</span>
       ) : (
         <span className="s-status s-time tnum">
-          {new Date(m.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+          <LocalTime iso={m.date} />
         </span>
       )}
 
