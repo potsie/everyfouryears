@@ -176,10 +176,8 @@ export function VenueWeather({ data, roofType, lat, lng }: Props) {
   useEffect(() => {
     if (!open) return;
     const handler = () => { setOpen(false); setExpandedDay(null); };
-    window.addEventListener('scroll', handler, { passive: true });
     window.addEventListener('resize', handler);
     return () => {
-      window.removeEventListener('scroll', handler);
       window.removeEventListener('resize', handler);
     };
   }, [open]);

@@ -193,7 +193,9 @@
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--r-lg); box-shadow: var(--sh-2);
   width: 420px; max-width: calc(100vw - 24px);
-  overflow: hidden;
+  max-height: calc(100dvh - 80px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .wx-popup-head {
   display: flex; align-items: center; justify-content: space-between;
