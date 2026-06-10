@@ -41,6 +41,17 @@ export function getVenueBySlug(slug: string): VenueData | undefined {
   return VENUES.find(v => v.slug === slug);
 }
 
+// ESPN venue name → our VenueData (handles known aliases)
+const ESPN_VENUE_ALIASES: Record<string, string> = {
+  'GEHA Field at Arrowhead Stadium': 'Arrowhead Stadium',
+  'Estadio Azteca': 'Estadio Banorte',
+};
+
+export function getVenueByName(espnName: string): VenueData | undefined {
+  const name = ESPN_VENUE_ALIASES[espnName] ?? espnName;
+  return VENUES.find(v => v.name === name);
+}
+
 export function venuesByCountry(country: VenueData['country']): VenueData[] {
   return VENUES.filter(v => v.country === country).sort((a, b) => b.cap - a.cap);
 }

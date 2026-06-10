@@ -214,7 +214,7 @@ export function normalizeWorldCupGame(
       id: teamId,
       name: competitor.team.displayName,
       abbr: competitor.team.abbreviation,
-      logo: competitor.team.logo ?? '',
+      logo: competitor.team.logo ?? competitor.team.logos?.[0]?.href ?? '',
       score: competitor.score,
       stats: {
         possession: teamStat(teamStats, 'possessionPct'),
@@ -385,7 +385,7 @@ function groupRosters(
 ): { lines: MatchLinePlayer[][]; bench: string[] } {
   if (!rosters) return { lines: [], bench: [] };
   const teamRoster = rosters.find(r => r.team.id === teamId);
-  if (!teamRoster) return { lines: [], bench: [] };
+  if (!teamRoster?.roster?.length) return { lines: [], bench: [] };
 
   const starters = teamRoster.roster.filter(p => p.starter);
   const subs = teamRoster.roster.filter(p => !p.starter);
@@ -549,7 +549,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
       id: teamId,
       abbr: competitor.team.abbreviation,
       name: competitor.team.displayName,
-      logo: competitor.team.logo ?? '',
+      logo: competitor.team.logo ?? competitor.team.logos?.[0]?.href ?? '',
       score,
       formation: '',
       coach: '',

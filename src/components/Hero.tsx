@@ -10,7 +10,7 @@ interface HeroProps {
   openingMatch?: WorldCupMatchNormalized;
 }
 
-const TOURNAMENT_START = new Date('2026-06-11T00:00:00-04:00').getTime();
+const TOURNAMENT_START = new Date('2026-06-11T15:00:00-04:00').getTime();
 
 function Countdown() {
   const [diff, setDiff] = useState<number | null>(null);

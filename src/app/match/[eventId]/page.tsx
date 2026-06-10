@@ -1,5 +1,8 @@
+import '@/app/venues/venues.css';
 import { notFound } from 'next/navigation';
 import { fetchMatchSummary } from '@/lib/espn/wc-fetchers';
+import { getVenueByName } from '@/lib/venues';
+import { fetchVenueWeather } from '@/lib/weather';
 import { Nav } from '@/components/Nav';
 import { MatchClient } from './MatchClient';
 
@@ -9,11 +12,21 @@ export default async function MatchPage({ params }: { params: Promise<{ eventId:
   const { eventId } = await params;
   try {
     const match = await fetchMatchSummary(eventId);
+    const venue = getVenueByName(match.venue);
+    const weatherData = venue ? await fetchVenueWeather(venue.lat, venue.lng) : null;
+
     return (
       <>
         <Nav activePath="/schedule" />
         <div className="page">
-          <MatchClient match={match} />
+          <MatchClient
+            match={match}
+            venueSlug={venue?.slug}
+            venueRoof={venue?.roof}
+            venueLat={venue?.lat}
+            venueLng={venue?.lng}
+            weatherData={weatherData}
+          />
         </div>
       </>
     );

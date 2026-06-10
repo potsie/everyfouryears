@@ -11,6 +11,7 @@ export interface ESPNWorldCupCompetitor {
     location: string;
     abbreviation: string;
     logo?: string;
+    logos?: { href: string; rel?: string[] }[];
   };
 }
 
@@ -88,7 +89,7 @@ export interface ESPNWorldCupRosterPlayer {
 
 export interface ESPNWorldCupRosterTeam {
   team: { id: string; displayName: string };
-  roster: ESPNWorldCupRosterPlayer[];
+  roster?: ESPNWorldCupRosterPlayer[];
 }
 
 export interface ESPNWorldCupCommentary {

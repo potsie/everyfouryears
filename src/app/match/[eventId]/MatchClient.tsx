@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Flag } from '@/components/Flag';
 import { Shot } from '@/components/Shot';
 import { GroupMini, type GroupMiniRow } from '@/components/GroupMini';
+import { VenueWeather } from '@/components/VenueWeather';
+import type { WeatherData } from '@/lib/weather';
 import type {
   MatchCenterData,
   MatchKeyEvent,
@@ -83,6 +85,32 @@ function PulseDot() {
   );
 }
 
+/* ---- countdown to kickoff ---- */
+function useTimeUntil(isoDate: string) {
+  const target = new Date(isoDate).getTime();
+  const [diff, setDiff] = useState<number | null>(null);
+  useEffect(() => {
+    setDiff(target - Date.now());
+    const id = setInterval(() => setDiff(target - Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [target]);
+  return diff;
+}
+
+function StartsIn({ iso }: { iso: string }) {
+  const diff = useTimeUntil(iso);
+  if (diff === null || diff <= 0) return null;
+  const days = Math.floor(diff / 86_400_000);
+  const hours = Math.floor((diff % 86_400_000) / 3_600_000);
+  const mins = Math.floor((diff % 3_600_000) / 60_000);
+  const secs = Math.floor((diff % 60_000) / 1000);
+  let label: string;
+  if (days > 0) label = `${days}d ${hours}h ${mins}m`;
+  else if (hours > 0) label = `${hours}h ${mins}m ${secs}s`;
+  else label = `${mins}m ${secs}s`;
+  return <span className="starts-in">Starts in {label}</span>;
+}
+
 /* ---- date/time helpers ---- */
 function formatKickoffDate(iso: string): string {
   try {
@@ -104,7 +132,7 @@ function formatKickoffTime(iso: string): string {
 /* ==============================================================
    MATCH HERO
    ============================================================== */
-function MatchHero({ match }: { match: MatchCenterData }) {
+function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: string }) {
   const { state, home, away, kickoffISO, group, matchday, venue, venueCity, broadcaster, clock, attendance } = match;
 
   const homeScore = home.score;
@@ -156,14 +184,12 @@ function MatchHero({ match }: { match: MatchCenterData }) {
               </div>
             )}
             {state === 'post' && <div className="mh-status ft">Full Time</div>}
-            {state === 'pre' && (
-              <div className="mh-status pre">{kickoffTime}</div>
-            )}
 
             {state === 'pre' ? (
               <>
                 <div className="mh-kick">VS</div>
                 <div className="mh-when">{kickoffTime} kick-off</div>
+                <StartsIn iso={kickoffISO} />
               </>
             ) : (
               <div className="mh-nums tnum">
@@ -186,13 +212,16 @@ function MatchHero({ match }: { match: MatchCenterData }) {
         </div>
 
         <div className="mh-foot">
-          <span className="it"><PinSm /> {venue}{venueCity ? ` · ${venueCity}` : ''}</span>
+          {venueSlug ? (
+            <Link href={`/venue/${venueSlug}`} className="it" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <PinSm /> {venue}{venueCity ? ` · ${venueCity}` : ''}
+            </Link>
+          ) : (
+            <span className="it"><PinSm /> {venue}{venueCity ? ` · ${venueCity}` : ''}</span>
+          )}
           {state !== 'pre' && attendance !== null && (
             <span className="it"><PeopleIcon /> {attendance.toLocaleString()} attendance</span>
           )}
-          <span className="grow" />
-          <span className="it">Where to watch</span>
-          {broadcaster && <span className="tvb">{broadcaster}</span>}
         </div>
       </div>
     </div>
@@ -798,17 +827,56 @@ function WatchPanel({ match }: { match: MatchCenterData }) {
   );
 }
 
-function Shelf({ match }: { match: MatchCenterData }) {
+interface WeatherPanelProps {
+  weatherData: WeatherData;
+  roofType: 'open' | 'retractable' | 'fixed';
+  lat: number;
+  lng: number;
+  venue: string;
+}
+
+function WeatherPanel({ weatherData, roofType, lat, lng, venue }: WeatherPanelProps) {
+  return (
+    <div className="panel" style={{ overflow: 'hidden' }}>
+      <div className="panel-head">
+        <h3>Match weather</h3>
+        <span style={{ fontSize: 12, color: 'var(--ink-3)', fontWeight: 600 }}>{venue}</span>
+      </div>
+      <div style={{ background: 'var(--navy)', padding: '12px 16px' }}>
+        <VenueWeather data={weatherData} roofType={roofType} lat={lat} lng={lng} />
+      </div>
+    </div>
+  );
+}
+
+interface ShelfProps {
+  match: MatchCenterData;
+  weatherData?: WeatherData | null;
+  venueRoof?: 'open' | 'retractable' | 'fixed';
+  venueLat?: number;
+  venueLng?: number;
+}
+
+function Shelf({ match, weatherData, venueRoof, venueLat, venueLng }: ShelfProps) {
   return (
     <div className="shelf">
+      {weatherData && venueRoof && venueLat != null && venueLng != null && (
+        <WeatherPanel
+          weatherData={weatherData}
+          roofType={venueRoof}
+          lat={venueLat}
+          lng={venueLng}
+          venue={match.venue}
+        />
+      )}
+      <WatchPanel match={match} />
+      <H2HPanel match={match} />
+      <GroupPanel match={match} />
       {match.state === 'post' ? (
         <MotmPanel match={match} />
       ) : (
         <ProbPanel match={match} />
       )}
-      <H2HPanel match={match} />
-      <GroupPanel match={match} />
-      <WatchPanel match={match} />
     </div>
   );
 }
@@ -819,10 +887,18 @@ function Shelf({ match }: { match: MatchCenterData }) {
 const TABS = ['Summary', 'Stats', 'Lineups', 'Commentary'] as const;
 type Tab = typeof TABS[number];
 
-export function MatchClient({ match }: { match: MatchCenterData }) {
+interface MatchClientProps {
+  match: MatchCenterData;
+  venueSlug?: string;
+  venueRoof?: 'open' | 'retractable' | 'fixed';
+  venueLat?: number;
+  venueLng?: number;
+  weatherData?: WeatherData | null;
+}
+
+export function MatchClient({ match, venueSlug, venueRoof, venueLat, venueLng, weatherData }: MatchClientProps) {
   const [activeTab, setActiveTab] = useState<Tab>('Summary');
 
-  // Event count pill on Summary tab
   const eventCount =
     match.state === 'in' || match.state === 'post'
       ? match.events.filter(e => e.type !== 'whistle').length
@@ -830,7 +906,7 @@ export function MatchClient({ match }: { match: MatchCenterData }) {
 
   return (
     <>
-      <MatchHero match={match} />
+      <MatchHero match={match} venueSlug={venueSlug} />
 
       {/* Tab strip */}
       <div className="mtabs">
@@ -853,7 +929,13 @@ export function MatchClient({ match }: { match: MatchCenterData }) {
         <div>
           <MainColumn tab={activeTab} match={match} />
         </div>
-        <Shelf match={match} />
+        <Shelf
+          match={match}
+          weatherData={weatherData}
+          venueRoof={venueRoof}
+          venueLat={venueLat}
+          venueLng={venueLng}
+        />
       </div>
     </>
   );
