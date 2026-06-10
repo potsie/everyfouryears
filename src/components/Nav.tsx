@@ -10,7 +10,6 @@ const NAV_LINKS = [
   { href: '/venues', label: 'Venues' },
   { href: '/stats', label: 'Stats' },
   { href: '/news', label: 'News' },
-  { href: '/print', label: 'Print' },
 ];
 
 export function Nav({ activePath = '/' }: { activePath?: string }) {
