@@ -443,7 +443,7 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
               <span>Trace</span>
               <select
                 value={trace || ''}
-                onChange={(e) => { setTrace(e.target.value || null); setMyOn(false); }}
+                onChange={(e) => { setTrace(e.target.value || null); }}
               >
                 <option value="">a team…</option>
                 {data.alive.map((c) => <option key={c} value={c}>{c}</option>)}
