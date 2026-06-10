@@ -92,7 +92,7 @@ export function buildTournamentStats(
       const teamId = teamRoster.team.id;
       const abbr = teamAbbrMap.get(teamId) ?? '';
 
-      for (const player of teamRoster.roster) {
+      for (const player of teamRoster.roster ?? []) {
         const stats = player.stats ?? [];
         if (playerStat(stats, 'appearances') === 0) continue;
 

@@ -179,7 +179,7 @@ function extractRoster(rosters: ESPNWorldCupRosterTeam[] | undefined, teamId: st
   if (!rosters) return [];
   const teamRoster = rosters.find(r => r.team.id === teamId);
   if (!teamRoster) return [];
-  return teamRoster.roster.map(player => ({
+  return (teamRoster.roster ?? []).map(player => ({
     id: player.athlete.id,
     name: player.athlete.shortName || player.athlete.displayName,
     jersey: player.jersey,
