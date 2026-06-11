@@ -5,14 +5,19 @@ function getStat(stats: { name: string; displayValue: string }[], name: string):
   return stat ? parseInt(stat.displayValue, 10) : 0;
 }
 
-function parseAdvancementStatus(color?: string): AdvancementStatus {
-  if (!color) return 'pending';
-  switch (color.toLowerCase()) {
-    case 'green': return 'advancing';
-    case 'red': return 'eliminated';
-    case 'light green': return 'bubble';
-    default: return 'pending';
-  }
+// ESPN's advancement note. The `color` is a hex value (e.g. "#81D6AC"), so we
+// map off the human-readable `description`, falling back to color buckets.
+function parseAdvancementStatus(note?: { color?: string; description?: string }): AdvancementStatus {
+  const desc = (note?.description ?? '').toLowerCase();
+  if (desc.includes('eliminat')) return 'eliminated';
+  if (desc.includes('best')) return 'bubble';        // "Best 8 advance"
+  if (desc.includes('advance')) return 'advancing';  // "Advance to Round of 32"
+
+  const c = (note?.color ?? '').toLowerCase();
+  if (c.includes('ff7') || c === 'red') return 'eliminated';
+  if (c.includes('b5e7') || c.includes('light')) return 'bubble';
+  if (c.includes('81d6') || c === 'green') return 'advancing';
+  return 'pending';
 }
 
 export function normalizeGroupStandings(
@@ -27,11 +32,16 @@ export function normalizeGroupStandings(
     const teamId = teamIdMatch ? teamIdMatch[1] : String(index);
 
     const teamInfo = teamDictionary[teamId] ?? { name: 'TBD', abbr: 'TBD', logo: '' };
-    const stats: { name: string; displayValue: string }[] = entry.stats ?? [];
+    // Stats live under records[0] (type "total"), not directly on the entry.
+    const stats: { name: string; displayValue: string }[] =
+      entry.records?.find((r: any) => r.type === 'total')?.stats ??
+      entry.records?.[0]?.stats ??
+      entry.stats ??
+      [];
 
     return {
       teamId,
-      rank: index + 1,
+      rank: getStat(stats, 'rank'),
       teamName: teamInfo.name,
       teamAbbr: teamInfo.abbr,
       logo: teamInfo.logo,
@@ -43,10 +53,20 @@ export function normalizeGroupStandings(
       goalsAgainst: getStat(stats, 'pointsAgainst'),
       goalDiff: getStat(stats, 'pointDifferential'),
       points: getStat(stats, 'points'),
-      status: parseAdvancementStatus(entry.note?.color),
+      status: parseAdvancementStatus(entry.note),
       statusNote: entry.note?.description,
     };
   });
+
+  // ESPN returns entries in team-id order, not standings order — sort by the
+  // official rank (falling back to points / goal difference), then renumber.
+  standings.sort((a, b) => {
+    const ra = a.rank || 99, rb = b.rank || 99;
+    if (ra !== rb) return ra - rb;
+    if (b.points !== a.points) return b.points - a.points;
+    return b.goalDiff - a.goalDiff;
+  });
+  standings.forEach((s, i) => { s.rank = i + 1; });
 
   return { groupId, groupName, standings };
 }
