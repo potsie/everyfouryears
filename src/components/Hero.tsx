@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
+import { linescoreCells } from '@/lib/normalize/world-cup-normalizer';
 import { Flag } from './Flag';
 
 interface HeroProps {
@@ -118,6 +119,35 @@ function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
   const awayScore = parseInt(match.away.score) || 0;
   const awayLeads = awayScore > homeScore;
   const homeLeads = homeScore > awayScore;
+  const isPost = match.status.state === 'post';
+  const isPre = match.status.state === 'pre';
+  const cells = linescoreCells(match);
+  const kickoff = new Date(match.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const statusText = isPost ? 'Full time' : isPre ? kickoff : (match.status.clock || 'Live');
+
+  const cols = '1fr 18px 18px 28px';
+
+  const teamRow = (side: 'home' | 'away', leads: boolean, dim: boolean) => {
+    const t = match[side];
+    const [h1, h2, tot] = cells[side];
+    return (
+      <div
+        className="grid items-center gap-x-[9px]"
+        style={{ gridTemplateColumns: cols, opacity: dim ? 0.55 : 1, marginTop: side === 'away' ? 8 : 0 }}
+      >
+        <div className="flex items-center gap-[9px] min-w-0">
+          <Flag logo={t.logo} abbr={t.abbr} size={24} />
+          <span className="font-display font-bold text-[16px] text-white leading-none">{t.abbr}</span>
+          {isPost && leads && (
+            <span className="font-extrabold text-[9px] tracking-[.08em] uppercase whitespace-nowrap" style={{ color: '#7ee2a8' }}>● Winner</span>
+          )}
+        </div>
+        <span className="font-display font-bold text-[14px] tnum text-center" style={{ color: 'rgba(255,255,255,.7)' }}>{h1}</span>
+        <span className="font-display font-bold text-[14px] tnum text-center" style={{ color: 'rgba(255,255,255,.7)' }}>{h2}</span>
+        <span className="font-display font-black text-[22px] tnum text-white text-center">{tot}</span>
+      </div>
+    );
+  };
 
   return (
     <a
@@ -139,42 +169,26 @@ function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
           {match.status.state === 'in' && (
             <span className="pulse-dot on-dark" style={{ width: 6, height: 6 }} />
           )}
-          {match.status.clock || 'FT'}
+          {statusText}
         </span>
       </div>
-      <div
-        className="flex items-center justify-between gap-[10px]"
-        style={{ opacity: awayLeads ? 0.55 : 1 }}
-      >
-        <div className="flex items-center gap-[9px]">
-          <Flag logo={match.home.logo} abbr={match.home.abbr} size={24} />
-          <span className="font-display font-bold text-[16px] text-white">{match.home.abbr}</span>
-        </div>
-        <span className="font-display font-black text-[26px] tnum text-white" style={{ letterSpacing: '.02em' }}>
-          {match.home.score || '0'}
-        </span>
+      <div className="grid gap-x-[9px] mb-[5px]" style={{ gridTemplateColumns: cols }}>
+        <span />
+        {['1H', '2H', 'T'].map(h => (
+          <span key={h} className="text-center font-bold text-[9px] tracking-[.06em] uppercase" style={{ color: 'rgba(255,255,255,.4)' }}>{h}</span>
+        ))}
       </div>
-      <div
-        className="flex items-center justify-between gap-[10px] mt-2"
-        style={{ opacity: homeLeads ? 0.55 : 1 }}
-      >
-        <div className="flex items-center gap-[9px]">
-          <Flag logo={match.away.logo} abbr={match.away.abbr} size={24} />
-          <span className="font-display font-bold text-[16px] text-white">{match.away.abbr}</span>
-        </div>
-        <span className="font-display font-black text-[26px] tnum text-white" style={{ letterSpacing: '.02em' }}>
-          {match.away.score || '0'}
-        </span>
-      </div>
+      {teamRow('home', homeLeads, awayLeads)}
+      {teamRow('away', awayLeads, homeLeads)}
     </a>
   );
 }
 
 export function Hero({ phase, todayMatches, openingMatch }: HeroProps) {
   const liveMatches = todayMatches.filter(m => m.status.state === 'in');
-  const displayMatches = todayMatches.filter(
-    m => m.status.state === 'in' || m.status.state === 'post',
-  );
+  // The full day's slate — live, upcoming, and finished — in chronological
+  // (kickoff) order, left to right.
+  const displayMatches = [...todayMatches].sort((a, b) => a.date.localeCompare(b.date));
   const liveCount = liveMatches.length;
 
   return (
@@ -251,7 +265,7 @@ export function Hero({ phase, todayMatches, openingMatch }: HeroProps) {
 
         {(phase === 'live' || phase === 'knockout') && displayMatches.length === 0 && (
           <p className="text-[14px]" style={{ color: 'rgba(255,255,255,.62)' }}>
-            No matches in progress. Check the schedule below.
+            No matches scheduled today. Check the schedule below.
           </p>
         )}
       </div>

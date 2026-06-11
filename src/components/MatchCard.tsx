@@ -1,6 +1,7 @@
 'use client';
 
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
+import { linescoreCells } from '@/lib/normalize/world-cup-normalizer';
 import { Flag } from './Flag';
 
 interface MatchCardProps {
@@ -34,6 +35,7 @@ export function MatchCard({ match }: MatchCardProps) {
   const awayScore = parseInt(match.away.score) || 0;
   const homeDim = !isPre && awayScore > homeScore;
   const awayDim = !isPre && homeScore > awayScore;
+  const cells = linescoreCells(match);
 
   return (
     <a
@@ -82,41 +84,35 @@ export function MatchCard({ match }: MatchCardProps) {
           )}
         </div>
 
-        {/* Body — two team rows */}
+        {/* Body — two team rows with the 1H/2H/T linescore */}
         <div className="px-[16px] py-[14px]">
-          {/* Home team */}
-          <div
-            className="flex items-center gap-3"
-            style={{ opacity: homeDim ? 0.62 : 1 }}
-          >
-            <Flag logo={match.home.logo} abbr={match.home.abbr} size={32} />
-            <div className="flex-1 min-w-0">
-              <span className="font-display font-bold text-[17px] block">{match.home.abbr}</span>
-              <span className="text-[12px] font-semibold block" style={{ color: 'var(--ink-3)' }}>
-                {match.home.name}
-              </span>
-            </div>
-            <span className="font-display font-black text-[24px] tnum" style={{ letterSpacing: '.02em' }}>
-              {isPre ? '–' : (match.home.score || '0')}
-            </span>
+          <div className="grid items-center gap-x-[10px] mb-[6px]" style={{ gridTemplateColumns: 'auto 1fr 22px 22px 30px' }}>
+            <span /><span />
+            {['1H', '2H', 'T'].map(h => (
+              <span key={h} className="text-center text-[9.5px] font-bold uppercase tracking-wider" style={{ color: 'var(--ink-3)' }}>{h}</span>
+            ))}
           </div>
-
-          {/* Away team */}
-          <div
-            className="flex items-center gap-3 mt-[10px]"
-            style={{ opacity: awayDim ? 0.62 : 1 }}
-          >
-            <Flag logo={match.away.logo} abbr={match.away.abbr} size={32} />
-            <div className="flex-1 min-w-0">
-              <span className="font-display font-bold text-[17px] block">{match.away.abbr}</span>
-              <span className="text-[12px] font-semibold block" style={{ color: 'var(--ink-3)' }}>
-                {match.away.name}
-              </span>
-            </div>
-            <span className="font-display font-black text-[24px] tnum" style={{ letterSpacing: '.02em' }}>
-              {isPre ? '–' : (match.away.score || '0')}
-            </span>
-          </div>
+          {(['home', 'away'] as const).map((side, i) => {
+            const t = match[side];
+            const dim = side === 'home' ? homeDim : awayDim;
+            const [h1, h2, tot] = cells[side];
+            return (
+              <div
+                key={side}
+                className="grid items-center gap-x-[10px]"
+                style={{ gridTemplateColumns: 'auto 1fr 22px 22px 30px', opacity: dim ? 0.62 : 1, marginTop: i === 1 ? 10 : 0 }}
+              >
+                <Flag logo={t.logo} abbr={t.abbr} size={32} />
+                <div className="min-w-0">
+                  <span className="font-display font-bold text-[17px] block leading-tight">{t.abbr}</span>
+                  <span className="text-[12px] font-semibold block" style={{ color: 'var(--ink-3)' }}>{t.name}</span>
+                </div>
+                <span className="font-display font-bold text-[15px] tnum text-center" style={{ color: 'var(--ink-3)' }}>{h1}</span>
+                <span className="font-display font-bold text-[15px] tnum text-center" style={{ color: 'var(--ink-3)' }}>{h2}</span>
+                <span className="font-display font-black text-[24px] tnum text-center" style={{ letterSpacing: '.02em' }}>{tot}</span>
+              </div>
+            );
+          })}
         </div>
 
         {/* Scorer lines */}

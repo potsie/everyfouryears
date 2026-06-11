@@ -35,8 +35,45 @@ export interface WorldCupTeamBoxScore {
   score: string;
   stats: Record<string, string>;
   goals: WorldCupGoal[];
+  linescore: { h1: number; h2: number };  // goals by half, derived from goal minutes
   cards: WorldCupCard[];
   roster: WorldCupPlayer[];
+}
+
+// Split a team's goals into first/second half from their minute (e.g. "45'+2'"
+// → 45 → 1H, "67'" → 2H). ESPN's scoreboard doesn't return linescores, so we
+// derive them; extra-time goals (>45) fold into the 2H bucket.
+export function halvesFromGoals(goals: WorldCupGoal[]): { h1: number; h2: number } {
+  let h1 = 0, h2 = 0;
+  for (const g of goals) {
+    const m = parseInt(g.minute, 10);
+    if (Number.isNaN(m)) continue;
+    if (m <= 45) h1++; else h2++;
+  }
+  return { h1, h2 };
+}
+
+// Display strings for the [1H, 2H, T] linescore columns, per team. A half that
+// hasn't happened yet shows "–": everything for an upcoming match, and the 2H
+// while a live match is still in the first half / at the break.
+export function linescoreCells(match: WorldCupMatchNormalized): {
+  home: [string, string, string];
+  away: [string, string, string];
+} {
+  const { state, clock } = match.status;
+  const clk = clock || '';
+  const clockMin = parseInt(clk, 10);
+  const atHalftime = /ht|half/i.test(clk);
+  const secondHalfStarted = state === 'post' || (state === 'in' && !atHalftime && clockMin >= 46);
+  const cells = (t: WorldCupTeamBoxScore): [string, string, string] => {
+    if (state === 'pre') return ['–', '–', '–'];
+    return [
+      String(t.linescore.h1),
+      secondHalfStarted ? String(t.linescore.h2) : '–',
+      t.score || '0',
+    ];
+  };
+  return { home: cells(match.home), away: cells(match.away) };
 }
 
 export interface WorldCupMatchNormalized {
@@ -93,13 +130,14 @@ export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
   function goalsFromDetails(teamId: string): WorldCupGoal[] {
     return details
       .filter(d => {
-        const isGoal = d.type?.text === 'Goal' || d.type?.id === '20';
-        const notShootout = !d.shootout;
-        const scoringPlay = d.scoringPlay !== false;
+        // Key off ESPN's scoringPlay flag — the type text varies ("Goal",
+        // "Goal - Header", "Penalty - Scored"...) and a strict === 'Goal'
+        // check silently drops headers and other goal types.
+        const isGoal = d.scoringPlay === true && !d.shootout;
         const teamMatch =
           d.team?.id === teamId ||
           d.athletesInvolved?.[0]?.team?.id === teamId;
-        return isGoal && notShootout && scoringPlay && teamMatch;
+        return isGoal && teamMatch;
       })
       .map(d => ({
         minute: d.clock?.displayValue ?? '',
@@ -110,6 +148,7 @@ export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
 
   function buildTeam(competitor: any): WorldCupTeamBoxScore {
     const teamId: string = competitor?.team?.id ?? '';
+    const goals = goalsFromDetails(teamId);
     return {
       id: teamId,
       name: competitor?.team?.displayName ?? '',
@@ -117,7 +156,8 @@ export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
       logo: competitor?.team?.logo ?? '',
       score: competitor?.score ?? '',
       stats: {},
-      goals: goalsFromDetails(teamId),
+      goals,
+      linescore: halvesFromGoals(goals),
       cards: [],
       roster: [],
     };
@@ -228,6 +268,7 @@ export function normalizeWorldCupGame(
         passPct: teamStat(teamStats, 'passPct'),
       },
       goals: extractGoalsFromEvents(keyEvents, teamId),
+      linescore: halvesFromGoals(extractGoalsFromEvents(keyEvents, teamId)),
       cards: extractCards(keyEvents, teamId),
       roster: extractRoster(rosters, teamId),
     };
