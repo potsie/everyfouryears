@@ -54,8 +54,9 @@
 .ed-stage-title { font-size: 19px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink); }
 .ed-stage-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--ink-3); margin-left: auto; }
 
-.ed-days { column-count: 3; column-gap: 22px; }
-.ed-day { break-inside: avoid; margin-bottom: 13px; }
+.ed-days { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 22px; align-items: start; }
+.ed-col { display: flex; flex-direction: column; }
+.ed-day { margin-bottom: 13px; }
 .ed-day-hd {
   display: flex; align-items: baseline; gap: 6px;
   border-bottom: 1px solid var(--rule); padding-bottom: 2px; margin-bottom: 5px;

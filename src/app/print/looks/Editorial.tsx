@@ -15,6 +15,12 @@ import { VENUES } from '@/lib/venues';
 
 interface Props { matches: WorldCupMatchNormalized[]; }
 
+// Split an array into n roughly-equal explicit chunks (reliable in print, unlike column-count)
+function chunk<T>(arr: T[], n: number): T[][] {
+  const size = Math.ceil(arr.length / n);
+  return Array.from({ length: n }, (_, i) => arr.slice(i * size, (i + 1) * size));
+}
+
 function Flag({ logo, abbr }: { logo: string; abbr: string }) {
   if (!logo) return null;
   // eslint-disable-next-line @next/next/no-img-element
@@ -50,6 +56,28 @@ function MatchRow({ m, ko }: { m: WorldCupMatchNormalized; ko: boolean }) {
   );
 }
 
+interface DayBlockProps {
+  dateKey: string;
+  dayMatches: WorldCupMatchNormalized[];
+  ko: boolean;
+}
+
+function DayBlock({ dateKey, dayMatches, ko }: DayBlockProps) {
+  const iso = dayMatches[0].date;
+  return (
+    <div key={dateKey} className="ed-day">
+      <div className="ed-day-hd">
+        <span className="ed-dow">{fmtDayOfWeek(iso)}</span>
+        <span className="ed-dnum">{fmtDayNum(iso)}</span>
+        <span className="ed-dmon">{fmtMonthShort(iso)}</span>
+      </div>
+      {dayMatches.map(m => (
+        <MatchRow key={m.eventId} m={m} ko={ko} />
+      ))}
+    </div>
+  );
+}
+
 export function Editorial({ matches }: Props) {
   const byStage = groupByStage(matches);
 
@@ -70,7 +98,8 @@ export function Editorial({ matches }: Props) {
 
         {[...byStage.entries()].map(([stageId, stageMatches]) => {
           const ko = stageId > 1;
-          const byDate = groupByLocalDate(stageMatches);
+          const dayEntries = [...groupByLocalDate(stageMatches).entries()];
+          const cols = chunk(dayEntries, 3);
           return (
             <section key={stageId} className={`ed-stage${ko ? ' ko' : ''}`}>
               <div className="ed-stage-hd">
@@ -79,21 +108,13 @@ export function Editorial({ matches }: Props) {
                 <span className="ed-stage-sub">{STAGE_SUBLABELS[stageId]}</span>
               </div>
               <div className="ed-days">
-                {[...byDate.entries()].map(([dateKey, dayMatches]) => {
-                  const iso = dayMatches[0].date;
-                  return (
-                    <div key={dateKey} className="ed-day">
-                      <div className="ed-day-hd">
-                        <span className="ed-dow">{fmtDayOfWeek(iso)}</span>
-                        <span className="ed-dnum">{fmtDayNum(iso)}</span>
-                        <span className="ed-dmon">{fmtMonthShort(iso)}</span>
-                      </div>
-                      {dayMatches.map(m => (
-                        <MatchRow key={m.eventId} m={m} ko={ko} />
-                      ))}
-                    </div>
-                  );
-                })}
+                {cols.map((colDays, ci) => (
+                  <div key={ci} className="ed-col">
+                    {colDays.map(([dateKey, dayMatches]) => (
+                      <DayBlock key={dateKey} dateKey={dateKey} dayMatches={dayMatches} ko={ko} />
+                    ))}
+                  </div>
+                ))}
               </div>
             </section>
           );

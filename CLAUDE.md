@@ -125,6 +125,112 @@ Country code is the lowercase ESPN abbreviation from the teams endpoint (`logo` 
 - **No rate limit headers documented.** Be respectful. Cache everything that isn't live-score data.
 - **Undocumented API = no SLA.** Endpoints could change without notice.
 
+## Secondary news source: Inoreader API
+
+ESPN's `news` endpoint only surfaces ESPN's own editorial. To broaden the News page beyond a single outlet, pull additional stories from **Inoreader** — a paid RSS aggregator account where we curate World Cup sources into a folder (and/or an active-search rule) and pull the resulting stream via API. Inoreader handles the polling, deduping, and normalization of dozens of RSS feeds; we just consume one clean stream.
+
+### Why Inoreader
+
+- One curated World Cup folder aggregates wire services (Reuters, AP, BBC, Guardian), soccer-specific outlets (ESPN FC editorial, Goal, 90min), FIFA/confederation official feeds, and per-nation beat writers — coverage the ESPN API will never surface.
+- Paid tier: API quota is effectively a non-issue for periodic server-side polling, and the subscription/feed-count caps are high enough to be liberal with sources.
+- Paid tier also unlocks **active search** + rules: build a saved search across all feeds (matching team names / "World Cup"), cast a wide net with noisy feeds (e.g. Google News topic RSS), then filter down with a rule before items reach the site. Pull the saved-search stream the same way as a folder.
+
+### Auth
+
+Single-user personal site → use the **AppId / AppKey** header approach, not full OAuth (no token-refresh dance). Pass `AppId` and `AppKey` as headers (plus the user auth token). **All Inoreader credentials live server-side only** — never ship the token to the browser. The client only ever sees normalized, cached JSON.
+
+### Key endpoint: Stream Contents
+
+```
+GET inoreader.com/reader/api/0/stream/contents/{streamId}
+  ?n=50            // item count
+  &xt=user/-/state/com.google/read   // optional: exclude read items
+```
+
+`streamId` forms:
+- **Folder:** `user/-/label/World Cup`
+- **Saved search / tag:** same `user/-/label/{name}` shape
+- **Single feed:** `feed/{feedUrl}`
+
+Returns an `items[]` array. Map each item to our normalized shape:
+
+| Normalized field | Inoreader field | Notes |
+|---|---|---|
+| `id` | `items[].id` | |
+| `feedTitle` | `items[].origin.title` | origin outlet name |
+| `feedId` | `items[].origin.streamId` | |
+| `title` | `items[].title` | |
+| `summary` | `items[].summary.content` | strip HTML → plain text, truncate |
+| `url` | `items[].canonical[0].href` | fallback `alternate[0].href` |
+| `author` | `items[].author` | nullable |
+| `published` | `items[].published` | **Unix seconds, not ms** → convert to ISO |
+| `imageUrl` | `items[].enclosure[0].href` | else parse from content; nullable |
+| `categories` | `items[].categories` | filter to folder/tag labels |
+
+Other useful endpoints: `/subscription/list` (render "sources we follow"), `/tag/list` (enumerate folders).
+
+### Content rights
+
+RSS gives headline + summary + link. **Render title, snippet, source name, timestamp, and an outbound link only** — never full article text, even if a feed provides it. The point is to drive traffic back to the source. This keeps republishing clean.
+
+### Unified news model
+
+ESPN news and Inoreader news render through **one source-agnostic component**. Normalize both into a shared item shape with a `source` field (`"espn"` | `"inoreader"`) that drives a small attribution badge:
+
+```jsonc
+{
+  "id": "...",
+  "source": "inoreader",
+  "feedTitle": "BBC Sport - Football",
+  "title": "...",
+  "summary": "...",            // plain-text, truncated
+  "url": "https://...",        // canonical outbound link
+  "author": "...",             // nullable
+  "published": "2026-06-09T14:32:00Z",  // ISO 8601 UTC — the merge sort key
+  "imageUrl": "https://...",   // nullable
+  "categories": ["World Cup", "Argentina"]
+}
+```
+
+Cached file is a single merged, sorted, deduped array plus metadata:
+
+```jsonc
+{
+  "generatedAt": "2026-06-10T18:00:00Z",
+  "sources": {
+    "espn": { "count": 12, "ok": true },
+    "inoreader": { "count": 40, "ok": true, "stream": "user/-/label/World Cup" }
+  },
+  "items": [ /* normalized items, newest first */ ]
+}
+```
+
+**Dedup:** ESPN and a wire feed may carry the same story. Dedup on normalized canonical URL (strip query/UTM params, lowercase host), with a fallback fuzzy title match inside a time window. ESPN item wins ties (richer internal linking).
+
+### Data flow
+
+```
+Build time / scheduled job:
+  Inoreader Stream Contents → normalize → cache JSON
+  ESPN news endpoint → (existing flow) → normalize
+  → merge + dedup + sort → cached merged feed → page generation
+
+Runtime (client):
+  News page renders merged feed from cached JSON
+  Optional: poll a Next.js API route returning the cached feed
+  (revalidate interval — NEVER direct Inoreader calls; token stays server-side)
+```
+
+### Caching
+
+Treat like the ESPN news feed (10-min cache) — news moves fast during a tournament but doesn't need sub-minute freshness. Reasonable cadence: every 10–15 min on match days, hourly otherwise. Implement as an ISR `revalidate` interval or a scheduled function that rewrites the cached JSON, same shape as the ESPN polling layer borrowed from boxscores.
+
+### Broadening further (optional layers)
+
+- **Self-hosted RSS merge** — alternative to Inoreader: fetch a hardcoded feed list server-side, parse with `rss-parser`, merge/dedup/sort. Removes the dependency but rebuilds what Inoreader gives free. Inoreader is the lower-effort path since the account already exists.
+- **Google News topic/query RSS** — wide net, noisier. Best added *inside* the Inoreader folder and cleaned up by an active-search rule rather than consumed raw.
+- **Editorial layer** — a thin hand-curated/annotated selection on top of the auto feed differentiates from a pure aggregator.
+
 ## Supplemental data (gaps the API doesn't cover)
 
 ### Static JSON files to build and maintain
