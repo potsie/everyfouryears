@@ -1,5 +1,5 @@
 import { espnFetch } from '@/lib/espn/core';
-import { normalizeScoreboardEvent, normalizeMatchDetail, type WorldCupMatchNormalized, type MatchCenterData, type MatchOfficial } from '@/lib/normalize/world-cup-normalizer';
+import { normalizeScoreboardEvent, normalizeMatchDetail, type WorldCupMatchNormalized, type MatchCenterData, type MatchCenterTeam, type MatchOfficial } from '@/lib/normalize/world-cup-normalizer';
 import { normalizeGroupStandings } from '@/lib/normalize/standings';
 import type { WorldCupGroupTable } from '@/types/standings-types';
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
@@ -348,18 +348,35 @@ export async function fetchFifaMatchOfficials(): Promise<Record<string, MatchOff
   return map;
 }
 
+// ESPN marks bench players as 'SUB', so fill their position code (GK/DEF/MID/FWD)
+// from the FIFA squad, joined by jersey number, and group the bench by position.
+const BENCH_POS_ORDER: Record<string, number> = { GK: 0, DEF: 1, MID: 2, FWD: 3 };
+function fillBenchPositions(team: MatchCenterTeam, squads: FifaTeamSquad[]): void {
+  const squad = squads.find(s => s.countryCode === team.abbr);
+  if (!squad) return;
+  const byJersey = new Map<string, string>();
+  for (const p of squad.players) {
+    if (p.jerseyNum != null) byJersey.set(String(p.jerseyNum), p.positionCode);
+  }
+  team.bench = team.bench
+    .map(b => ({ ...b, pos: byJersey.get(b.jersey) || b.pos }))
+    .sort((a, b) => (BENCH_POS_ORDER[a.pos] ?? 9) - (BENCH_POS_ORDER[b.pos] ?? 9));
+}
+
 export async function fetchMatchSummary(eventId: string): Promise<MatchCenterData> {
   const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${eventId}`;
   const data = await espnFetch<ESPNMatchSummaryFull>(url, `wc-match-${eventId}`, 60);
   const match = normalizeMatchDetail(eventId, data);
 
-  // Enrich with FIFA match officials (best-effort — never block the page on it)
-  try {
-    const officialsMap = await fetchFifaMatchOfficials();
-    match.officials = officialsMap[`${match.home.abbr}|${match.away.abbr}`] ?? [];
-  } catch {
-    // FIFA API unavailable — leave officials empty
-  }
+  // Enrich from FIFA (best-effort — never block the page on it): match referee
+  // and bench player positions. Both are independently cached, so run in parallel.
+  const [officialsMap, squads] = await Promise.all([
+    fetchFifaMatchOfficials().catch(() => ({} as Record<string, MatchOfficial[]>)),
+    fetchFifaSquads().catch(() => [] as FifaTeamSquad[]),
+  ]);
+  match.officials = officialsMap[`${match.home.abbr}|${match.away.abbr}`] ?? [];
+  fillBenchPositions(match.home, squads);
+  fillBenchPositions(match.away, squads);
 
   return match;
 }

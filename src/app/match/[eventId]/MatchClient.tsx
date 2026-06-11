@@ -14,6 +14,7 @@ import type {
   CommentaryEntry,
   MatchCenterTeam,
   MatchBroadcast,
+  MatchBenchPlayer,
 } from '@/lib/normalize/world-cup-normalizer';
 
 /* ---- inline SVG icons ---- */
@@ -380,6 +381,19 @@ function PossessionHeader({ stats, homeAbbr, awayAbbr }: { stats: MatchStat[]; h
 /* ==============================================================
    PITCH / LINEUPS
    ============================================================== */
+function BenchList({ players }: { players: MatchBenchPlayer[] }) {
+  return (
+    <ul>
+      {players.map((b, i) => (
+        <li key={i}>
+          {b.pos && <span className="bpos">{b.pos}</span>}
+          {b.name}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function Pitch({ home, away }: { home: MatchCenterTeam; away: MatchCenterTeam }) {
   function placeDots(lines: MatchCenterTeam['lines'], side: 'home' | 'away') {
     const L = lines.length || 1;
@@ -398,6 +412,7 @@ function Pitch({ home, away }: { home: MatchCenterTeam; away: MatchCenterTeam })
           >
             <div className={'disc' + (pl.isStar ? ' star' : '')}>{pl.jersey}</div>
             <div className="nm">{pl.name}{pl.isCaptain ? ' (C)' : ''}</div>
+            {pl.pos && <div className="pos">{pl.pos}</div>}
           </div>
         );
       });
@@ -408,6 +423,10 @@ function Pitch({ home, away }: { home: MatchCenterTeam; away: MatchCenterTeam })
     <div className="pitch">
       <div className="box-line top" />
       <div className="box-line bot" />
+      <div className="goal-box top" />
+      <div className="goal-box bot" />
+      <div className="pen-arc top" />
+      <div className="pen-arc bot" />
       {placeDots(away.lines, 'away')}
       {placeDots(home.lines, 'home')}
     </div>
@@ -449,25 +468,21 @@ function Lineups({ match }: { match: MatchCenterData }) {
           <Flag logo={home.logo} abbr={home.abbr} size={18} />
           <span className="code">{home.abbr}</span>
           {home.formation && <span className="fm">{home.formation}</span>}
+          {home.coach && <span className="coach">· {home.coach}</span>}
         </span>
-        {(home.coach || away.coach) && (
-          <span className="coach">{away.coach} vs {home.coach}</span>
-        )}
         <span className="side">
-          {away.formation && <span className="fm">{away.formation}</span>}
-          <span className="code">{away.abbr}</span>
           <Flag logo={away.logo} abbr={away.abbr} size={18} />
+          <span className="code">{away.abbr}</span>
+          {away.formation && <span className="fm">{away.formation}</span>}
+          {away.coach && <span className="coach">· {away.coach}</span>}
         </span>
       </div>
       {(home.bench.length > 0 || away.bench.length > 0) && (
         <div className="bench">
-          <div>
-            <h4><Flag logo={home.logo} abbr={home.abbr} size={14} /> {home.abbr} bench</h4>
-            <ul>{home.bench.map((n, i) => <li key={i}>{n}</li>)}</ul>
-          </div>
-          <div>
-            <h4><Flag logo={away.logo} abbr={away.abbr} size={14} /> {away.abbr} bench</h4>
-            <ul>{away.bench.map((n, i) => <li key={i}>{n}</li>)}</ul>
+          <h4 className="bench-title">Bench</h4>
+          <div className="bench-cols">
+            <BenchList players={home.bench} />
+            <BenchList players={away.bench} />
           </div>
         </div>
       )}

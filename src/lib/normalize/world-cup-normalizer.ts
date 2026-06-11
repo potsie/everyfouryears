@@ -262,14 +262,21 @@ export interface MatchCenterTeam {
   formation: string;
   coach: string;
   lines: MatchLinePlayer[][];  // grouped by position line: [GK], [DEF...], [MID...], [FWD...]
-  bench: string[];
+  bench: MatchBenchPlayer[];
   goals: MatchGoal[];
+}
+
+export interface MatchBenchPlayer {
+  name: string;
+  jersey: string;
+  pos: string;   // GK | DEF | MID | FWD — filled from FIFA squads (ESPN marks bench as 'SUB')
 }
 
 export interface MatchLinePlayer {
   id: string;
   name: string;             // short name
   jersey: string;
+  pos: string;              // short position code, e.g. 'GK' | 'CB' | 'LB' | 'DM' | 'CM' | 'LM' | 'ST'
   isCaptain: boolean;
   isStar: boolean;
   headshotUrl: string;
@@ -417,10 +424,55 @@ function commentaryType(text: string, typeText?: string): CommentaryEntry['type'
   return 'note';
 }
 
+// ESPN gives detailed position abbreviations like 'CD-L', 'DM', 'LB', 'CM-R'.
+// Map each to a vertical band (0 = keeper, rising toward the opponent goal) so
+// players land in the right row of the formation.
+function posBand(abbr: string): number {
+  const a = abbr.toUpperCase();
+  if (a === 'G' || a === 'GK') return 0;
+  // Strip the -L/-R side suffix so 'CM-L'/'CD-R' classify by their base role.
+  const base = a.replace(/-[LR]$/, '');
+  if (base.includes('WB') || base.endsWith('B') || base.startsWith('CD') || base === 'CB' || base === 'D' || base === 'SW') return 1; // defenders
+  if (base.includes('DM')) return 2;   // defensive mid
+  if (base.includes('AM')) return 4;   // attacking mid
+  if (base.endsWith('M')) return 3;    // midfield (CM, LM, RM)
+  return 5;                             // forwards (F, ST, CF, LW, RW, W)
+}
+
+// Horizontal rank within a band, left (1) → right (5). Used to order players
+// across a row; the pitch then spreads them evenly.
+function posCol(abbr: string): number {
+  const a = abbr.toUpperCase();
+  if (a.endsWith('-L')) return 2;   // center-left (CD-L, CM-L)
+  if (a.endsWith('-R')) return 4;   // center-right
+  if (a.startsWith('L')) return 1;  // far left (LB, LM, LW)
+  if (a.startsWith('R')) return 5;  // far right (RB, RM, RW)
+  return 3;                          // central
+}
+
+const SHORT_POS: Record<string, string> = {
+  G: 'GK', GK: 'GK',
+  CD: 'CB', CB: 'CB', LCB: 'CB', RCB: 'CB', D: 'CB', SW: 'SW',
+  LB: 'LB', RB: 'RB', LWB: 'LWB', RWB: 'RWB',
+  DM: 'DM', CDM: 'DM',
+  CM: 'CM', M: 'CM',
+  LM: 'LM', RM: 'RM',
+  AM: 'AM', CAM: 'AM',
+  LW: 'LW', RW: 'RW',
+  F: 'ST', ST: 'ST', CF: 'ST', SS: 'SS',
+};
+function shortPos(abbr: string): string {
+  const a = abbr.toUpperCase();
+  if (SHORT_POS[a]) return SHORT_POS[a];
+  // Fall back to the base position without the -L/-R side suffix (CF-L → ST).
+  const base = a.replace(/-[LR]$/, '');
+  return SHORT_POS[base] ?? base;
+}
+
 function groupRosters(
   rosters: ESPNWorldCupRosterTeam[] | undefined,
   teamId: string,
-): { lines: MatchLinePlayer[][]; bench: string[] } {
+): { lines: MatchLinePlayer[][]; bench: MatchBenchPlayer[] } {
   if (!rosters) return { lines: [], bench: [] };
   const teamRoster = rosters.find(r => r.team.id === teamId);
   if (!teamRoster?.roster?.length) return { lines: [], bench: [] };
@@ -428,24 +480,32 @@ function groupRosters(
   const starters = teamRoster.roster.filter(p => p.starter);
   const subs = teamRoster.roster.filter(p => !p.starter);
 
-  // Group starters by position line
-  const posOrder: Record<string, number> = { GK: 0, G: 0, DEF: 1, D: 1, MID: 2, M: 2, FWD: 3, F: 3, ATT: 3 };
-  const lineMap: Record<number, MatchLinePlayer[]> = {};
+  // Group starters into formation bands, ordered left→right within each band.
+  const bandMap: Record<number, Array<MatchLinePlayer & { col: number }>> = {};
   for (const p of starters) {
-    const posAbbr = p.position?.abbreviation?.toUpperCase() ?? 'MID';
-    const lineIdx = posOrder[posAbbr] ?? 2;
-    if (!lineMap[lineIdx]) lineMap[lineIdx] = [];
-    lineMap[lineIdx].push({
+    const abbr = p.position?.abbreviation ?? 'M';
+    const band = posBand(abbr);
+    (bandMap[band] ??= []).push({
       id: p.athlete.id,
       name: p.athlete.shortName || p.athlete.displayName,
       jersey: p.jersey,
+      pos: shortPos(abbr),
       isCaptain: false,
       isStar: false,
       headshotUrl: p.athlete.headshot?.href ?? `https://a.espncdn.com/i/headshots/soccer/players/full/${p.athlete.id}.png`,
+      col: posCol(abbr),
     });
   }
-  const lines = [0, 1, 2, 3].map(i => lineMap[i] ?? []).filter(l => l.length > 0);
-  const bench = subs.map(p => p.athlete.shortName || p.athlete.displayName);
+  const lines = [0, 1, 2, 3, 4, 5]
+    .map(b => (bandMap[b] ?? []).sort((x, y) => x.col - y.col).map(({ col: _col, ...rest }) => rest))
+    .filter(l => l.length > 0);
+  // ESPN marks every bench player's position as 'SUB'; the real position code is
+  // filled in later from the FIFA squads (joined by jersey number).
+  const bench: MatchBenchPlayer[] = subs.map(p => ({
+    name: p.athlete.shortName || p.athlete.displayName,
+    jersey: p.jersey,
+    pos: '',
+  }));
   return { lines, bench };
 }
 

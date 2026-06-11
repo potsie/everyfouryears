@@ -604,9 +604,17 @@ body {
 }
 .pitch::before { content: ""; position: absolute; left: 6%; right: 6%; top: 50%; height: 2px; background: rgba(255,255,255,.22); }
 .pitch::after { content: ""; position: absolute; left: 50%; top: 50%; width: 74px; height: 74px; border: 2px solid rgba(255,255,255,.22); border-radius: 50%; transform: translate(-50%,-50%); }
-.pitch .box-line { position: absolute; left: 28%; right: 28%; height: 13%; border: 2px solid rgba(255,255,255,.18); border-top: none; }
-.pitch .box-line.top { top: 0; border-top: 2px solid rgba(255,255,255,.18); border-bottom: none; }
-.pitch .box-line.bot { bottom: 0; }
+.pitch .box-line { position: absolute; left: 28%; right: 28%; height: 13%; border: 2px solid rgba(255,255,255,.18); }
+.pitch .box-line.top { top: 0; border-top: none; }       /* goal line is the pitch edge; 18-yd line drawn at the bottom */
+.pitch .box-line.bot { bottom: 0; border-bottom: none; } /* goal line is the pitch edge; 18-yd line drawn at the top */
+/* 6-yard goal box (nested inside the penalty area) */
+.pitch .goal-box { position: absolute; left: 40%; right: 40%; height: 5%; border: 2px solid rgba(255,255,255,.18); }
+.pitch .goal-box.top { top: 0; border-top: none; }
+.pitch .goal-box.bot { bottom: 0; border-bottom: none; }
+/* penalty arc (the "D") — sits on the 18-yd line, bulging toward midfield */
+.pitch .pen-arc { position: absolute; left: 50%; transform: translateX(-50%); width: 64px; height: 17px; border: 2px solid rgba(255,255,255,.18); }
+.pitch .pen-arc.top { top: 13%; border-top: none; border-radius: 0 0 32px 32px / 0 0 17px 17px; }
+.pitch .pen-arc.bot { bottom: 13%; border-bottom: none; border-radius: 32px 32px 0 0 / 17px 17px 0 0; }
 .dot { position: absolute; transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; }
 .dot .disc {
   width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
@@ -616,18 +624,21 @@ body {
 .dot.home .disc { background: var(--navy); border: 1.5px solid rgba(255,255,255,.7); }
 .dot.away .disc { background: #fff; color: var(--navy); border: 1.5px solid var(--navy); }
 .dot .nm { font-size: 10.5px; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.6); white-space: nowrap; }
+.dot .pos { font-size: 8.5px; font-weight: 800; letter-spacing: .06em; color: rgba(255,255,255,.7); text-shadow: 0 1px 2px rgba(0,0,0,.6); margin-top: -1px; }
 .dot .disc.star { box-shadow: 0 0 0 2px var(--live), 0 2px 6px rgba(0,0,0,.3); }
 
-.lu-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 12.5px; }
+.lu-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 12.5px; }
 .lu-meta .side { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .lu-meta .side .code { font-family: var(--display); font-weight: 700; font-size: 14px; }
 .lu-meta .side .fm { color: var(--ink-3); font-weight: 600; }
 .lu-meta .coach { color: var(--ink-3); font-weight: 500; }
 
-.bench { padding: 12px 16px 14px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.bench h4 { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 9px; display: flex; align-items: center; gap: 7px; }
+.bench { padding: 12px 16px 14px; border-top: 1px solid var(--line); }
+.bench-title { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 10px; }
+.bench-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .bench ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.bench li { font-size: 12.5px; color: var(--ink-2); font-weight: 500; }
+.bench li { font-size: 12.5px; color: var(--ink-2); font-weight: 500; display: flex; align-items: baseline; gap: 7px; }
+.bench li .bpos { flex: 0 0 auto; min-width: 26px; font-size: 9.5px; font-weight: 800; letter-spacing: .04em; color: var(--ink-3); }
 
 /* ---------- commentary ---------- */
 .cmt { padding: 4px 0 8px; }
@@ -705,7 +716,7 @@ body {
   .mh-nums .n { font-size: 44px; }
   .mh-team .code { font-size: 24px; }
   .mh-in { padding: 16px 16px 18px; }
-  .bench { grid-template-columns: 1fr; }
+  .bench-cols { grid-template-columns: 1fr; }
 }
 
 /* density */
