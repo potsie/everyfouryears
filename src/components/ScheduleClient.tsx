@@ -65,8 +65,9 @@ function MatchStatus({ m }: { m: ScheduleMatch }) {
   return <span className="s-status s-time tnum">{formatKickoff(m.dateISO)}</span>;
 }
 
-function TeamCell({ team, side, lose }: { team: ScheduleTeam | SeedTeam; side: 'a' | 'b'; lose: boolean }) {
+function TeamCell({ team, side, lose, win }: { team: ScheduleTeam | SeedTeam; side: 'a' | 'b'; lose: boolean; win?: boolean }) {
   const loseClass = lose ? ' lose' : '';
+  const mark = win ? <span className="s-win" style={{ color: 'var(--live-ink)', fontWeight: 800 }}>{side === 'a' ? '▸' : '◂'}</span> : null;
 
   if (isSeed(team)) {
     return (
@@ -79,6 +80,7 @@ function TeamCell({ team, side, lose }: { team: ScheduleTeam | SeedTeam; side: '
   if (side === 'a') {
     return (
       <span className={`s-team a${loseClass}`}>
+        {mark}
         <span className="s-code">{team.abbr}</span>
         <Flag logo={team.logo} abbr={team.abbr} size={22} />
       </span>
@@ -88,6 +90,7 @@ function TeamCell({ team, side, lose }: { team: ScheduleTeam | SeedTeam; side: '
     <span className={`s-team b${loseClass}`}>
       <Flag logo={team.logo} abbr={team.abbr} size={22} />
       <span className="s-code">{team.abbr}</span>
+      {mark}
     </span>
   );
 }
@@ -115,6 +118,8 @@ function ScheduleRow({ m, hide }: { m: ScheduleMatch; hide: boolean }) {
   const [hs, as_] = m.score ?? [0, 0];
   const loseHome = post && !!m.score && hs < as_;
   const loseAway = post && !!m.score && as_ < hs;
+  const winHome = post && !!m.score && hs > as_;
+  const winAway = post && !!m.score && as_ > hs;
 
   const badge = m.groupLetter
     ? `GRP ${m.groupLetter}`
@@ -127,9 +132,9 @@ function ScheduleRow({ m, hide }: { m: ScheduleMatch; hide: boolean }) {
       style={{ textDecoration: 'none', color: 'inherit' }}
     >
       <MatchStatus m={m} />
-      <TeamCell team={m.home} side="a" lose={loseHome} />
+      <TeamCell team={m.home} side="a" lose={loseHome} win={winHome} />
       <ScoreCell m={m} hide={hide} />
-      <TeamCell team={m.away} side="b" lose={loseAway} />
+      <TeamCell team={m.away} side="b" lose={loseAway} win={winAway} />
       <span className="s-meta">
         {badge && <span className="s-grp">{badge}</span>}
         <span className="s-ven">
