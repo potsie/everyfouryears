@@ -321,6 +321,35 @@ export interface H2HGame {
   score: string;
 }
 
+export interface MatchBroadcast {
+  name: string;
+  lang: string; // abbreviated: 'EN' | 'ES' | '' (unknown)
+}
+
+// Match officials come from the FIFA API (ESPN's summary doesn't surface them).
+// Joined onto the ESPN-keyed match in fetchMatchSummary, so the normalizer
+// defaults this to []. During a live match only the referee is present; the
+// full crew (assistants, fourth official, VAR) fills in around full time.
+export interface MatchOfficial {
+  name: string;
+  country: string; // FIFA country code, e.g. 'BRA'
+  role: string;    // 'Referee', 'Assistant Referee', 'Fourth Official', 'Video Assistant Referee'
+}
+
+// US World Cup 2026 channel → language. ESPN's per-broadcast `lang` field is
+// unreliable (it marks Telemundo and Peacock as "en"), so map from the known
+// channel and only fall back to ESPN's field for anything unrecognized.
+const CHANNEL_LANG: Record<string, 'EN' | 'ES'> = {
+  FOX: 'EN', FS1: 'EN', 'FOX Sports': 'EN', Tubi: 'EN',
+  Telemundo: 'ES', Universo: 'ES', Peacock: 'ES',
+};
+function channelLang(name: string, espnLang?: string): string {
+  if (CHANNEL_LANG[name]) return CHANNEL_LANG[name];
+  if (espnLang === 'es') return 'ES';
+  if (espnLang === 'en') return 'EN';
+  return '';
+}
+
 export interface MatchCenterData {
   eventId: string;
   state: 'pre' | 'in' | 'post';
@@ -331,7 +360,9 @@ export interface MatchCenterData {
   round: string;
   venue: string;
   venueCity: string;
-  broadcaster: string;
+  broadcaster: MatchBroadcast[];
+  streamer: MatchBroadcast[];
+  officials: MatchOfficial[];
   attendance: number | null;
   clock: string;
   home: MatchCenterTeam;
@@ -357,14 +388,21 @@ function parseMinute(displayValue: string): { at: number; extra: number } {
   return { at: Number(m) || 0, extra: 0 };
 }
 
-function eventType(text: string): MatchKeyEvent['type'] {
-  if (text === 'Penalty Kick Goal') return 'pen';
-  if (text.includes('Goal') || text.includes('goal')) return 'goal';
+// Returns null for events we don't surface on the timeline (kickoff, delays,
+// half markers, VAR checks, anything unrecognized). Goals are keyed off ESPN's
+// authoritative `scoringPlay` flag — text alone misclassifies "Start Delay" etc.
+function eventType(e: ESPNKeyEvent): MatchKeyEvent['type'] | null {
+  const text = e.type.text;
+  const isGoal =
+    !e.shootout &&
+    e.scoringPlay !== false &&
+    (e.scoringPlay === true || text.startsWith('Goal'));
+  if (isGoal) return text === 'Penalty Kick Goal' ? 'pen' : 'goal';
   if (text === 'Yellow Card') return 'yellow';
   if (text === 'Red Card') return 'red';
   if (text === 'Substitution') return 'sub';
   if (text === 'End Match' || text === 'Full Time') return 'whistle';
-  return 'goal' as MatchKeyEvent['type']; // fallback — filtered before use
+  return null;
 }
 
 function commentaryType(text: string, typeText?: string): CommentaryEntry['type'] {
@@ -421,30 +459,37 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
   const keyEvents = data.keyEvents ?? [];
   const state = comp.status.type.state;
 
-  // Events for timeline
+  // Events for timeline. ESPN returns keyEvents in chronological order, so the
+  // running score is accumulated as we walk them.
   let runningHome = 0, runningAway = 0;
   const events: MatchKeyEvent[] = keyEvents
-    .filter(e => {
-      const t = e.type.text;
-      return t !== 'Kickoff' && t !== 'Halftime';
-    })
     .map(e => {
+      const type = eventType(e);
+      if (type === null) return null;
       const { at, extra } = parseMinute(e.clock?.displayValue ?? '0');
       const team: 'home' | 'away' | 'neutral' = e.team?.id === homeId ? 'home' : e.team?.id === awayId ? 'away' : 'neutral';
+      // participants[0] is the primary player; participants[1] is context that
+      // differs by event: the assist provider on a goal, the player coming off
+      // on a substitution ("X replaces Y").
       const player = e.participants?.[0]?.athlete.displayName ?? '';
-      const assist = e.participants?.[1]?.athlete.displayName;
-      const type = eventType(e.type.text);
+      const second = e.participants?.[1]?.athlete.displayName;
       if (type === 'goal' || type === 'pen') {
         if (team === 'home') runningHome++;
         else if (team === 'away') runningAway++;
       }
+      let detail = '';
+      if (type === 'sub') {
+        detail = second ? `for ${second}` : '';
+      } else if (type === 'goal' || type === 'pen') {
+        detail = second ? `assist ${second}` : e.type.text === 'Penalty Kick Goal' ? 'penalty' : '';
+      }
       return {
-        at, extra, type, team, player,
-        detail: assist ? `assist ${assist}` : e.type.text === 'Penalty Kick Goal' ? 'penalty' : '',
+        at, extra, type, team, player, detail,
         scoreHome: (type === 'goal' || type === 'pen') ? runningHome : null,
         scoreAway: (type === 'goal' || type === 'pen') ? runningAway : null,
       };
-    });
+    })
+    .filter((e): e is MatchKeyEvent => e !== null);
 
   // Add whistle for post
   if (state === 'post') {
@@ -478,7 +523,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
 
   // Commentary
   const commentary: CommentaryEntry[] = (data.commentary ?? []).map(c => ({
-    min: c.clock?.displayValue ?? '—',
+    min: c.time?.displayValue || c.clock?.displayValue || '—',
     type: commentaryType(c.text, c.type?.text),
     text: c.text,
   }));
@@ -523,8 +568,26 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
   // Group standings (from embedded standings in summary)
   const groupStandings: MatchCenterData['groupStandings'] = [];
 
-  // Broadcast
-  const broadcaster = comp.geoBroadcasts?.[0]?.media?.shortName ?? '';
+  // Broadcast — summary endpoint exposes this via top-level `broadcasts`
+  // (geoBroadcasts is null here, unlike the scoreboard endpoint).
+  const collectChannels = (slug: string): MatchBroadcast[] => {
+    const seen = new Set<string>();
+    const out: MatchBroadcast[] = [];
+    for (const b of data.broadcasts ?? []) {
+      if (b.type?.slug !== slug) continue;
+      const name = b.media?.name || b.media?.shortName || '';
+      if (!name || seen.has(name)) continue;
+      seen.add(name);
+      out.push({ name, lang: channelLang(name, b.lang) });
+    }
+    return out;
+  };
+  let broadcaster = collectChannels('television');
+  const streamer = collectChannels('streaming');
+  if (broadcaster.length === 0) {
+    const geo = comp.geoBroadcasts?.[0]?.media?.shortName;
+    if (geo) broadcaster = [{ name: geo, lang: channelLang(geo) }];
+  }
 
   // Group info from header
   const rawGroup = (comp as any).groups?.shortName ?? (comp as any).group?.shortName ?? '';
@@ -584,6 +647,8 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     venue: data.gameInfo.venue?.fullName ?? '',
     venueCity: data.gameInfo.venue?.address?.city ?? '',
     broadcaster,
+    streamer,
+    officials: [], // populated from FIFA API in fetchMatchSummary
     attendance: data.gameInfo.attendance ?? null,
     clock: comp.status.displayClock,
     home: buildTeam(homeComp, 'home'),

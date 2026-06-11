@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 import { Flag } from './Flag';
-import { LiveStatsDrawer } from './LiveStatsDrawer';
 
 interface MatchCardProps {
   match: WorldCupMatchNormalized;
@@ -28,8 +26,6 @@ function stageLabel(match: WorldCupMatchNormalized): string {
 }
 
 export function MatchCard({ match }: MatchCardProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
   const isLive = match.status.state === 'in';
   const isPost = match.status.state === 'post';
   const isPre = match.status.state === 'pre';
@@ -40,11 +36,10 @@ export function MatchCard({ match }: MatchCardProps) {
   const awayDim = !isPre && homeScore > awayScore;
 
   return (
-    <>
-      <div
-        onClick={() => setDrawerOpen(true)}
-        className="cursor-pointer"
-        style={{
+    <a
+      href={`/match/${match.eventId}`}
+      className="block no-underline cursor-pointer"
+      style={{
           background: 'var(--surface)',
           border: '1px solid var(--line)',
           borderRadius: 'var(--r-md)',
@@ -177,13 +172,6 @@ export function MatchCard({ match }: MatchCardProps) {
             </span>
           )}
         </div>
-      </div>
-
-      <LiveStatsDrawer
-        isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        match={match}
-      />
-    </>
+    </a>
   );
 }

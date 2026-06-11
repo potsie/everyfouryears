@@ -13,6 +13,7 @@ import type {
   MatchStat,
   CommentaryEntry,
   MatchCenterTeam,
+  MatchBroadcast,
 } from '@/lib/normalize/world-cup-normalizer';
 
 /* ---- inline SVG icons ---- */
@@ -52,6 +53,14 @@ function TvIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
       <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="2" />
       <path d="m8 21 4-3 4 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function WhistleIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+      <path d="M3 9h11l6-3v9a5 5 0 0 1-5 5 5 5 0 0 1-5-5H3a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="13" cy="14" r="2.4" stroke="currentColor" strokeWidth="2" />
     </svg>
   );
 }
@@ -133,7 +142,8 @@ function formatKickoffTime(iso: string): string {
    MATCH HERO
    ============================================================== */
 function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: string }) {
-  const { state, home, away, kickoffISO, group, matchday, venue, venueCity, broadcaster, clock, attendance } = match;
+  const { state, home, away, kickoffISO, group, matchday, venue, venueCity, officials, clock, attendance } = match;
+  const referee = officials.find(o => o.role === 'Referee') ?? officials[0];
 
   const homeScore = home.score;
   const awayScore = away.score;
@@ -221,6 +231,11 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
           )}
           {state !== 'pre' && attendance !== null && (
             <span className="it"><PeopleIcon /> {attendance.toLocaleString()} attendance</span>
+          )}
+          {referee && (
+            <span className="it">
+              <WhistleIcon /> {referee.name}{referee.country ? ` · ${referee.country}` : ''}
+            </span>
           )}
         </div>
       </div>
@@ -348,7 +363,7 @@ function PossessionHeader({ stats, homeAbbr, awayAbbr }: { stats: MatchStat[]; h
       </div>
       <div
         className="poss-ring"
-        style={{ background: `conic-gradient(var(--navy-600) 0 ${p.home}%, var(--accent) ${p.home}% 100%)` }}
+        style={{ background: `conic-gradient(var(--team-home) 0 ${p.home}%, var(--team-away) ${p.home}% 100%)` }}
       >
         <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--surface)', display: 'grid', placeItems: 'center' }}>
           <span className="cap">Poss.</span>
@@ -597,8 +612,8 @@ function MainColumn({ tab, match }: { tab: string; match: MatchCenterData }) {
         <div className="mc-card">
           <div className="mc-head">
             <h3>Match stats</h3>
-            <span className="sub" style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)' }}>
-              Top 5 · <a href="#stats-tab" style={{ color: 'var(--ink-2)', textDecoration: 'none' }}>All stats →</a>
+            <span className="sub" style={{ fontSize: 12, fontWeight: 600 }}>
+              Top 5 · <a href="#stats-tab" style={{ textDecoration: 'none' }}>All stats →</a>
             </span>
           </div>
           <PossessionHeader stats={stats} homeAbbr={home.abbr} awayAbbr={away.abbr} />
@@ -784,8 +799,26 @@ function GroupPanel({ match }: { match: MatchCenterData }) {
   );
 }
 
+function Channels({ list }: { list: MatchBroadcast[] }) {
+  return (
+    <>
+      {list.map((c, i) => (
+        <span key={c.name}>
+          {i > 0 && <span style={{ color: 'var(--ink-3)' }}> · </span>}
+          {c.name}
+          {c.lang && (
+            <span style={{ color: 'var(--ink-3)', fontWeight: 700, fontSize: 10, marginLeft: 4, letterSpacing: '.04em' }}>
+              {c.lang}
+            </span>
+          )}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function WatchPanel({ match }: { match: MatchCenterData }) {
-  const { state, broadcaster, kickoffISO } = match;
+  const { state, broadcaster, streamer, kickoffISO } = match;
   const kickoffTime = formatKickoffTime(kickoffISO);
 
   return (
@@ -801,16 +834,18 @@ function WatchPanel({ match }: { match: MatchCenterData }) {
         </div>
       )}
 
-      {broadcaster && (
+      {broadcaster.length > 0 && (
         <div className="watch-row">
           <span className="lbl"><TvIcon /> Broadcast</span>
-          <span className="val">{broadcaster}</span>
+          <span className="val"><Channels list={broadcaster} /></span>
         </div>
       )}
-      <div className="watch-row">
-        <span className="lbl"><TvIcon /> Streaming</span>
-        <span className="val">Peacock</span>
-      </div>
+      {streamer.length > 0 && (
+        <div className="watch-row">
+          <span className="lbl"><TvIcon /> Streaming</span>
+          <span className="val"><Channels list={streamer} /></span>
+        </div>
+      )}
 
       {state === 'post' ? (
         <div className="watch-row">

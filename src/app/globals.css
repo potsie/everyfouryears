@@ -41,6 +41,10 @@
   --best3: #fff7e6;
   --accent: #0a2240;
   --accent-ink: #ffffff;
+  /* Home/away team viz colors (stat bars, possession, win-prob, h2h).
+     Away is deliberately NOT navy so it contrasts the dark card header. */
+  --team-home: #2f6db0;
+  --team-away: #c2740c;
   --bg-2: #e6eaf1;
   --danger-soft: #fdeced;
   --display: "Archivo", system-ui, sans-serif;
@@ -520,9 +524,10 @@ body {
 /* ---------- generic section card ---------- */
 .mc-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--sh-1); overflow: hidden; }
 .mc-card + .mc-card { margin-top: 18px; }
-.mc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--line); }
-.mc-head h3 { font-family: var(--display); font-weight: 700; font-size: 15px; margin: 0; color: var(--ink); letter-spacing: .01em; }
-.mc-head .sub { font-size: 12px; color: var(--ink-3); font-weight: 600; }
+.mc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 16px; background: var(--navy); }
+.mc-head h3 { font-family: var(--display); font-weight: 700; font-size: 15px; margin: 0; color: #fff; letter-spacing: .01em; }
+.mc-head .sub { font-size: 12px; color: rgba(255,255,255,.55); font-weight: 600; }
+.mc-head .sub a { color: rgba(255,255,255,.8) !important; }
 
 /* ---------- key events timeline (center spine) ---------- */
 .tl { padding: 8px 16px 16px; position: relative; }
@@ -572,20 +577,20 @@ body {
 .sbar-top .lab { font-size: 11.5px; font-weight: 600; color: var(--ink-3); letter-spacing: .02em; white-space: nowrap; padding: 0 12px; }
 .sbar-track { display: flex; align-items: center; gap: 5px; height: 7px; }
 .sbar-track .h, .sbar-track .a { height: 100%; border-radius: 999px; }
-.sbar-track .h { background: var(--navy-600); justify-self: end; margin-left: auto; }
-.sbar-track .a { background: var(--accent); }
+.sbar-track .h { background: var(--team-home); justify-self: end; margin-left: auto; }
+.sbar-track .a { background: var(--team-away); }
 .sbar-track .hbg, .sbar-track .abg { flex: 1; height: 100%; background: var(--inset); border-radius: 999px; display: flex; overflow: hidden; }
 .sbar-track .hbg { justify-content: flex-end; }
-.sbar-track .hbg i { background: var(--navy-600); height: 100%; border-radius: 999px; }
-.sbar-track .abg i { background: var(--accent); height: 100%; border-radius: 999px; }
+.sbar-track .hbg i { background: var(--team-home); height: 100%; border-radius: 999px; }
+.sbar-track .abg i { background: var(--team-away); height: 100%; border-radius: 999px; }
 
 /* possession donut header */
 .poss { display: flex; align-items: center; justify-content: center; gap: 26px; padding: 18px 16px; border-bottom: 1px solid var(--line); }
 .poss-side { text-align: center; }
 .poss-side .p { font-family: var(--display); font-weight: 800; font-size: 30px; line-height: 1; }
 .poss-side .l { font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-top: 5px; }
-.poss-side.h .p { color: var(--navy-600); }
-.poss-side.a .p { color: var(--accent); }
+.poss-side.h .p { color: var(--team-home); }
+.poss-side.a .p { color: var(--team-away); }
 .poss-ring { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto; }
 .poss-ring .cap { font-size: 10px; font-weight: 700; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; text-align: center; }
 
@@ -640,9 +645,9 @@ body {
 
 /* ---------- shelf panels (odds / h2h / motm / watch) ---------- */
 .prob-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; margin: 4px 15px 10px; background: var(--inset); }
-.prob-bar .ph { background: var(--navy-600); }
+.prob-bar .ph { background: var(--team-home); }
 .prob-bar .pd { background: var(--line-2); }
-.prob-bar .pa { background: var(--accent); }
+.prob-bar .pa { background: var(--team-away); }
 .prob-legend { display: flex; justify-content: space-between; padding: 0 15px 14px; font-size: 11.5px; }
 .prob-legend .pl { display: flex; flex-direction: column; gap: 2px; }
 .prob-legend .pl.r { align-items: flex-end; }
@@ -661,9 +666,9 @@ body {
 .h2h-sum .seg .k { font-size: 10px; font-weight: 700; color: var(--ink-3); letter-spacing: .04em; text-transform: uppercase; margin-top: 2px; }
 .h2h-sum .meter { flex: 1; display: flex; align-items: center; }
 .h2h-sum .meter .track { flex: 1; height: 8px; border-radius: 999px; overflow: hidden; display: flex; }
-.h2h-sum .meter .track .w { background: var(--navy-600); }
+.h2h-sum .meter .track .w { background: var(--team-home); }
 .h2h-sum .meter .track .d { background: var(--line-2); }
-.h2h-sum .meter .track .l { background: var(--accent); }
+.h2h-sum .meter .track .l { background: var(--team-away); }
 .h2h-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 10px 15px; border-top: 1px solid var(--line); }
 .h2h-row:first-of-type { border-top: none; }
 .h2h-row .meet { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; }

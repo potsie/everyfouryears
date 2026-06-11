@@ -1,5 +1,5 @@
 import { espnFetch } from '@/lib/espn/core';
-import { normalizeScoreboardEvent, normalizeMatchDetail, type WorldCupMatchNormalized, type MatchCenterData } from '@/lib/normalize/world-cup-normalizer';
+import { normalizeScoreboardEvent, normalizeMatchDetail, type WorldCupMatchNormalized, type MatchCenterData, type MatchOfficial } from '@/lib/normalize/world-cup-normalizer';
 import { normalizeGroupStandings } from '@/lib/normalize/standings';
 import type { WorldCupGroupTable } from '@/types/standings-types';
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
@@ -322,8 +322,44 @@ export async function fetchNews(): Promise<NewsArticle[]> {
   }));
 }
 
+// Match officials (referee + crew) come from the FIFA calendar — ESPN's summary
+// doesn't include them. One cached call covers all 104 matches; we key by the
+// FIFA trigram pairing, which matches ESPN's team abbreviations.
+export async function fetchFifaMatchOfficials(): Promise<Record<string, MatchOfficial[]>> {
+  const url =
+    'https://api.fifa.com/api/v3/calendar/matches' +
+    '?idCompetition=17&idSeason=285023&count=200&language=en';
+  const data = await espnFetch<any>(url, 'fifa-match-officials', 300);
+  const results: any[] = data?.Results ?? [];
+  const map: Record<string, MatchOfficial[]> = {};
+  for (const m of results) {
+    const home = m?.Home?.Abbreviation;
+    const away = m?.Away?.Abbreviation;
+    if (!home || !away) continue;
+    const officials: MatchOfficial[] = (m.Officials ?? [])
+      .map((o: any) => ({
+        name: o?.Name?.[0]?.Description ?? o?.NameShort?.[0]?.Description ?? '',
+        country: o?.IdCountry ?? '',
+        role: o?.TypeLocalized?.[0]?.Description ?? '',
+      }))
+      .filter((o: MatchOfficial) => o.name);
+    if (officials.length) map[`${home}|${away}`] = officials;
+  }
+  return map;
+}
+
 export async function fetchMatchSummary(eventId: string): Promise<MatchCenterData> {
   const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${eventId}`;
   const data = await espnFetch<ESPNMatchSummaryFull>(url, `wc-match-${eventId}`, 60);
-  return normalizeMatchDetail(eventId, data);
+  const match = normalizeMatchDetail(eventId, data);
+
+  // Enrich with FIFA match officials (best-effort — never block the page on it)
+  try {
+    const officialsMap = await fetchFifaMatchOfficials();
+    match.officials = officialsMap[`${match.home.abbr}|${match.away.abbr}`] ?? [];
+  } catch {
+    // FIFA API unavailable — leave officials empty
+  }
+
+  return match;
 }

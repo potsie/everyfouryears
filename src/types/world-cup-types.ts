@@ -71,6 +71,7 @@ export interface ESPNKeyEvent {
   }[];
   text?: string;
   shootout?: boolean;
+  scoringPlay?: boolean;
 }
 
 export interface ESPNWorldCupRosterPlayer {
@@ -119,6 +120,9 @@ export interface ESPNWorldCupSummaryResponse {
 // Extended summary response — full match center data
 export interface ESPNCommentaryEntry {
   text: string;
+  // Commentary carries the match minute in `time.displayValue` (e.g. "9'"),
+  // not `clock`. `clock` is present on keyEvents but not commentary items.
+  time?: { value: number; displayValue: string };
   clock?: { displayValue: string };
   type?: { text: string };
   athletesInvolved?: { id: string; displayName: string }[];
@@ -164,4 +168,11 @@ export interface ESPNMatchSummaryFull extends ESPNWorldCupSummaryResponse {
   article?: { story?: string };
   videos?: { source?: { HD?: { href: string } }; thumbnail?: string; description?: string; duration?: number }[];
   winprobability?: { homeWinPercentage: number; tiePercentage: number; awayWinPercentage?: number; playId?: string }[];
+  // Summary endpoint puts broadcast info here (header.competitions[].geoBroadcasts
+  // is null on this endpoint, unlike the scoreboard endpoint).
+  broadcasts?: {
+    type?: { slug?: string };
+    media?: { shortName?: string; name?: string; callLetters?: string };
+    lang?: string;
+  }[];
 }
