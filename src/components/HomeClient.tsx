@@ -9,12 +9,15 @@ import { DateRail } from '@/components/DateRail';
 import { MatchCard } from '@/components/MatchCard';
 import { DataShelf } from '@/components/DataShelf';
 import { GroupTable } from '@/components/GroupTable';
+import { HomeNewsBand } from '@/components/HomeNewsBand';
+import type { NewsItem } from '@/lib/news';
 import { useMyTeam } from '@/contexts/my-team-context';
 
 interface HomeClientProps {
   allMatches: WorldCupMatchNormalized[];
   groupStandings: WorldCupGroupTable[];
   todayStr: string; // YYYYMMDD in US Eastern
+  news: NewsItem[];
 }
 
 const TOURNAMENT_START = '20260611';
@@ -73,7 +76,7 @@ function buildDateRail(matches: WorldCupMatchNormalized[]): DateRailDay[] {
     });
 }
 
-export function HomeClient({ allMatches, groupStandings, todayStr }: HomeClientProps) {
+export function HomeClient({ allMatches, groupStandings, todayStr, news }: HomeClientProps) {
   const defaultDate = getDefaultDate(todayStr);
   const [matches, setMatches] = useState(allMatches);
   const [selectedDate, setSelectedDate] = useState(defaultDate);
@@ -223,6 +226,9 @@ export function HomeClient({ allMatches, groupStandings, todayStr }: HomeClientP
                 ))}
               </div>
             )}
+
+            {/* Latest news band — sits directly under today's matches */}
+            <HomeNewsBand items={news} />
           </div>
 
           {/* Data shelf */}

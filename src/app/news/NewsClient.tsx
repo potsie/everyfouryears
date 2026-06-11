@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { NewsArticle } from '@/lib/espn/wc-fetchers';
+import type { NewsItem } from '@/lib/news';
 import { PageHero } from '@/components/PageHero';
 
 /* ---------- icons ---------- */
@@ -68,12 +68,26 @@ function PremiumBadge() {
   );
 }
 
-function ArticlePhoto({ article, className }: { article: NewsArticle; className?: string }) {
-  if (article.imageUrl) {
+/** Source/feed attribution badge — "ESPN" or the originating RSS outlet. */
+function SourceBadge({ a, onDark }: { a: NewsItem; onDark?: boolean }) {
+  return <span className={`news-kicker${onDark ? ' on-dark' : ''}`}>{a.feedTitle}</span>;
+}
+
+/** "Read on <source>" — the outbound link always opens on the original source. */
+function readOnLabel(a: NewsItem): string {
+  return a.source === 'espn' ? 'Read on ESPN' : `Read on ${a.feedTitle}`;
+}
+
+function byMeta(a: NewsItem): string {
+  return a.author || a.feedTitle;
+}
+
+function ArticlePhoto({ item, className }: { item: NewsItem; className?: string }) {
+  if (item.imageUrl) {
     return (
       <img
-        src={article.imageUrl}
-        alt={article.headline}
+        src={item.imageUrl}
+        alt={item.title}
         className={className}
         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
       />
@@ -83,26 +97,26 @@ function ArticlePhoto({ article, className }: { article: NewsArticle; className?
 }
 
 /* ---------- FEED: lead / hero ---------- */
-function LeadStory({ a }: { a: NewsArticle }) {
+function LeadStory({ a }: { a: NewsItem }) {
   return (
-    <a className="news-lead" href={a.href} target="_blank" rel="noopener noreferrer">
+    <a className="news-lead" href={a.url} target="_blank" rel="noopener noreferrer">
       <div className="news-lead-photo">
-        <ArticlePhoto article={a} className={a.imageUrl ? '' : 'on-dark'} />
+        <ArticlePhoto item={a} className={a.imageUrl ? '' : 'on-dark'} />
       </div>
       <div className="news-lead-scrim" />
       <div className="news-lead-top">
-        <span className="news-kicker on-dark">{a.section}</span>
+        <SourceBadge a={a} onDark />
         {a.premium && <PremiumBadge />}
       </div>
       <div className="news-lead-in">
         <span className="news-kicker on-dark" style={{ display: 'inline-block' }}>Top Story</span>
-        <h2 className="news-lead-h">{a.headline}</h2>
-        <p className="news-lead-d">{a.description}</p>
+        <h2 className="news-lead-h">{a.title}</h2>
+        <p className="news-lead-d">{a.summary}</p>
         <div className="news-lead-foot">
-          <span style={{ color: 'rgba(255,255,255,.82)', fontWeight: 700 }}>{a.byline}</span>
+          <span style={{ color: 'rgba(255,255,255,.82)', fontWeight: 700 }}>{byMeta(a)}</span>
           <span className="sep">·</span>
           <span className="tnum">{timeAgo(a.published)}</span>
-          <span className="news-read-on">Read on ESPN <ExtIco /></span>
+          <span className="news-read-on">{readOnLabel(a)} <ExtIco /></span>
         </div>
       </div>
     </a>
@@ -110,46 +124,46 @@ function LeadStory({ a }: { a: NewsArticle }) {
 }
 
 /* ---------- FEED: stacked row ---------- */
-function FeedRow({ a }: { a: NewsArticle }) {
+function FeedRow({ a }: { a: NewsItem }) {
   return (
-    <a className="news-frow" href={a.href} target="_blank" rel="noopener noreferrer">
+    <a className="news-frow" href={a.url} target="_blank" rel="noopener noreferrer">
       <div className="news-fr-thumb">
-        <ArticlePhoto article={a} className="nshot" />
+        <ArticlePhoto item={a} className="nshot" />
         {a.premium && <span className="news-premium-pin"><PremiumBadge /></span>}
       </div>
       <div className="news-fr-body">
-        <span className="news-kicker">{a.section}</span>
-        <h3 className="news-fr-h">{a.headline}</h3>
-        <p className="news-fr-d">{a.description}</p>
+        <SourceBadge a={a} />
+        <h3 className="news-fr-h">{a.title}</h3>
+        <p className="news-fr-d">{a.summary}</p>
         <div className="news-fr-meta">
           <div className="news-art-meta">
-            <span className="by">{a.byline}</span>
+            <span className="by">{byMeta(a)}</span>
             <span className="sep">·</span>
             <span className="tnum">{timeAgo(a.published)}</span>
           </div>
         </div>
       </div>
-      <span className="news-extlink news-fr-ext" aria-label="Opens on ESPN.com"><ExtIco /></span>
+      <span className="news-extlink news-fr-ext" aria-label={`Opens on ${a.feedTitle}`}><ExtIco /></span>
     </a>
   );
 }
 
 /* ---------- FEED: right rail ---------- */
-function MostRead({ items }: { items: NewsArticle[] }) {
+function MostRead({ items }: { items: NewsItem[] }) {
   return (
     <div className="panel">
       <div className="panel-head">
-        <h3>Most read</h3>
+        <h3>Most recent</h3>
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-3)' }}>Today</span>
       </div>
       {items.map((a, i) => (
-        <a className="news-mini-row" href={a.href} target="_blank" rel="noopener noreferrer" key={a.id}>
+        <a className="news-mini-row" href={a.url} target="_blank" rel="noopener noreferrer" key={a.id}>
           <span className="news-mr-num tnum">{i + 1}</span>
           <div>
-            <div className="news-mr-h">{a.headline}</div>
+            <div className="news-mr-h">{a.title}</div>
             <div className="news-mr-meta">
               {a.premium && <span className="news-mr-lock"><LockIco /></span>}
-              <span>{a.section}</span>
+              <span>{a.feedTitle}</span>
               <span className="sep">·</span>
               <span className="tnum">{timeAgo(a.published)}</span>
             </div>
@@ -178,24 +192,24 @@ function BracketCrossLink() {
 }
 
 /* ---------- GRID: card ---------- */
-function NewsCard({ a, feat }: { a: NewsArticle; feat?: boolean }) {
+function NewsCard({ a, feat }: { a: NewsItem; feat?: boolean }) {
   return (
-    <a className={`news-ncard${feat ? ' feat' : ''}`} href={a.href} target="_blank" rel="noopener noreferrer">
+    <a className={`news-ncard${feat ? ' feat' : ''}`} href={a.url} target="_blank" rel="noopener noreferrer">
       <div className="news-nc-photo">
-        <ArticlePhoto article={a} className="nshot" />
+        <ArticlePhoto item={a} className="nshot" />
         {a.premium && <span className="news-premium-pin"><PremiumBadge /></span>}
       </div>
       <div className="news-nc-body">
-        <span className="news-kicker">{a.section}</span>
-        <h3 className="news-nc-h">{a.headline}</h3>
-        <p className="news-nc-d">{a.description}</p>
+        <SourceBadge a={a} />
+        <h3 className="news-nc-h">{a.title}</h3>
+        <p className="news-nc-d">{a.summary}</p>
         <div className="news-nc-foot">
           <div className="news-art-meta">
-            <span className="by">{a.byline}</span>
+            <span className="by">{byMeta(a)}</span>
             <span className="sep">·</span>
             <span className="tnum">{timeAgo(a.published)}</span>
           </div>
-          <span className="news-extlink" aria-label="Opens on ESPN.com"><ExtIco /></span>
+          <span className="news-extlink" aria-label={`Opens on ${a.feedTitle}`}><ExtIco /></span>
         </div>
       </div>
     </a>
@@ -203,7 +217,7 @@ function NewsCard({ a, feat }: { a: NewsArticle; feat?: boolean }) {
 }
 
 /* ---------- main ---------- */
-export function NewsClient({ articles }: { articles: NewsArticle[] }) {
+export function NewsClient({ items }: { items: NewsItem[] }) {
   const [view, setView] = useState<'Feed' | 'Grid'>(() => {
     try { return (localStorage.getItem('wc-news-view') as 'Feed' | 'Grid') || 'Feed'; } catch { return 'Feed'; }
   });
@@ -213,7 +227,7 @@ export function NewsClient({ articles }: { articles: NewsArticle[] }) {
     try { localStorage.setItem('wc-news-view', v); } catch {}
   }
 
-  const sorted = [...articles].sort(
+  const sorted = [...items].sort(
     (a, b) => new Date(b.published).getTime() - new Date(a.published).getTime(),
   );
   const lead = sorted[0];
@@ -272,7 +286,7 @@ export function NewsClient({ articles }: { articles: NewsArticle[] }) {
         sub={<>
           Latest from the tournament
           <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
-          updated continuously · <strong style={{ color: '#fff', fontWeight: 700 }}>{articles.length} stories</strong>
+          updated continuously · <strong style={{ color: '#fff', fontWeight: 700 }}>{items.length} stories</strong>
         </>}
       />
 
@@ -297,7 +311,7 @@ export function NewsClient({ articles }: { articles: NewsArticle[] }) {
       )}
 
       <div className="news-attrib">
-        <NewsIco /> Headlines syndicated from ESPN · every article opens on ESPN.com
+        <NewsIco /> Headlines syndicated from ESPN &amp; partner feeds · every story opens on its original source
       </div>
     </>
   );

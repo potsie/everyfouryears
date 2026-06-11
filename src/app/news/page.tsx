@@ -1,15 +1,16 @@
 import './news.css';
 import { Nav } from '@/components/Nav';
 import { NewsClient } from './NewsClient';
-import { fetchNews, type NewsArticle } from '@/lib/espn/wc-fetchers';
+import { getMergedNews, type NewsItem } from '@/lib/news';
 
 export const metadata = { title: 'News — 2026 FIFA World Cup' };
 export const revalidate = 600;
 
 export default async function NewsPage() {
-  let articles: NewsArticle[] = [];
+  let items: NewsItem[] = [];
   try {
-    articles = await fetchNews();
+    const feed = await getMergedNews();
+    items = feed.items;
   } catch {
     // fall through to empty state
   }
@@ -18,7 +19,7 @@ export default async function NewsPage() {
     <>
       <Nav activePath="/news" />
       <div className="page">
-        <NewsClient articles={articles} />
+        <NewsClient items={items} />
       </div>
     </>
   );

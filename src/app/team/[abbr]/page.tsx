@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings, fetchFifaTeamBio, fetchFifaCoaches, fetchFifaSquads, fetchTeamNews } from '@/lib/espn/wc-fetchers';
-import type { NewsArticle } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings, fetchFifaTeamBio, fetchFifaCoaches, fetchFifaSquads } from '@/lib/espn/wc-fetchers';
+import { fetchTeamNewsMerged } from '@/lib/news';
 import { Nav } from '@/components/Nav';
 import TeamClient from './TeamClient';
 import type { GroupMiniRow } from '@/components/GroupMini';
@@ -71,7 +71,11 @@ export default async function TeamPage({
     fetchTeamColors(espnId),
     fetchFifaRankings(),
     fetchFifaCoaches(),
-    fetchTeamNews(espnId),
+    fetchTeamNewsMerged(espnId, {
+      abbr: upperAbbr,
+      teamName: suppName,
+      nickname: suppTeamActual?.nickname,
+    }),
   ]);
 
   const fifaRanking = fifaRankings[upperAbbr] ?? null;

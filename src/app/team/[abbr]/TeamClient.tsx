@@ -6,7 +6,7 @@ import { Shot } from '@/components/Shot';
 import { GroupMini } from '@/components/GroupMini';
 import type { GroupMiniRow } from '@/components/GroupMini';
 import PinMyTeamButton from '@/components/PinMyTeamButton';
-import type { NewsArticle } from '@/lib/espn/wc-fetchers';
+import type { NewsItem } from '@/lib/news';
 
 interface FormEntry {
   res: 'W' | 'D' | 'L';
@@ -54,7 +54,7 @@ interface TeamClientProps {
   groupStandings: GroupMiniRow[];
   teamColorPrimary: string | null;
   teamColorAlt: string | null;
-  teamNews: NewsArticle[];
+  teamNews: NewsItem[];
 }
 
 function ordinal(n: number): string {
@@ -401,7 +401,7 @@ export default function TeamClient({
                 {teamNews.map((article, i) => (
                   <a
                     key={article.id}
-                    href={article.href}
+                    href={article.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -413,10 +413,10 @@ export default function TeamClient({
                     }}
                   >
                     <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 4 }}>
-                      {article.section}
+                      {article.feedTitle}
                     </div>
                     <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.35 }}>
-                      {article.headline}
+                      {article.title}
                     </div>
                   </a>
                 ))}
