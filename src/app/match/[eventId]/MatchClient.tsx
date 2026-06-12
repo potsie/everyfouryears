@@ -192,7 +192,10 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
           <div className="mh-center">
             {state === 'in' && (
               <div className="mh-status live">
-                <PulseDot /> {clock} · Live
+                {match.isHalftime
+                  ? 'HALF TIME'
+                  : <><PulseDot /> {clock} · Live</>
+                }
               </div>
             )}
             {state === 'post' && <div className="mh-status ft">Full Time</div>}
@@ -322,7 +325,7 @@ function Timeline({ match }: { match: MatchCenterData }) {
     rows.push(
       <div className="tl-mark" key="livenow">
         <span style={{ color: 'var(--live-ink)', background: 'var(--live-soft)', borderColor: '#cfe8d8' }}>
-          ● Live · {match.clock}
+          {match.isHalftime ? '● Half Time' : `● Live · ${match.clock}`}
         </span>
       </div>
     );
@@ -677,7 +680,7 @@ function Commentary({ match }: { match: MatchCenterData }) {
     <div className="mc-card">
       <div className="mc-head">
         <h3>Live commentary</h3>
-        <span className="sub">{state === 'post' ? 'Full match' : state === 'in' ? `Live · ${clock}` : 'Auto-updating'}</span>
+        <span className="sub">{state === 'post' ? 'Full match' : state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'Auto-updating'}</span>
       </div>
       <div className="cmt">
         {commentary.map((c: CommentaryEntry, i: number) => {
@@ -711,7 +714,7 @@ function Empty({ children }: { children: React.ReactNode }) {
   );
 }
 
-function MainColumn({ tab, match }: { tab: string; match: MatchCenterData }) {
+function MainColumn({ tab, match, onSelectTab }: { tab: string; match: MatchCenterData; onSelectTab: (t: Tab) => void }) {
   const { state, stats, home, away, clock } = match;
 
   if (tab === 'Stats') {
@@ -720,7 +723,7 @@ function MainColumn({ tab, match }: { tab: string; match: MatchCenterData }) {
       <div className="mc-card">
         <div className="mc-head">
           <h3>Team stats</h3>
-          <span className="sub">{state === 'in' ? `Live · ${clock}` : 'Full time'}</span>
+          <span className="sub">{state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'Full time'}</span>
         </div>
         <PossessionHeader stats={stats} homeAbbr={home.abbr} awayAbbr={away.abbr} />
         <div className="stats-wrap">
@@ -785,7 +788,7 @@ function MainColumn({ tab, match }: { tab: string; match: MatchCenterData }) {
       <div className="mc-card">
         <div className="mc-head">
           <h3>Key events</h3>
-          <span className="sub">{state === 'in' ? `Live · ${clock}` : 'Full time'}</span>
+          <span className="sub">{state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'Full time'}</span>
         </div>
         {match.events.length === 0
           ? <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>No events yet.</div>
@@ -798,7 +801,7 @@ function MainColumn({ tab, match }: { tab: string; match: MatchCenterData }) {
           <div className="mc-head">
             <h3>Match stats</h3>
             <span className="sub" style={{ fontSize: 12, fontWeight: 600 }}>
-              Top 5 · <a href="#stats-tab" style={{ textDecoration: 'none' }}>All stats →</a>
+              Top 5 · <button onClick={() => onSelectTab('Stats')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'rgba(255,255,255,.8)', fontWeight: 600, fontSize: 12 }}>All stats →</button>
             </span>
           </div>
           <PossessionHeader stats={stats} homeAbbr={home.abbr} awayAbbr={away.abbr} />
@@ -1147,7 +1150,7 @@ export function MatchClient({ match, venueSlug, venueRoof, venueLat, venueLng, w
       {/* Two-column layout */}
       <div className="cols mcols">
         <div>
-          <MainColumn tab={activeTab} match={match} />
+          <MainColumn tab={activeTab} match={match} onSelectTab={setActiveTab} />
         </div>
         <Shelf
           match={match}

@@ -123,7 +123,7 @@ function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
   const isPre = match.status.state === 'pre';
   const cells = linescoreCells(match);
   const kickoff = new Date(match.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  const statusText = isPost ? 'Full time' : isPre ? kickoff : (match.status.clock || 'Live');
+  const statusText = isPost ? 'Full time' : isPre ? kickoff : match.status.isHalftime ? 'HALF TIME' : (match.status.clock || 'Live');
 
   const cols = '1fr 18px 18px 28px';
 
@@ -166,10 +166,10 @@ function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
       >
         <span className="tracking-[.04em] uppercase">{match.stage}</span>
         <span className="flex items-center gap-[6px]">
-          {match.status.state === 'in' && (
+          {match.status.state === 'in' && !match.status.isHalftime && (
             <span className="pulse-dot on-dark" style={{ width: 6, height: 6 }} />
           )}
-          {statusText}
+          <span style={match.status.isHalftime ? { color: '#7ee2a8' } : undefined}>{statusText}</span>
         </span>
       </div>
       <div className="grid gap-x-[9px] mb-[5px]" style={{ gridTemplateColumns: cols }}>

@@ -85,6 +85,7 @@ export interface WorldCupMatchNormalized {
   status: {
     state: 'pre' | 'in' | 'post';
     clock: string;
+    isHalftime: boolean;
   };
   venue: string;
   venueCity: string;
@@ -177,6 +178,7 @@ export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
     status: {
       state: comp.status?.type?.state ?? 'pre',
       clock: comp.status?.displayClock ?? '',
+      isHalftime: comp.status?.type?.name === 'STATUS_HALFTIME',
     },
     venue: comp.venue?.fullName ?? '',
     venueCity: comp.venue?.address?.city ?? '',
@@ -283,6 +285,7 @@ export function normalizeWorldCupGame(
     status: {
       state: comp.status.type.state,
       clock: comp.status.displayClock,
+      isHalftime: comp.status.type.name === 'STATUS_HALFTIME',
     },
     venue,
     venueCity,
@@ -424,6 +427,7 @@ export interface MatchCenterData {
   officials: MatchOfficial[];
   attendance: number | null;
   clock: string;
+  isHalftime: boolean;
   home: MatchCenterTeam;
   away: MatchCenterTeam;
   events: MatchKeyEvent[];
@@ -764,6 +768,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     officials: [], // populated from FIFA API in fetchMatchSummary
     attendance: data.gameInfo.attendance ?? null,
     clock: comp.status.displayClock,
+    isHalftime: comp.status.type.name === 'STATUS_HALFTIME',
     home: buildTeam(homeComp, 'home'),
     away: buildTeam(awayComp, 'away'),
     events,

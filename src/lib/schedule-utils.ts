@@ -18,6 +18,7 @@ export interface ScheduleMatch {
   seasonTypeId: number;
   state: 'pre' | 'in' | 'post';
   clock: string;
+  isHalftime: boolean;
   dateISO: string;
   score: [number, number] | null;
   home: ScheduleTeam | SeedTeam;
@@ -60,6 +61,7 @@ function toScheduleMatch(m: WorldCupMatchNormalized): ScheduleMatch {
     seasonTypeId: m.seasonTypeId,
     state: m.status.state,
     clock: m.status.clock,
+    isHalftime: m.status.isHalftime,
     dateISO: m.date,
     score,
     home: toScheduleTeam(m.home),

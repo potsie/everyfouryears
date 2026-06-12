@@ -79,7 +79,7 @@ function FixtureRow({ m }: { m: WorldCupMatchNormalized }) {
       {/* Status */}
       {m.status.state === 'in' ? (
         <span className="s-status s-live">
-          <span className="pulse-dot" />{m.status.clock}
+          {m.status.isHalftime ? <span style={{ color: 'var(--live-ink)', fontWeight: 700 }}>HALF TIME</span> : <><span className="pulse-dot" />{m.status.clock}</>}
         </span>
       ) : m.status.state === 'post' ? (
         <span className="s-status s-ft">FULL TIME</span>
