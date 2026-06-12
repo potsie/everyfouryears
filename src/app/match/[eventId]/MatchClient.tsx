@@ -198,7 +198,7 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
                 }
               </div>
             )}
-            {state === 'post' && <div className="mh-status ft">Full Time</div>}
+            {state === 'post' && <div className="mh-status ft">FULL TIME</div>}
 
             {state === 'pre' ? (
               <>
@@ -723,7 +723,7 @@ function MainColumn({ tab, match, onSelectTab }: { tab: string; match: MatchCent
       <div className="mc-card">
         <div className="mc-head">
           <h3>Team stats</h3>
-          <span className="sub">{state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'Full time'}</span>
+          <span className="sub">{state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'FULL TIME'}</span>
         </div>
         <PossessionHeader stats={stats} homeAbbr={home.abbr} awayAbbr={away.abbr} />
         <div className="stats-wrap">
@@ -788,7 +788,7 @@ function MainColumn({ tab, match, onSelectTab }: { tab: string; match: MatchCent
       <div className="mc-card">
         <div className="mc-head">
           <h3>Key events</h3>
-          <span className="sub">{state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'Full time'}</span>
+          <span className="sub">{state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'FULL TIME'}</span>
         </div>
         {match.events.length === 0
           ? <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>No events yet.</div>
