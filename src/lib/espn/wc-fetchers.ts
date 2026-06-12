@@ -439,6 +439,23 @@ function fillBenchPositions(team: MatchCenterTeam, squads: FifaTeamSquad[]): voi
     .sort((a, b) => (BENCH_POS_ORDER[a.pos] ?? 9) - (BENCH_POS_ORDER[b.pos] ?? 9));
 }
 
+// Starters on the pitch have ESPN IDs, but the player page looks up by FIFA ID.
+// Join by jersey number against the FIFA squad to fill in fifaId.
+function fillLineupFifaIds(team: MatchCenterTeam, squads: FifaTeamSquad[]): void {
+  const squad = squads.find(s => s.countryCode === team.abbr);
+  if (!squad) return;
+  const byJersey = new Map<string, string>();
+  for (const p of squad.players) {
+    if (p.jerseyNum != null) byJersey.set(String(p.jerseyNum), p.fifaId);
+  }
+  for (const line of team.lines) {
+    for (const pl of line) {
+      const fid = byJersey.get(pl.jersey);
+      if (fid) pl.fifaId = fid;
+    }
+  }
+}
+
 export async function fetchMatchSummary(eventId: string): Promise<MatchCenterData> {
   const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${eventId}`;
   const data = await espnFetch<ESPNMatchSummaryFull>(url, `wc-match-${eventId}`, 60);
@@ -456,6 +473,8 @@ export async function fetchMatchSummary(eventId: string): Promise<MatchCenterDat
   match.officials = calEntry?.officials ?? [];
   fillBenchPositions(match.home, squads);
   fillBenchPositions(match.away, squads);
+  fillLineupFifaIds(match.home, squads);
+  fillLineupFifaIds(match.away, squads);
 
   if (calEntry && match.state !== 'pre') {
     match.shots = await fetchFifaTimeline(

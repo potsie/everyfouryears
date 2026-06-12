@@ -558,21 +558,29 @@ function Pitch({ home, away }: { home: MatchCenterTeam; away: MatchCenterTeam })
     const L = lines.length || 1;
     return lines.flatMap((line, li) => {
       const y = side === 'home'
-        ? 94 - li * (42 / Math.max(L - 1, 1))
-        : 6 + li * (42 / Math.max(L - 1, 1));
+        ? 93 - li * (36 / Math.max(L - 1, 1))
+        : 7 + li * (36 / Math.max(L - 1, 1));
       const k = line.length || 1;
       return line.map((pl, j) => {
         const x = 12 + ((j + 0.5) / k) * 76;
-        return (
+        const inner = <>
+          <div className={'disc' + (pl.isStar ? ' star' : '')}>{pl.jersey}</div>
+          <div className="nm">{pl.name}{pl.isCaptain ? ' (C)' : ''}</div>
+          {pl.pos && <div className="pos">{pl.pos}</div>}
+        </>;
+        return pl.fifaId ? (
+          <Link
+            href={`/player/${pl.fifaId}`}
+            className={`dot ${side}`}
+            style={{ left: `${x}%`, top: `${y}%`, textDecoration: 'none' }}
+            key={`${side}-${li}-${j}`}
+          >{inner}</Link>
+        ) : (
           <div
             className={`dot ${side}`}
             style={{ left: `${x}%`, top: `${y}%` }}
             key={`${side}-${li}-${j}`}
-          >
-            <div className={'disc' + (pl.isStar ? ' star' : '')}>{pl.jersey}</div>
-            <div className="nm">{pl.name}{pl.isCaptain ? ' (C)' : ''}</div>
-            {pl.pos && <div className="pos">{pl.pos}</div>}
-          </div>
+          >{inner}</div>
         );
       });
     });
@@ -622,26 +630,28 @@ function Lineups({ match }: { match: MatchCenterData }) {
       <div className="pitch-wrap">
         <Pitch home={home} away={away} />
       </div>
-      <div className="lu-meta">
-        <span className="side">
-          <Flag logo={home.logo} abbr={home.abbr} size={18} />
-          <span className="code">{home.abbr}</span>
-          {home.formation && <span className="fm">{home.formation}</span>}
-          {home.coach && <span className="coach">· {home.coach}</span>}
-        </span>
-        <span className="side">
-          <Flag logo={away.logo} abbr={away.abbr} size={18} />
-          <span className="code">{away.abbr}</span>
-          {away.formation && <span className="fm">{away.formation}</span>}
-          {away.coach && <span className="coach">· {away.coach}</span>}
-        </span>
-      </div>
       {(home.bench.length > 0 || away.bench.length > 0) && (
         <div className="bench">
           <h4 className="bench-title">Bench</h4>
           <div className="bench-cols">
-            <BenchList players={home.bench} />
-            <BenchList players={away.bench} />
+            <div className="bench-team">
+              <span className="side">
+                <Flag logo={home.logo} abbr={home.abbr} size={18} />
+                <span className="code">{home.abbr}</span>
+                {home.formation && <span className="fm">{home.formation}</span>}
+                {home.coach && <span className="coach">· {home.coach}</span>}
+              </span>
+              <BenchList players={home.bench} />
+            </div>
+            <div className="bench-team">
+              <span className="side">
+                <Flag logo={away.logo} abbr={away.abbr} size={18} />
+                <span className="code">{away.abbr}</span>
+                {away.formation && <span className="fm">{away.formation}</span>}
+                {away.coach && <span className="coach">· {away.coach}</span>}
+              </span>
+              <BenchList players={away.bench} />
+            </div>
           </div>
         </div>
       )}
