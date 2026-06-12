@@ -1,4 +1,4 @@
-import { nowET, toISODate } from '@/lib/dates';
+import { nowET, toISODate, isoToETDate } from '@/lib/dates';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 
 export interface ScheduleTeam {
@@ -76,7 +76,7 @@ export function groupMatchesByDay(matches: WorldCupMatchNormalized[]): ScheduleD
 
   const byDate = new Map<string, WorldCupMatchNormalized[]>();
   for (const m of matches) {
-    const key = m.date.slice(0, 10);
+    const key = isoToETDate(m.date);
     if (!byDate.has(key)) byDate.set(key, []);
     byDate.get(key)!.push(m);
   }
