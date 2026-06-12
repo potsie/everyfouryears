@@ -123,7 +123,7 @@ function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
   const isPre = match.status.state === 'pre';
   const cells = linescoreCells(match);
   const kickoff = new Date(match.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  const statusText = isPost ? 'Full time' : isPre ? kickoff : match.status.isHalftime ? 'HALF TIME' : (match.status.clock || 'Live');
+  const statusText = isPost ? 'FULL TIME' : isPre ? kickoff : match.status.isHalftime ? 'HALF TIME' : (match.status.clock || 'Live');
 
   const cols = '1fr 18px 18px 28px';
 
