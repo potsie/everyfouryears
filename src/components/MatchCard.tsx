@@ -72,8 +72,8 @@ export function MatchCard({ match }: MatchCardProps) {
 
           {isLive && (
             <span className="flex items-center gap-[6px]" style={{ color: '#7ee2a8' }}>
-              <span className="pulse-dot on-dark" style={{ width: 6, height: 6 }} />
-              {match.status.clock}
+              {!match.status.isHalftime && <span className="pulse-dot on-dark" style={{ width: 6, height: 6 }} />}
+              {match.status.isHalftime ? 'HALF TIME' : match.status.clock}
             </span>
           )}
           {isPost && (

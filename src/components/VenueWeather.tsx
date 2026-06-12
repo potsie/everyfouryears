@@ -159,7 +159,14 @@ export function VenueWeather({ data, roofType, lat, lng }: Props) {
   const openPopup = useCallback(() => {
     if (triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect();
-      setPopupStyle({
+      const isMobile = window.innerWidth < 640;
+      setPopupStyle(isMobile ? {
+        position: 'fixed',
+        top: r.bottom + 8,
+        left: 8,
+        right: 8,
+        maxHeight: `calc(100dvh - ${r.bottom + 24}px)`,
+      } : {
         position: 'fixed',
         top: r.bottom + 8,
         right: Math.max(8, window.innerWidth - r.right),

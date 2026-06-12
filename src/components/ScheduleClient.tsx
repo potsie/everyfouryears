@@ -48,7 +48,7 @@ function MatchStatus({ m }: { m: ScheduleMatch }) {
   if (m.state === 'in') {
     return (
       <span className="s-status s-live">
-        <PulseDot />{m.clock}
+        {m.isHalftime ? <span style={{ color: 'var(--live-ink)', fontWeight: 700 }}>HALF TIME</span> : <><PulseDot />{m.clock}</>}
       </span>
     );
   }
