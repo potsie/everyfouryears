@@ -315,6 +315,7 @@ export interface MatchBenchPlayer {
 
 export interface MatchLinePlayer {
   id: string;
+  fifaId?: string;          // FIFA player ID — resolved post-normalize via jersey-number join against FIFA squads
   name: string;             // short name
   jersey: string;
   pos: string;              // short position code, e.g. 'GK' | 'CB' | 'LB' | 'DM' | 'CM' | 'LM' | 'ST'
