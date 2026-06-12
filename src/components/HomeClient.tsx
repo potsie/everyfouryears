@@ -37,13 +37,14 @@ function getDefaultDate(todayStr: string): string {
 
 function getMatchDateKey(isoDate: string): string {
   if (!isoDate) return '';
-  const utcDate = new Date(isoDate);
-  // Matches at 00:00–05:59 UTC are late-night US broadcasts — attribute to prior calendar day
-  if (utcDate.getUTCHours() < 6) {
-    const prev = new Date(utcDate.getTime() - 86_400_000);
-    return prev.toISOString().slice(0, 10).replace(/-/g, '');
-  }
-  return utcDate.toISOString().slice(0, 10).replace(/-/g, '');
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date(isoDate));
+  const y = parts.find(p => p.type === 'year')!.value;
+  const mo = parts.find(p => p.type === 'month')!.value;
+  const d = parts.find(p => p.type === 'day')!.value;
+  return `${y}${mo}${d}`;
 }
 
 function buildDateRail(matches: WorldCupMatchNormalized[]): DateRailDay[] {

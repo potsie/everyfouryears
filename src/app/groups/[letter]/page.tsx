@@ -5,6 +5,7 @@ import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
 import { GroupStandingsTable } from './GroupStandingsTable';
 import { LocalTime } from '@/components/LocalTime';
+import { isoToETDate } from '@/lib/dates';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 
 export const revalidate = 300;
@@ -15,7 +16,7 @@ const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function formatShortDate(dateISO: string): string {
-  const [y, mo, d] = dateISO.slice(0, 10).split('-').map(Number);
+  const [y, mo, d] = isoToETDate(dateISO).split('-').map(Number);
   const dt = new Date(Date.UTC(y, mo - 1, d, 12));
   return `${DAYS_SHORT[dt.getUTCDay()]}, ${MONTHS_SHORT[dt.getUTCMonth()]} ${d}`;
 }

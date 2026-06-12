@@ -15,6 +15,7 @@ import type {
   MatchCenterTeam,
   MatchBroadcast,
   MatchBenchPlayer,
+  ShotEvent,
 } from '@/lib/normalize/world-cup-normalizer';
 
 /* ---- inline SVG icons ---- */
@@ -379,6 +380,164 @@ function PossessionHeader({ stats, homeAbbr, awayAbbr }: { stats: MatchStat[]; h
 }
 
 /* ==============================================================
+   SHOT CHART
+   ============================================================== */
+// Home markers are white (contrast against green pitch); away markers are gold.
+const SHOT_COLORS = { home: '#FFFFFF', away: '#FFD100' } as const;
+
+// SVG viewBox is 100×140 to match the 5:7 pitch aspect ratio — circles stay round.
+const VB_H = 140;
+const R_ATTEMPT = 2.4;
+const R_GOAL = 3.2;
+const R_OUTER = R_GOAL + 1.6;  // outer dashed ring for 2H goals
+
+function ShotMarker({ s }: { s: ShotEvent }) {
+  const color = SHOT_COLORS[s.side];
+  const cx = s.y;
+  const cy = (s.side === 'home' ? (100 - s.x) : s.x) * (VB_H / 100);
+  const isGoal = s.outcome === 'goal';
+  const isH2 = s.period === 2;
+  const r = isGoal ? R_GOAL : R_ATTEMPT;
+
+  if (isGoal && isH2) {
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={r} fill={color} stroke="rgba(0,0,0,0.25)" strokeWidth={0.8} />
+        <circle cx={cx} cy={cy} r={R_OUTER} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={1.5} />
+        <circle cx={cx} cy={cy} r={R_OUTER} fill="none" stroke={color} strokeWidth={1} strokeDasharray="2 1.5" />
+      </g>
+    );
+  }
+  if (isGoal) {
+    return (
+      <circle cx={cx} cy={cy} r={r} fill={color} stroke="rgba(0,0,0,0.25)" strokeWidth={0.8} />
+    );
+  }
+  if (isH2) {
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={1.5} />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={1} strokeDasharray="2 1.5" />
+      </g>
+    );
+  }
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={1.5} />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={1} />
+    </g>
+  );
+}
+
+function LegendDot({ color, isGoal, isH2 }: { color: string; isGoal: boolean; isH2: boolean }) {
+  const size = 20;
+  const c = size / 2;
+  const r = isGoal ? 5 : 4;
+  if (isGoal && isH2) {
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+        <circle cx={c} cy={c} r={r} fill={color} stroke="rgba(0,0,0,0.15)" strokeWidth={0.8} />
+        <circle cx={c} cy={c} r={r + 2.5} fill="none" stroke={color} strokeWidth={1.5} strokeDasharray="3 2" />
+      </svg>
+    );
+  }
+  if (isGoal) {
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+        <circle cx={c} cy={c} r={r} fill={color} stroke="rgba(0,0,0,0.15)" strokeWidth={0.8} />
+      </svg>
+    );
+  }
+  if (isH2) {
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+        <circle cx={c} cy={c} r={r} fill="none" stroke={color} strokeWidth={2} strokeDasharray="3 2" />
+      </svg>
+    );
+  }
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+      <circle cx={c} cy={c} r={r} fill="none" stroke={color} strokeWidth={2} />
+    </svg>
+  );
+}
+
+function ShotChart({ shots, home, away }: { shots: ShotEvent[]; home: MatchCenterTeam; away: MatchCenterTeam }) {
+  if (shots.length === 0) return null;
+
+  const homeGoals = shots.filter(s => s.side === 'home' && s.outcome === 'goal').length;
+  const homeAttempts = shots.filter(s => s.side === 'home').length;
+  const awayGoals = shots.filter(s => s.side === 'away' && s.outcome === 'goal').length;
+  const awayAttempts = shots.filter(s => s.side === 'away').length;
+
+  // Render attempts before goals so goals appear on top
+  const sorted = [...shots].sort((a, b) => (a.outcome === 'goal' ? 1 : 0) - (b.outcome === 'goal' ? 1 : 0));
+
+  return (
+    <div className="sc-wrap">
+      <div className="sc-head">
+        <div className="sc-team">
+          <Flag logo={home.logo} abbr={home.abbr} size={16} />
+          <span className="sc-abbr">{home.abbr}</span>
+          <span className="sc-tally">{homeGoals}G · {homeAttempts} shots</span>
+        </div>
+        <span className="sc-title">Shot map</span>
+        <div className="sc-team right">
+          <span className="sc-tally">{awayGoals}G · {awayAttempts} shots</span>
+          <span className="sc-abbr">{away.abbr}</span>
+          <Flag logo={away.logo} abbr={away.abbr} size={16} />
+        </div>
+      </div>
+      <div className="pitch-wrap">
+        <div className="pitch">
+          <div className="box-line top" />
+          <div className="box-line bot" />
+          <div className="goal-box top" />
+          <div className="goal-box bot" />
+          <div className="pen-arc top" />
+          <div className="pen-arc bot" />
+          <svg
+            className="sc-svg"
+            viewBox={`0 0 100 ${VB_H}`}
+            preserveAspectRatio="none"
+            style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.4))' }}
+          >
+            {sorted.map((s, i) => <ShotMarker key={i} s={s} />)}
+          </svg>
+        </div>
+      </div>
+      <div className="sc-legend">
+        <span className="sc-leg-item">
+          <LegendDot color={SHOT_COLORS.home} isGoal={false} isH2={false} /> 1H Shot
+        </span>
+        <span className="sc-leg-item">
+          <LegendDot color={SHOT_COLORS.home} isGoal={false} isH2={true} /> 2H Shot
+        </span>
+        <span className="sc-leg-item">
+          <LegendDot color={SHOT_COLORS.home} isGoal={true} isH2={false} /> 1H Goal
+        </span>
+        <span className="sc-leg-item">
+          <LegendDot color={SHOT_COLORS.home} isGoal={true} isH2={true} /> 2H Goal
+        </span>
+        <span className="sc-leg-sep" />
+        <span className="sc-leg-item">
+          <LegendDot color={SHOT_COLORS.away} isGoal={false} isH2={false} /> 1H Shot
+        </span>
+        <span className="sc-leg-item">
+          <LegendDot color={SHOT_COLORS.away} isGoal={false} isH2={true} /> 2H Shot
+        </span>
+        <span className="sc-leg-item">
+          <LegendDot color={SHOT_COLORS.away} isGoal={true} isH2={false} /> 1H Goal
+        </span>
+        <span className="sc-leg-item">
+          <LegendDot color={SHOT_COLORS.away} isGoal={true} isH2={true} /> 2H Goal
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ==============================================================
    PITCH / LINEUPS
    ============================================================== */
 function BenchList({ players }: { players: MatchBenchPlayer[] }) {
@@ -557,6 +716,7 @@ function MainColumn({ tab, match }: { tab: string; match: MatchCenterData }) {
         <div className="stats-wrap">
           {stats.slice(1).map(s => <StatBar key={s.label} s={s} />)}
         </div>
+        <ShotChart shots={match.shots} home={home} away={away} />
       </div>
     );
   }

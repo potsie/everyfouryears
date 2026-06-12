@@ -57,3 +57,17 @@ export function toISODate(date: Date): string {
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
+
+// Convert a UTC ISO string to a YYYY-MM-DD date key in Eastern Time.
+// Use this everywhere matches are bucketed by day so grouping and "today"
+// detection stay in sync (both use America/New_York as the reference timezone).
+export function isoToETDate(isoString: string): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: SITE_TZ,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date(isoString));
+  const y = parts.find(p => p.type === 'year')!.value;
+  const mo = parts.find(p => p.type === 'month')!.value;
+  const d = parts.find(p => p.type === 'day')!.value;
+  return `${y}-${mo}-${d}`;
+}
