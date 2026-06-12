@@ -408,6 +408,16 @@ body {
 .fdot.l { background: var(--danger); }
 .fdot.none { background: var(--inset); border: 1px solid var(--line); }
 .hide-s { }
+@media (max-width: 620px) {
+  .hide-s { display: none !important; }
+  .gw-row {
+    grid-template-columns: 20px minmax(0,1fr) 26px 24px 24px 24px 36px 38px;
+    gap: 6px; padding: 8px 14px; font-size: 12.5px;
+  }
+  .gw-row.head { padding: 9px 14px 5px; }
+  .gw-row .tm .n { display: inline; margin-top: 0; }
+  .gw-row .pts { font-size: 13px; }
+}
 
 .gd-md { margin-top: 18px; }
 .gd-md:first-child { margin-top: 0; }
