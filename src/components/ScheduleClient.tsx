@@ -21,13 +21,6 @@ function PulseDot() {
   return <span className="pulse-dot" />;
 }
 
-function CheckIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m5 12 5 5L20 6" />
-    </svg>
-  );
-}
 
 function ChevRight() {
   return (
@@ -95,14 +88,9 @@ function TeamCell({ team, side, lose, win }: { team: ScheduleTeam | SeedTeam; si
   );
 }
 
-function ScoreCell({ m, hide }: { m: ScheduleMatch; hide: boolean }) {
+function ScoreCell({ m }: { m: ScheduleMatch }) {
   if (m.state === 'pre') {
     return <span className="s-score pre">vs</span>;
-  }
-  if (hide) {
-    return (
-      <span className="s-score" style={{ color: 'var(--ink-3)', letterSpacing: '.1em' }}>···</span>
-    );
   }
   if (!m.score) return <span className="s-score pre">—</span>;
   const [hs, as_] = m.score;
@@ -113,7 +101,7 @@ function ScoreCell({ m, hide }: { m: ScheduleMatch; hide: boolean }) {
   );
 }
 
-function ScheduleRow({ m, hide }: { m: ScheduleMatch; hide: boolean }) {
+function ScheduleRow({ m }: { m: ScheduleMatch }) {
   const post = m.state === 'post';
   const [hs, as_] = m.score ?? [0, 0];
   const loseHome = post && !!m.score && hs < as_;
@@ -133,7 +121,7 @@ function ScheduleRow({ m, hide }: { m: ScheduleMatch; hide: boolean }) {
     >
       <MatchStatus m={m} />
       <TeamCell team={m.home} side="a" lose={loseHome} win={winHome} />
-      <ScoreCell m={m} hide={hide} />
+      <ScoreCell m={m} />
       <TeamCell team={m.away} side="b" lose={loseAway} win={winAway} />
       <span className="s-meta">
         {badge && <span className="s-grp">{badge}</span>}
@@ -147,7 +135,7 @@ function ScheduleRow({ m, hide }: { m: ScheduleMatch; hide: boolean }) {
   );
 }
 
-function DaySection({ day, hide }: { day: ScheduleDay; hide: boolean }) {
+function DaySection({ day }: { day: ScheduleDay }) {
   return (
     <section
       className={`sday${day.isToday ? ' is-today' : ''}`}
@@ -162,7 +150,7 @@ function DaySection({ day, hide }: { day: ScheduleDay; hide: boolean }) {
         </span>
       </div>
       <div className="slist">
-        {day.matches.map(m => <ScheduleRow key={m.id} m={m} hide={hide} />)}
+        {day.matches.map(m => <ScheduleRow key={m.id} m={m} />)}
       </div>
     </section>
   );
@@ -179,7 +167,6 @@ interface ScheduleClientProps {
 export function ScheduleClient({ days, singleDay = false, groupTeams = {} }: ScheduleClientProps) {
   const [stage, setStage] = useState<'all' | 'group' | 'ko'>('all');
   const [grp, setGrp] = useState('all');
-  const [hide, setHide] = useState(false);
 
   const jumpToday = useCallback(() => {
     const todayDay = days.find(d => d.isToday);
@@ -245,11 +232,6 @@ export function ScheduleClient({ days, singleDay = false, groupTeams = {} }: Sch
               ))}
             </select>
 
-            <button className={`chk${hide ? ' on' : ''}`} onClick={() => setHide(h => !h)}>
-              <span className="box">{hide && <CheckIcon />}</span>
-              Hide scores
-            </button>
-
             <div className="fspace" />
 
             <button className="btn btn-primary" onClick={jumpToday}>
@@ -276,7 +258,7 @@ export function ScheduleClient({ days, singleDay = false, groupTeams = {} }: Sch
           <div className="sched-empty">No matches match these filters.</div>
         </div>
       ) : (
-        filteredDays.map(d => <DaySection key={d.key} day={d} hide={hide} />)
+        filteredDays.map(d => <DaySection key={d.key} day={d} />)
       )}
 
       <div className="foot-note">
