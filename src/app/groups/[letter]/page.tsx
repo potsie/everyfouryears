@@ -22,37 +22,6 @@ function formatShortDate(dateISO: string): string {
 }
 
 
-// Compute W/D/L form dots for each team from completed matches
-function computeForm(matches: WorldCupMatchNormalized[]): Record<string, Array<'w' | 'd' | 'l'>> {
-  const form: Record<string, Array<'w' | 'd' | 'l'>> = {};
-
-  const completed = [...matches]
-    .filter(m => m.status.state === 'post')
-    .sort((a, b) => a.date.localeCompare(b.date));
-
-  for (const m of completed) {
-    const hs = parseInt(m.home.score || '0', 10);
-    const as_ = parseInt(m.away.score || '0', 10);
-    const hAbbr = m.home.abbr;
-    const aAbbr = m.away.abbr;
-
-    if (!form[hAbbr]) form[hAbbr] = [];
-    if (!form[aAbbr]) form[aAbbr] = [];
-
-    if (hs > as_) {
-      form[hAbbr].push('w');
-      form[aAbbr].push('l');
-    } else if (as_ > hs) {
-      form[hAbbr].push('l');
-      form[aAbbr].push('w');
-    } else {
-      form[hAbbr].push('d');
-      form[aAbbr].push('d');
-    }
-  }
-  return form;
-}
-
 // Assign matchday 1/2/3 by chronological order (2 matches per matchday)
 function assignMatchdays(matches: WorldCupMatchNormalized[]) {
   const sorted = [...matches].sort((a, b) => a.date.localeCompare(b.date));
@@ -155,8 +124,6 @@ export default async function GroupDetailPage({
       (groupTeamAbbrs.has(m.home.abbr) || groupTeamAbbrs.has(m.away.abbr))
   );
   const matchdays = assignMatchdays(groupMatches);
-  const form = computeForm(groupMatches);
-
   const completedCount = groupMatches.filter(m => m.status.state === 'post').length;
   const top2 = groupStanding.standings.slice(0, 2);
 
@@ -216,21 +183,18 @@ export default async function GroupDetailPage({
             </div>
 
             <div className="gtable-wide">
-              <div className="gw-row head">
+              <div className="gfrow head">
                 <span className="rk">#</span>
                 <span className="tm">Team</span>
                 <span className="num">Pl</span>
                 <span className="num">W</span>
                 <span className="num">D</span>
                 <span className="num">L</span>
-                <span className="num hide-s">GF</span>
-                <span className="num hide-s">GA</span>
                 <span className="num">GD</span>
-                <span className="form hide-s">Form</span>
                 <span className="pts">Pts</span>
               </div>
 
-              <GroupStandingsTable standings={groupStanding.standings} form={form} />
+              <GroupStandingsTable standings={groupStanding.standings} />
             </div>
 
             {/* Legend */}
