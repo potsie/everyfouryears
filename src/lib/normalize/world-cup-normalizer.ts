@@ -398,6 +398,16 @@ function channelLang(name: string, espnLang?: string): string {
   return '';
 }
 
+export interface ShotEvent {
+  side: 'home' | 'away';
+  outcome: 'goal' | 'attempt';
+  period: 1 | 2;  // 1=first half, 2=second half
+  // Normalized coords: x=0–100 where 100 is near the attacking goal; y=0–100 pitch width
+  x: number;
+  y: number;
+  minute: string;
+}
+
 export interface MatchCenterData {
   eventId: string;
   state: 'pre' | 'in' | 'post';
@@ -425,6 +435,7 @@ export interface MatchCenterData {
   groupStandings: { abbr: string; logo: string; played: number; gd: string; pts: number; status: 'advancing' | 'bubble' | 'out' | '' }[];
   motmName: string | null;
   motmLine: string | null;
+  shots: ShotEvent[];
 }
 
 function parseMinute(displayValue: string): { at: number; extra: number } {
@@ -764,5 +775,6 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     groupStandings,
     motmName,
     motmLine,
+    shots: [], // populated from FIFA timeline in fetchMatchSummary
   };
 }

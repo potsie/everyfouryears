@@ -1,5 +1,5 @@
 import { espnFetch } from '@/lib/espn/core';
-import { normalizeScoreboardEvent, normalizeMatchDetail, type WorldCupMatchNormalized, type MatchCenterData, type MatchCenterTeam, type MatchOfficial } from '@/lib/normalize/world-cup-normalizer';
+import { normalizeScoreboardEvent, normalizeMatchDetail, type WorldCupMatchNormalized, type MatchCenterData, type MatchCenterTeam, type MatchOfficial, type ShotEvent } from '@/lib/normalize/world-cup-normalizer';
 import { normalizeGroupStandings } from '@/lib/normalize/standings';
 import type { WorldCupGroupTable } from '@/types/standings-types';
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
@@ -322,20 +322,26 @@ export async function fetchNews(): Promise<NewsArticle[]> {
   }));
 }
 
-// Match officials (referee + crew) come from the FIFA calendar — ESPN's summary
-// doesn't include them. One cached call covers all 104 matches; we key by the
-// FIFA trigram pairing, which matches ESPN's team abbreviations.
-export async function fetchFifaMatchOfficials(): Promise<Record<string, MatchOfficial[]>> {
+interface FifaCalendarEntry {
+  officials: MatchOfficial[];
+  idMatch: string;
+  idStage: string;
+  homeTeamId: string;
+  awayTeamId: string;
+}
+
+// One cached call covers all 104 matches. Keyed by ESPN trigram pair HOME|AWAY.
+async function fetchFifaCalendar(): Promise<Record<string, FifaCalendarEntry>> {
   const url =
     'https://api.fifa.com/api/v3/calendar/matches' +
     '?idCompetition=17&idSeason=285023&count=200&language=en';
-  const data = await espnFetch<any>(url, 'fifa-match-officials', 300);
+  const data = await espnFetch<any>(url, 'fifa-calendar', 300);
   const results: any[] = data?.Results ?? [];
-  const map: Record<string, MatchOfficial[]> = {};
+  const map: Record<string, FifaCalendarEntry> = {};
   for (const m of results) {
     const home = m?.Home?.Abbreviation;
     const away = m?.Away?.Abbreviation;
-    if (!home || !away) continue;
+    if (!home || !away || !m.IdMatch || !m.IdStage) continue;
     const officials: MatchOfficial[] = (m.Officials ?? [])
       .map((o: any) => ({
         name: o?.Name?.[0]?.Description ?? o?.NameShort?.[0]?.Description ?? '',
@@ -343,9 +349,79 @@ export async function fetchFifaMatchOfficials(): Promise<Record<string, MatchOff
         role: o?.TypeLocalized?.[0]?.Description ?? '',
       }))
       .filter((o: MatchOfficial) => o.name);
-    if (officials.length) map[`${home}|${away}`] = officials;
+    map[`${home}|${away}`] = {
+      officials,
+      idMatch: String(m.IdMatch),
+      idStage: String(m.IdStage),
+      homeTeamId: String(m.Home?.IdTeam ?? ''),
+      awayTeamId: String(m.Away?.IdTeam ?? ''),
+    };
   }
   return map;
+}
+
+export async function fetchFifaMatchOfficials(): Promise<Record<string, MatchOfficial[]>> {
+  const calendar = await fetchFifaCalendar();
+  return Object.fromEntries(
+    Object.entries(calendar).map(([key, entry]) => [key, entry.officials])
+  );
+}
+
+// FIFA type codes relevant to shot charts
+const FIFA_SHOT_TYPES = new Set([0, 12]); // 0=Goal, 12=Attempt at Goal
+
+export async function fetchFifaTimeline(
+  idStage: string,
+  idMatch: string,
+  homeTeamId: string,
+  awayTeamId: string,
+): Promise<ShotEvent[]> {
+  const url = `https://api.fifa.com/api/v3/timelines/17/285023/${idStage}/${idMatch}?language=en`;
+  const data = await espnFetch<any>(url, `fifa-timeline-${idMatch}`, 60);
+  const events: any[] = data?.Event ?? [];
+
+  // Collect goal coordinates for outcome classification
+  const goalCoords = new Set<string>();
+  for (const e of events) {
+    if (e.Type === 0 && e.PositionX != null && e.PositionY != null) {
+      goalCoords.add(`${e.PositionX.toFixed(1)},${e.PositionY.toFixed(1)}`);
+    }
+  }
+
+  const shots: ShotEvent[] = [];
+  for (const e of events) {
+    if (!FIFA_SHOT_TYPES.has(e.Type)) continue;
+    if (e.Type === 0) continue; // Goal events duplicate the attempt; outcome added via goalCoords
+    if (e.PositionX == null || e.PositionY == null) continue;
+
+    const isHome = String(e.IdTeam) === homeTeamId;
+    const isAway = String(e.IdTeam) === awayTeamId;
+    if (!isHome && !isAway) continue;
+
+    // FIFA periods: 3=H1, 5=H2. Home attacks high-X end in H1, swaps in H2.
+    const period: number = e.Period ?? 3;
+    const homeAttacksHighX = period === 3;
+    const attacksHighX = isHome ? homeAttacksHighX : !homeAttacksHighX;
+
+    const rawX: number = e.PositionX;
+    const rawY: number = e.PositionY;
+    const nx = attacksHighX ? rawX : 100 - rawX;
+    const ny = attacksHighX ? rawY : 100 - rawY;
+
+    const coordKey = `${rawX.toFixed(1)},${rawY.toFixed(1)}`;
+    // FIFA period 3=H1, 5=H2; everything else treated as H2
+    const normalizedPeriod: 1 | 2 = period === 3 ? 1 : 2;
+    shots.push({
+      side: isHome ? 'home' : 'away',
+      outcome: goalCoords.has(coordKey) ? 'goal' : 'attempt',
+      period: normalizedPeriod,
+      x: nx,
+      y: ny,
+      minute: String(e.MatchMinute ?? ''),
+    });
+  }
+
+  return shots;
 }
 
 // ESPN marks bench players as 'SUB', so fill their position code (GK/DEF/MID/FWD)
@@ -368,15 +444,27 @@ export async function fetchMatchSummary(eventId: string): Promise<MatchCenterDat
   const data = await espnFetch<ESPNMatchSummaryFull>(url, `wc-match-${eventId}`, 60);
   const match = normalizeMatchDetail(eventId, data);
 
-  // Enrich from FIFA (best-effort — never block the page on it): match referee
-  // and bench player positions. Both are independently cached, so run in parallel.
-  const [officialsMap, squads] = await Promise.all([
-    fetchFifaMatchOfficials().catch(() => ({} as Record<string, MatchOfficial[]>)),
+  // Enrich from FIFA (best-effort — never block the page on it): officials,
+  // bench positions, and shot coordinates. All independently cached, run in parallel.
+  const [calendar, squads] = await Promise.all([
+    fetchFifaCalendar().catch(() => ({} as Record<string, FifaCalendarEntry>)),
     fetchFifaSquads().catch(() => [] as FifaTeamSquad[]),
   ]);
-  match.officials = officialsMap[`${match.home.abbr}|${match.away.abbr}`] ?? [];
+
+  const matchKey = `${match.home.abbr}|${match.away.abbr}`;
+  const calEntry = calendar[matchKey];
+  match.officials = calEntry?.officials ?? [];
   fillBenchPositions(match.home, squads);
   fillBenchPositions(match.away, squads);
+
+  if (calEntry && match.state !== 'pre') {
+    match.shots = await fetchFifaTimeline(
+      calEntry.idStage,
+      calEntry.idMatch,
+      calEntry.homeTeamId,
+      calEntry.awayTeamId,
+    ).catch(() => []);
+  }
 
   return match;
 }
