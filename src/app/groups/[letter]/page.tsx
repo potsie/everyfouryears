@@ -21,6 +21,7 @@ function formatShortDate(dateISO: string): string {
   return `${DAYS_SHORT[dt.getUTCDay()]}, ${MONTHS_SHORT[dt.getUTCMonth()]} ${d}`;
 }
 
+
 // Compute W/D/L form dots for each team from completed matches
 function computeForm(matches: WorldCupMatchNormalized[]): Record<string, Array<'w' | 'd' | 'l'>> {
   const form: Record<string, Array<'w' | 'd' | 'l'>> = {};
@@ -259,19 +260,33 @@ export default async function GroupDetailPage({
               <span className="eyebrow">Round robin · 6 matches</span>
             </div>
 
-            {matchdays.filter(({ matches: ms }) => ms.length > 0).map(({ md, matches: ms }) => (
-              <div className="gd-md" key={md}>
-                <div className="md-label">
-                  Matchday {md}
-                  {ms[0] && (
-                    <span className="d">· {formatShortDate(ms[0].date)}</span>
-                  )}
+            {matchdays.filter(({ matches: ms }) => ms.length > 0).map(({ md, matches: ms }) => {
+              // Group matches by ET date so splits across midnight show separate day headers
+              const byDate: { dateKey: string; label: string; matches: typeof ms }[] = [];
+              for (const m of ms) {
+                const dk = isoToETDate(m.date);
+                const last = byDate[byDate.length - 1];
+                if (last && last.dateKey === dk) { last.matches.push(m); }
+                else { byDate.push({ dateKey: dk, label: formatShortDate(m.date), matches: [m] }); }
+              }
+              const singleDay = byDate.length === 1;
+              return (
+                <div className="gd-md" key={md}>
+                  <div className="md-label">
+                    Matchday {md}
+                    {singleDay && <span className="d">· {byDate[0].label}</span>}
+                  </div>
+                  {byDate.map(({ dateKey, label, matches: dayMs }) => (
+                    <div key={dateKey}>
+                      {!singleDay && <div className="md-day-sub">{label}</div>}
+                      <div className="slist">
+                        {dayMs.map(m => <FixtureRow key={m.eventId} m={m} />)}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="slist">
-                  {ms.map(m => <FixtureRow key={m.eventId} m={m} />)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </section>
         </div>
 
