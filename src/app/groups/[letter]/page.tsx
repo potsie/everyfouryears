@@ -69,6 +69,8 @@ function FixtureRow({ m }: { m: WorldCupMatchNormalized }) {
   const as_ = parseInt(m.away.score || '0', 10);
   const loseHome = post && m.home.score !== '' && hs < as_;
   const loseAway = post && m.away.score !== '' && as_ < hs;
+  const winHome = post && m.home.score !== '' && hs > as_;
+  const winAway = post && m.away.score !== '' && as_ > hs;
 
   return (
     <Link
@@ -91,6 +93,7 @@ function FixtureRow({ m }: { m: WorldCupMatchNormalized }) {
 
       {/* Home (left) */}
       <span className={`s-team a${loseHome ? ' lose' : ''}`}>
+        {winHome && <span className="s-win" style={{ color: 'var(--live-ink)', fontWeight: 800 }}>▸</span>}
         <span className="s-code">{m.home.abbr}</span>
         <Flag logo={m.home.logo} abbr={m.home.abbr} size={22} />
       </span>
@@ -108,6 +111,7 @@ function FixtureRow({ m }: { m: WorldCupMatchNormalized }) {
       <span className={`s-team b${loseAway ? ' lose' : ''}`}>
         <Flag logo={m.away.logo} abbr={m.away.abbr} size={22} />
         <span className="s-code">{m.away.abbr}</span>
+        {winAway && <span className="s-win" style={{ color: 'var(--live-ink)', fontWeight: 800 }}>◂</span>}
       </span>
 
       {/* Meta */}
