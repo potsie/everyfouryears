@@ -45,7 +45,7 @@ const EMPTY_STATS: TournamentStats = {
     { k: 'Goals / match', v: '—', sub: 'avg' },
     { k: 'Penalties',     v: '—', sub: 'scored / taken' },
     { k: 'Clean sheets',  v: '—', sub: 'by goalkeepers' },
-    { k: 'Red cards',     v: '—', sub: 'this tournament' },
+    { k: 'Yellow cards',  v: '—', sub: 'this tournament', v2: '—', k2: 'Red cards' },
     { k: 'Hat-tricks',    v: '—', sub: 'this tournament' },
   ],
   goldenBoot: [],
@@ -397,9 +397,22 @@ export function StatsClient() {
       <div className="tally-strip">
         {(tallies as TallyItem[]).map((t, i) => (
           <div className="ts-cell" key={i}>
-            <div className="v tnum">{t.v}</div>
-            <div className="k">{t.k}</div>
-            <div className="s">{t.sub}</div>
+            {t.v2 !== undefined ? (
+              <>
+                <div className="ts-split">
+                  <div><div className="v tnum">{t.v}</div><div className="k">{t.k}</div></div>
+                  <div className="ts-divider" />
+                  <div><div className="v tnum">{t.v2}</div><div className="k">{t.k2}</div></div>
+                </div>
+                <div className="s">{t.sub}</div>
+              </>
+            ) : (
+              <>
+                <div className="v tnum">{t.v}</div>
+                <div className="k">{t.k}</div>
+                <div className="s">{t.sub}</div>
+              </>
+            )}
           </div>
         ))}
       </div>

@@ -1,6 +1,6 @@
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
 
-export interface TallyItem { k: string; v: string; sub: string; }
+export interface TallyItem { k: string; v: string; sub: string; v2?: string; k2?: string; }
 export interface ScorerEntry { p: string; t: string; g: number; a: number; pens: number; mp: number; }
 export interface LeadEntry { p: string; t: string; v: number; }
 export interface DisciplineEntry { p: string; t: string; y: number; r: number; }
@@ -62,6 +62,7 @@ export function buildTournamentStats(
   const teamAccum = new Map<string, { gf: number; ga: number; poss: number; shots: number; matches: number }>();
   let totalPens = 0;
   let totalPensTaken = 0;
+  let totalYellowCards = 0;
   let totalRedCards = 0;
   let totalCleanSheets = 0;
   let hatTricks = 0;
@@ -142,6 +143,7 @@ export function buildTournamentStats(
         p.matches++;
 
         if (cleanSheet) totalCleanSheets++;
+        totalYellowCards += yellows;
         if (reds > 0) totalRedCards += reds;
         // Hat-trick: 3+ goals in a single match for this player
         if (goals >= 3) hatTricks++;
@@ -179,7 +181,7 @@ export function buildTournamentStats(
     { k: 'Goals / match', v: matchCount > 0 ? goalsPerMatch : '—',                   sub: 'avg' },
     { k: 'Penalties',     v: matchCount > 0 ? (totalPensTaken > 0 ? `${totalPens}/${totalPensTaken}` : String(totalPens)) : '—', sub: 'scored / taken' },
     { k: 'Clean sheets',  v: matchCount > 0 ? String(totalCleanSheets) : '—',        sub: 'by goalkeepers' },
-    { k: 'Red cards',     v: matchCount > 0 ? String(totalRedCards) : '—',           sub: 'this tournament' },
+    { k: 'Yellow cards',  v: matchCount > 0 ? String(totalYellowCards) : '—',        sub: 'this tournament', v2: matchCount > 0 ? String(totalRedCards) : '—', k2: 'Red cards' },
     { k: 'Hat-tricks',    v: matchCount > 0 ? String(hatTricks) : '—',              sub: 'this tournament' },
   ];
 
