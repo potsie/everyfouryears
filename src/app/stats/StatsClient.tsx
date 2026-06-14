@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Flag } from '@/components/Flag';
 import { PageHero } from '@/components/PageHero';
 import { Shot } from '@/components/Shot';
@@ -39,6 +40,25 @@ function countryName(abbr: string): string {
 
 const MEDALS = ['Golden Boot', 'Silver', 'Bronze'];
 
+// Render a player-row container as a link to /player/{fifaId} when we have a
+// FIFA id, otherwise a plain div. Player pages key on FIFA ids (see stats-live).
+function RowLink({
+  fifaId,
+  className,
+  style,
+  children,
+}: {
+  fifaId?: string;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  if (fifaId) {
+    return <Link href={`/player/${fifaId}`} className={className} style={style}>{children}</Link>;
+  }
+  return <div className={className} style={style}>{children}</div>;
+}
+
 const EMPTY_STATS: TournamentStats = {
   tallies: [
     { k: 'Goals scored',  v: '—', sub: 'this tournament' },
@@ -59,10 +79,10 @@ const EMPTY_STATS: TournamentStats = {
 
 function Podium({ p, rank }: { p: ScorerEntry; rank: 1 | 2 | 3 }) {
   return (
-    <div className={`podium p${rank}`}>
+    <RowLink fifaId={p.fifaId} className={`podium p${rank}`}>
       <span className="pd-rank tnum">#{rank}</span>
       <span className="pd-medal">{MEDALS[rank - 1]}</span>
-      <Shot name={p.p} size={rank === 1 ? 64 : 56} />
+      <Shot name={p.p} size={rank === 1 ? 64 : 56} headshotUrl={p.photo} />
       <div className="pd-name">{p.p}</div>
       <div className="pd-team">
         <Flag logo={teamFlagUrl(p.t)} abbr={p.t} size={16} />
@@ -74,7 +94,7 @@ function Podium({ p, rank }: { p: ScorerEntry; rank: 1 | 2 | 3 }) {
         <div className="m"><span className="mv tnum">{p.a}</span><span className="mk">Assists</span></div>
         <div className="m"><span className="mv tnum">{p.pens}</span><span className="mk">Pens</span></div>
       </div>
-    </div>
+    </RowLink>
   );
 }
 
@@ -90,10 +110,10 @@ function GoldenBootTable({ rows }: { rows: ScorerEntry[] }) {
         <span className="lt-num head" style={{ textAlign: 'center' }}>Goals</span>
       </div>
       {rows.map((p, i) => (
-        <div className="lt-row" key={p.p}>
+        <RowLink className="lt-row" key={p.p} fifaId={p.fifaId}>
           <span className="lt-rank tnum">{i + 4}</span>
           <span className="lt-player">
-            <Shot name={p.p} size={34} />
+            <Shot name={p.p} size={34} headshotUrl={p.photo} />
             <span className="lt-info">
               <span className="lt-name">{p.p}</span>
               <span className="lt-club">
@@ -105,7 +125,7 @@ function GoldenBootTable({ rows }: { rows: ScorerEntry[] }) {
           <span className="lt-num tnum lt-hide">{p.mp}</span>
           <span className="lt-num tnum lt-hide">{p.a}</span>
           <span className="lt-main tnum">{p.g}</span>
-        </div>
+        </RowLink>
       ))}
     </div>
   );
@@ -124,7 +144,7 @@ function LeaderList({ rows, green }: { rows: LeadEntry[]; green?: boolean }) {
   return (
     <>
       {rows.slice(0, 6).map((r, i) => (
-        <div className="lead-card" key={r.p}>
+        <RowLink className="lead-card" key={r.p} fifaId={r.fifaId}>
           <span className="lc-rank tnum">{i + 1}</span>
           <div className="lc-info">
             <div className="lc-name">{r.p}</div>
@@ -134,7 +154,7 @@ function LeaderList({ rows, green }: { rows: LeadEntry[]; green?: boolean }) {
             </div>
           </div>
           <span className={`lc-val tnum${green ? ' green' : ''}`}>{r.v}</span>
-        </div>
+        </RowLink>
       ))}
     </>
   );
@@ -173,7 +193,7 @@ function DisciplinePanel({ rows }: { rows: DisciplineEntry[] }) {
         <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>Most booked</span>
       </div>
       {rows.length === 0 ? <EmptyLeaders label="bookings" /> : rows.map((d, i) => (
-        <div className="lead-card" key={d.p}>
+        <RowLink className="lead-card" key={d.p} fifaId={d.fifaId}>
           <span className="lc-rank tnum">{i + 1}</span>
           <div className="lc-info">
             <div className="lc-name">{d.p}</div>
@@ -186,7 +206,7 @@ function DisciplinePanel({ rows }: { rows: DisciplineEntry[] }) {
             {Array.from({ length: d.y }).map((_, k) => <span className="card y" key={`y${k}`} />)}
             {Array.from({ length: d.r }).map((_, k) => <span className="card r" key={`r${k}`} />)}
           </span>
-        </div>
+        </RowLink>
       ))}
     </div>
   );
@@ -200,7 +220,7 @@ function YoungPanel({ rows }: { rows: YoungEntry[] }) {
         <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>Under 21</span>
       </div>
       {rows.length === 0 ? <EmptyLeaders label="young scorers" /> : rows.map((y, i) => (
-        <div className="lead-card" key={y.p}>
+        <RowLink className="lead-card" key={y.p} fifaId={y.fifaId}>
           <span className="lc-rank tnum">{i + 1}</span>
           <div className="lc-info">
             <div className="lc-name">{y.p}</div>
@@ -212,7 +232,7 @@ function YoungPanel({ rows }: { rows: YoungEntry[] }) {
           <span className="lc-val tnum">
             {y.g + y.a}<span style={{ fontSize: 11, color: 'var(--ink-3)', fontWeight: 600, marginLeft: 3 }}>G+A</span>
           </span>
-        </div>
+        </RowLink>
       ))}
     </div>
   );
@@ -268,7 +288,7 @@ function GBHero({ rows }: { rows: ScorerEntry[] }) {
         </div>
         <div className="gh-podium">
           {top.map((p, i) => (
-            <div className={`ghp${i === 0 ? ' lead' : ''}`} key={p.p}>
+            <RowLink className={`ghp${i === 0 ? ' lead' : ''}`} key={p.p} fifaId={p.fifaId}>
               <div className="gp-top">
                 <span className="gp-rank tnum">#{i + 1}</span>
                 {i === 0 && <span className="gp-medal">Golden Boot</span>}
@@ -281,7 +301,7 @@ function GBHero({ rows }: { rows: ScorerEntry[] }) {
               <div className="gp-goals tnum">
                 {p.g}<span className="u">goals</span>
               </div>
-            </div>
+            </RowLink>
           ))}
         </div>
       </div>
@@ -305,10 +325,10 @@ function FullScorerList({ rows }: { rows: ScorerEntry[] }) {
         <span className="lt-num head" style={{ textAlign: 'center' }}>Goals</span>
       </div>
       {rows.map((p, i) => (
-        <div className="lt-row" key={p.p}>
+        <RowLink className="lt-row" key={p.p} fifaId={p.fifaId}>
           <span className="lt-rank tnum">{i + 1}</span>
           <span className="lt-player">
-            <Shot name={p.p} size={34} />
+            <Shot name={p.p} size={34} headshotUrl={p.photo} />
             <span className="lt-info">
               <span className="lt-name">{p.p}</span>
               <span className="lt-club">
@@ -320,7 +340,7 @@ function FullScorerList({ rows }: { rows: ScorerEntry[] }) {
           <span className="lt-num tnum lt-hide">{p.mp}</span>
           <span className="lt-num tnum lt-hide">{p.a}</span>
           <span className="lt-main tnum">{p.g}</span>
-        </div>
+        </RowLink>
       ))}
     </div>
   );

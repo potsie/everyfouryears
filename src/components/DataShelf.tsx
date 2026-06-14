@@ -44,11 +44,11 @@ export function DataShelf({
   }, []);
 
   // Map the selected tab to a normalized list of leader rows
-  const statLeaders: { p: string; t: string; v: number }[] = (() => {
+  const statLeaders: { p: string; t: string; v: number; fifaId?: string }[] = (() => {
     if (!stats) return [];
     switch (statCategory) {
       case 'Goals':
-        return stats.goldenBoot.map(e => ({ p: e.p, t: e.t, v: e.g }));
+        return stats.goldenBoot.map(e => ({ p: e.p, t: e.t, v: e.g, fifaId: e.fifaId }));
       case 'Assists':
         return stats.assists;
       case 'Clean sheets':
@@ -275,32 +275,42 @@ export function DataShelf({
             Stats accumulate as matches complete
           </div>
         ) : (
-          statLeaders.map((r, i) => (
-            <div
-              key={`${r.p}-${i}`}
-              className="flex items-center gap-3 px-[15px] py-[10px]"
-              style={{ borderTop: i === 0 ? 'none' : '1px solid var(--line)' }}
-            >
-              <span
-                className="font-display font-extrabold text-[14px] text-center"
-                style={{ color: 'var(--ink-3)', width: 16, flex: '0 0 auto' }}
-              >
-                {i + 1}
-              </span>
-              <img
-                src={espnFlagUrl(r.t)}
-                alt={r.t}
-                style={{ width: 18, height: 18, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-              <span className="flex-1 min-w-0 truncate font-bold text-[13px]" style={{ color: 'var(--ink)' }}>
-                {r.p}
-              </span>
-              <span className="font-display font-extrabold text-[18px]" style={{ color: 'var(--ink)' }}>
-                {r.v}
-              </span>
-            </div>
-          ))
+          statLeaders.map((r, i) => {
+            const rowClass = 'flex items-center gap-3 px-[15px] py-[10px] no-underline';
+            const rowStyle = { borderTop: i === 0 ? 'none' : '1px solid var(--line)' };
+            const inner = (
+              <>
+                <span
+                  className="font-display font-extrabold text-[14px] text-center"
+                  style={{ color: 'var(--ink-3)', width: 16, flex: '0 0 auto' }}
+                >
+                  {i + 1}
+                </span>
+                <img
+                  src={espnFlagUrl(r.t)}
+                  alt={r.t}
+                  style={{ width: 18, height: 18, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+                <span className="flex-1 min-w-0 truncate font-bold text-[13px]" style={{ color: 'var(--ink)' }}>
+                  {r.p}
+                </span>
+                <span className="font-display font-extrabold text-[18px]" style={{ color: 'var(--ink)' }}>
+                  {r.v}
+                </span>
+              </>
+            );
+            // Link to the player page only when we resolved a FIFA id for them
+            return r.fifaId ? (
+              <Link key={`${r.p}-${i}`} href={`/player/${r.fifaId}`} className={rowClass} style={rowStyle}>
+                {inner}
+              </Link>
+            ) : (
+              <div key={`${r.p}-${i}`} className={rowClass} style={rowStyle}>
+                {inner}
+              </div>
+            );
+          })
         )}
       </div>
     </div>

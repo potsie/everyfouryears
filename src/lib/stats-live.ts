@@ -1,10 +1,10 @@
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
 
 export interface TallyItem { k: string; v: string; sub: string; v2?: string; k2?: string; }
-export interface ScorerEntry { p: string; t: string; g: number; a: number; pens: number; mp: number; }
-export interface LeadEntry { p: string; t: string; v: number; }
-export interface DisciplineEntry { p: string; t: string; y: number; r: number; }
-export interface YoungEntry { p: string; t: string; age: number; g: number; a: number; }
+export interface ScorerEntry { p: string; t: string; g: number; a: number; pens: number; mp: number; fifaId?: string; photo?: string; }
+export interface LeadEntry { p: string; t: string; v: number; fifaId?: string; }
+export interface DisciplineEntry { p: string; t: string; y: number; r: number; fifaId?: string; }
+export interface YoungEntry { p: string; t: string; age: number; g: number; a: number; fifaId?: string; }
 export interface TeamStatEntry { t: string; gf: number; ga: number; poss: number; shots: number; }
 
 export interface TournamentStats {
@@ -21,6 +21,7 @@ export interface TournamentStats {
 interface PlayerAcc {
   name: string;
   abbr: string;
+  jersey: string;
   pos: string;
   goals: number;
   assists: number;
@@ -57,6 +58,10 @@ export function buildTournamentStats(
   summaries: ESPNMatchSummaryFull[],
   dobMap: Map<string, string>,
   totalGoalsFromScoreboard: number,
+  // `${teamAbbr}|${jersey}` → FIFA player id, for linking to /player/{fifaId}.
+  // ESPN rosters carry ESPN athlete ids; player pages key on FIFA ids, so we
+  // bridge by jersey + team (same join used for match-center lineups).
+  fifaIdByKey: Map<string, string> = new Map(),
 ): TournamentStats {
   const players = new Map<string, PlayerAcc>();
   const teamAccum = new Map<string, { gf: number; ga: number; poss: number; shots: number; matches: number }>();
@@ -125,6 +130,7 @@ export function buildTournamentStats(
           players.set(id, {
             name: player.athlete.displayName,
             abbr,
+            jersey: player.jersey ?? '',
             pos: posAbbr,
             goals: 0, assists: 0, pens: 0, saves: 0,
             cleanSheets: 0, yellows: 0, reds: 0, matches: 0,
@@ -185,35 +191,38 @@ export function buildTournamentStats(
     { k: 'Hat-tricks',    v: matchCount > 0 ? String(hatTricks) : '—',              sub: 'this tournament' },
   ];
 
+  const fifaId = (p: PlayerAcc): string | undefined =>
+    p.jersey ? fifaIdByKey.get(`${p.abbr}|${p.jersey}`) : undefined;
+
   const goldenBoot: ScorerEntry[] = pa
     .filter(p => p.goals > 0)
     .sort((a, b) => b.goals - a.goals || b.assists - a.assists)
     .slice(0, 15)
-    .map(p => ({ p: p.name, t: p.abbr, g: p.goals, a: p.assists, pens: p.pens, mp: p.matches }));
+    .map(p => ({ p: p.name, t: p.abbr, g: p.goals, a: p.assists, pens: p.pens, mp: p.matches, fifaId: fifaId(p) }));
 
   const assists: LeadEntry[] = pa
     .filter(p => p.assists > 0)
     .sort((a, b) => b.assists - a.assists || b.goals - a.goals)
     .slice(0, 8)
-    .map(p => ({ p: p.name, t: p.abbr, v: p.assists }));
+    .map(p => ({ p: p.name, t: p.abbr, v: p.assists, fifaId: fifaId(p) }));
 
   const cleanSheets: LeadEntry[] = pa
     .filter(p => p.cleanSheets > 0)
     .sort((a, b) => b.cleanSheets - a.cleanSheets)
     .slice(0, 8)
-    .map(p => ({ p: p.name, t: p.abbr, v: p.cleanSheets }));
+    .map(p => ({ p: p.name, t: p.abbr, v: p.cleanSheets, fifaId: fifaId(p) }));
 
   const saves: LeadEntry[] = pa
     .filter(p => p.saves > 0)
     .sort((a, b) => b.saves - a.saves)
     .slice(0, 8)
-    .map(p => ({ p: p.name, t: p.abbr, v: p.saves }));
+    .map(p => ({ p: p.name, t: p.abbr, v: p.saves, fifaId: fifaId(p) }));
 
   const discipline: DisciplineEntry[] = pa
     .filter(p => p.yellows > 0 || p.reds > 0)
     .sort((a, b) => (b.yellows + b.reds * 3) - (a.yellows + a.reds * 3))
     .slice(0, 8)
-    .map(p => ({ p: p.name, t: p.abbr, y: p.yellows, r: p.reds }));
+    .map(p => ({ p: p.name, t: p.abbr, y: p.yellows, r: p.reds, fifaId: fifaId(p) }));
 
   const young: YoungEntry[] = pa
     .filter(p => {
@@ -222,7 +231,7 @@ export function buildTournamentStats(
     })
     .sort((a, b) => (b.goals + b.assists) - (a.goals + a.assists) || b.goals - a.goals)
     .slice(0, 6)
-    .map(p => ({ p: p.name, t: p.abbr, age: calcAge(p.dob!), g: p.goals, a: p.assists }));
+    .map(p => ({ p: p.name, t: p.abbr, age: calcAge(p.dob!), g: p.goals, a: p.assists, fifaId: fifaId(p) }));
 
   const teamStats: TeamStatEntry[] = Array.from(teamAccum.entries())
     .filter(([, t]) => t.matches > 0)

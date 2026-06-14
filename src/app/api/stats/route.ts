@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { fetchAllMatches } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchFifaSquads } from '@/lib/espn/wc-fetchers';
 import { espnFetch } from '@/lib/espn/core';
 import { buildTournamentStats } from '@/lib/stats-live';
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
@@ -39,7 +39,34 @@ export async function GET() {
       ),
     );
 
-    const stats = buildTournamentStats(summaries, dobMap, totalGoals);
+    // Build `${teamAbbr}|${jersey}` → FIFA player id map so leaders can link to
+    // /player/{fifaId}. Best-effort — never fail stats if FIFA squads are down.
+    const fifaIdByKey = new Map<string, string>();
+    try {
+      const squads = await fetchFifaSquads();
+      for (const squad of squads) {
+        for (const p of squad.players) {
+          if (p.jerseyNum != null) fifaIdByKey.set(`${squad.countryCode}|${p.jerseyNum}`, p.fifaId);
+        }
+      }
+    } catch (e) {
+      console.warn('[/api/stats] FIFA squad join skipped:', e);
+    }
+
+    const stats = buildTournamentStats(summaries, dobMap, totalGoals, fifaIdByKey);
+
+    // Attach scorer headshots from players-clubs.json (keyed by FIFA id), the
+    // same source the team roster pages use. Best-effort.
+    try {
+      const clubsPath = path.join(process.cwd(), 'data', 'players-clubs.json');
+      const clubs: Record<string, { photoUrl: string | null }> = JSON.parse(fs.readFileSync(clubsPath, 'utf-8'));
+      for (const s of stats.goldenBoot) {
+        const photo = s.fifaId ? clubs[s.fifaId]?.photoUrl : null;
+        if (photo) s.photo = photo;
+      }
+    } catch (e) {
+      console.warn('[/api/stats] player photo join skipped:', e);
+    }
 
     return NextResponse.json(stats, {
       headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
