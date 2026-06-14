@@ -1,4 +1,5 @@
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
+import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 
 export interface TallyItem { k: string; v: string; sub: string; v2?: string; k2?: string; }
 export interface ScorerEntry { p: string; t: string; g: number; a: number; pens: number; mp: number; fifaId?: string; photo?: string; }
@@ -246,4 +247,117 @@ export function buildTournamentStats(
     }));
 
   return { tallies, goldenBoot, assists, cleanSheets, saves, discipline, young, teamStats };
+}
+
+// ─── Per-player World Cup match log ────────────────────────────────────────
+
+export interface PlayerLogRow {
+  eventId: string;
+  date: string;          // ISO kickoff
+  oppAbbr: string;
+  oppLogo: string;
+  home: boolean;         // player's team was the home side
+  result: 'W' | 'L' | 'D';
+  teamScore: number;
+  oppScore: number;
+  started: boolean;
+  subIn: boolean;
+  // outfield
+  goals: number; assists: number; shots: number; sog: number;
+  fouls: number; fouled: number; offsides: number;
+  yellow: number; red: number;
+  // goalkeeper
+  saves: number; conceded: number; shotsFaced: number; cleanSheet: boolean;
+}
+
+export interface PlayerWorldCupLog {
+  isGK: boolean;
+  rows: PlayerLogRow[];  // newest first
+  totals: {
+    apps: number; starts: number; subs: number;
+    goals: number; assists: number; shots: number; sog: number;
+    fouls: number; fouled: number; offsides: number; yellow: number; red: number;
+    saves: number; conceded: number; shotsFaced: number; cleanSheets: number;
+  };
+}
+
+// Aggregate a single player's stats across their team's completed matches.
+// Player pages key on FIFA ids; ESPN rosters use ESPN athlete ids, so we locate
+// the player by jersey within their team's roster — the same join used elsewhere.
+export function buildPlayerWorldCupLog(
+  matches: { match: WorldCupMatchNormalized; summary: ESPNMatchSummaryFull | null }[],
+  teamAbbr: string,
+  jersey: string,
+  isGK: boolean,
+): PlayerWorldCupLog {
+  const rows: PlayerLogRow[] = [];
+  const upperAbbr = teamAbbr.toUpperCase();
+
+  for (const { match, summary } of matches) {
+    if (!summary) continue;
+    const teamRoster = (summary.rosters ?? []).find(
+      r => r.team.id === (match.home.abbr.toUpperCase() === upperAbbr ? match.home.id : match.away.id),
+    );
+    const entry = teamRoster?.roster?.find(p => p.jersey === jersey);
+    if (!entry) continue;
+
+    const s = entry.stats ?? [];
+    if (playerStat(s, 'appearances') === 0) continue; // didn't feature
+
+    const home = match.home.abbr.toUpperCase() === upperAbbr;
+    const teamScore = parseInt(home ? match.home.score : match.away.score) || 0;
+    const oppScore = parseInt(home ? match.away.score : match.home.score) || 0;
+    const opp = home ? match.away : match.home;
+    const conceded = playerStat(s, 'goalsConceded');
+
+    rows.push({
+      eventId: match.eventId,
+      date: match.date,
+      oppAbbr: opp.abbr,
+      oppLogo: opp.logo,
+      home,
+      result: teamScore > oppScore ? 'W' : teamScore < oppScore ? 'L' : 'D',
+      teamScore,
+      oppScore,
+      started: !!entry.starter,
+      subIn: !!entry.subbedIn,
+      goals: playerStat(s, 'totalGoals'),
+      assists: playerStat(s, 'goalAssists'),
+      shots: playerStat(s, 'totalShots'),
+      sog: playerStat(s, 'shotsOnTarget'),
+      fouls: playerStat(s, 'foulsCommitted'),
+      fouled: playerStat(s, 'foulsSuffered'),
+      offsides: playerStat(s, 'offsides'),
+      yellow: playerStat(s, 'yellowCards'),
+      red: playerStat(s, 'redCards'),
+      saves: playerStat(s, 'saves'),
+      conceded,
+      shotsFaced: playerStat(s, 'shotsFaced'),
+      cleanSheet: conceded === 0,
+    });
+  }
+
+  rows.sort((a, b) => b.date.localeCompare(a.date)); // newest first
+
+  const totals = rows.reduce(
+    (t, r) => {
+      t.apps += 1;
+      t.starts += r.started ? 1 : 0;
+      t.subs += r.subIn ? 1 : 0;
+      t.goals += r.goals; t.assists += r.assists; t.shots += r.shots; t.sog += r.sog;
+      t.fouls += r.fouls; t.fouled += r.fouled; t.offsides += r.offsides;
+      t.yellow += r.yellow; t.red += r.red;
+      t.saves += r.saves; t.conceded += r.conceded; t.shotsFaced += r.shotsFaced;
+      t.cleanSheets += r.cleanSheet ? 1 : 0;
+      return t;
+    },
+    {
+      apps: 0, starts: 0, subs: 0,
+      goals: 0, assists: 0, shots: 0, sog: 0,
+      fouls: 0, fouled: 0, offsides: 0, yellow: 0, red: 0,
+      saves: 0, conceded: 0, shotsFaced: 0, cleanSheets: 0,
+    },
+  );
+
+  return { isGK, rows, totals };
 }

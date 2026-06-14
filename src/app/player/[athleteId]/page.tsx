@@ -7,6 +7,10 @@ import { Flag } from '@/components/Flag';
 import { Shot } from '@/components/Shot';
 import Link from 'next/link';
 import { fetchFifaSquads, fetchAllMatches, fetchTeamColors } from '@/lib/espn/wc-fetchers';
+import { espnFetch } from '@/lib/espn/core';
+import { buildPlayerWorldCupLog } from '@/lib/stats-live';
+import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
+import { PlayerWorldCup } from './PlayerWorldCup';
 
 interface PlayerClubEntry {
   fifaId: string;
@@ -28,7 +32,7 @@ export default async function PlayerPage({
 }) {
   const { athleteId } = await params;
 
-  const [allSquads, { teamDict }] = await Promise.all([
+  const [allSquads, { matches, teamDict }] = await Promise.all([
     fetchFifaSquads(),
     fetchAllMatches(),
   ]);
@@ -65,6 +69,29 @@ export default async function PlayerPage({
   const heroBackground = teamColors?.primary
     ? `linear-gradient(135deg, color-mix(in srgb, ${teamColors.primary} 55%, #0a2240) 0%, #0a2240 100%)`
     : undefined;
+
+  // Build this player's World Cup match log from completed team matches.
+  const teamMatches = matches.filter(
+    m =>
+      m.status.state === 'post' &&
+      (m.home.abbr.toUpperCase() === teamCountryCode || m.away.abbr.toUpperCase() === teamCountryCode),
+  );
+  const matchSummaries = await Promise.all(
+    teamMatches.map(async m => ({
+      match: m,
+      summary: await espnFetch<ESPNMatchSummaryFull>(
+        `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${m.eventId}`,
+        `wc-match-${m.eventId}`,
+        undefined,
+      ).catch(() => null),
+    })),
+  );
+  const wcLog = buildPlayerWorldCupLog(
+    matchSummaries,
+    teamCountryCode,
+    player.jerseyNum != null ? String(player.jerseyNum) : '',
+    player.positionCode === 'GK',
+  );
 
   const dob = player.birthDate
     ? new Date(player.birthDate).toLocaleDateString('en-US', {
@@ -137,12 +164,7 @@ export default async function PlayerPage({
 
         <div className="cols">
           <div>
-            <div className="t-card">
-              <div className="t-card-head"><h3>At the 2026 World Cup</h3></div>
-              <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>
-                Tournament stats update after each match.
-              </div>
-            </div>
+            <PlayerWorldCup log={wcLog} />
           </div>
 
           <div className="shelf">

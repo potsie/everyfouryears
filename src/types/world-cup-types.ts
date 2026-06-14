@@ -76,6 +76,7 @@ export interface ESPNKeyEvent {
 
 export interface ESPNWorldCupRosterPlayer {
   starter: boolean;
+  subbedIn?: boolean;
   jersey: string;
   position?: { name: string; abbreviation: string };
   athlete: {

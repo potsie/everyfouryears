@@ -42,3 +42,35 @@
 .career-row .ca b { font-family: var(--display); color: var(--ink); }
 
 @media (max-width: 620px) { .ph-titles h1 { font-size: 30px; } }
+
+/* ── At the 2026 World Cup: totals strip + match log ── */
+.wc-tot { display: flex; border-bottom: 1px solid var(--line); }
+.wc-tot-cell { flex: 1 1 0; padding: 14px 16px; border-right: 1px solid var(--line); }
+.wc-tot-cell:last-child { border-right: none; }
+.wc-tot-cell .v { font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 1; color: var(--ink); }
+.wc-tot-cell .k { font-size: 11px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3); margin-top: 6px; }
+.wc-tot-cell .s { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+
+.wc-log-scroll { overflow-x: auto; }
+.wc-log { min-width: 540px; }
+.wc-log.gk { min-width: 440px; }
+.wc-log-row { display: grid; grid-template-columns: 58px 80px 80px repeat(9, 1fr); align-items: center; gap: 4px; padding: 9px 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink); text-decoration: none; }
+.wc-log-row.gk { grid-template-columns: 58px 80px 80px repeat(6, 1fr); }
+.wc-log-row:not(.head):hover { background: var(--inset); }
+.wc-log-row.head { border-top: none; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+.wc-log-row > span:nth-child(n+4) { text-align: center; color: var(--ink-2); }
+.wc-log-row .tnum.strong { font-weight: 800; font-family: var(--display); color: var(--ink); }
+.wc-log-row .wc-date { display: flex; align-items: center; gap: 5px; font-weight: 600; color: var(--ink-2); }
+.wc-log-row .wc-sub { font-style: normal; font-size: 9px; font-weight: 800; color: var(--ink-3); background: var(--inset); border-radius: 3px; padding: 1px 4px; }
+.wc-log-row .wc-opp { display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--ink); }
+.wc-log-row .wc-ha { color: var(--ink-3); font-weight: 600; width: 9px; }
+
+.wc-res { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-2); }
+.wc-res b { width: 16px; height: 16px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; }
+.wc-res.w b { background: var(--live); }
+.wc-res.l b { background: var(--danger); }
+.wc-res.d b { background: var(--ink-3); }
+
+.wc-card { display: inline-block; width: 9px; height: 12px; border-radius: 2px; vertical-align: middle; }
+.wc-card.y { background: #f4c430; }
+.wc-card.r { background: var(--danger); }
