@@ -11698,5 +11698,525 @@
     "league": "Super League",
     "leagueCountry": "Uzbekistan",
     "photoUrl": "https://media.api-sports.io/football/players/358427.png"
+  },
+  "360498": {
+    "fifaId": "360498",
+    "name": "Mert GUNOK",
+    "apifId": 49837,
+    "club": "Beşiktaş",
+    "clubLogo": "https://media.api-sports.io/football/teams/549.png",
+    "league": "Süper Lig",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/49837.png"
+  },
+  "433072": {
+    "fifaId": "433072",
+    "name": "Zeki CELIK",
+    "apifId": 22222,
+    "club": "AS Roma",
+    "clubLogo": "https://media.api-sports.io/football/teams/497.png",
+    "league": "Coppa Italia",
+    "leagueCountry": "Italy",
+    "photoUrl": "https://media.api-sports.io/football/players/22222.png"
+  },
+  "441179": {
+    "fifaId": "441179",
+    "name": "Merih DEMIRAL",
+    "apifId": 30521,
+    "club": "Al-Ahli Jeddah",
+    "clubLogo": "https://media.api-sports.io/football/teams/2929.png",
+    "league": "King's Cup",
+    "leagueCountry": "Saudi-Arabia",
+    "photoUrl": "https://media.api-sports.io/football/players/30521.png"
+  },
+  "401167": {
+    "fifaId": "401167",
+    "name": "Caglar SOYUNCU",
+    "apifId": 18776,
+    "club": "Fenerbahçe",
+    "clubLogo": "https://media.api-sports.io/football/teams/611.png",
+    "league": "Super Cup",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/18776.png"
+  },
+  "389907": {
+    "fifaId": "389907",
+    "name": "Salih OZCAN",
+    "apifId": 24807,
+    "club": "Borussia Dortmund",
+    "clubLogo": "https://media.api-sports.io/football/teams/165.png",
+    "league": "DFB Pokal",
+    "leagueCountry": "Germany",
+    "photoUrl": "https://media.api-sports.io/football/players/24807.png"
+  },
+  "433118": {
+    "fifaId": "433118",
+    "name": "Orkun KOKCU",
+    "apifId": 37155,
+    "club": "Beşiktaş",
+    "clubLogo": "https://media.api-sports.io/football/teams/549.png",
+    "league": "Süper Lig",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/37155.png"
+  },
+  "441188": {
+    "fifaId": "441188",
+    "name": "Kerem AKTURKOGLU",
+    "apifId": 142959,
+    "club": "Fenerbahçe",
+    "clubLogo": "https://media.api-sports.io/football/teams/611.png",
+    "league": "Super Cup",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/142959.png"
+  },
+  "484087": {
+    "fifaId": "484087",
+    "name": "Arda GULER",
+    "apifId": 291964,
+    "club": "Real Madrid",
+    "clubLogo": "https://media.api-sports.io/football/teams/541.png",
+    "league": "Super Cup",
+    "leagueCountry": "Spain",
+    "photoUrl": "https://media.api-sports.io/football/players/291964.png"
+  },
+  "495347": {
+    "fifaId": "495347",
+    "name": "Deniz GUL",
+    "apifId": 388570,
+    "club": "FC Porto",
+    "clubLogo": "https://media.api-sports.io/football/teams/212.png",
+    "league": "Taça de Portugal",
+    "leagueCountry": "Portugal",
+    "photoUrl": "https://media.api-sports.io/football/players/388570.png"
+  },
+  "369304": {
+    "fifaId": "369304",
+    "name": "Hakan CALHANOGLU",
+    "apifId": 1640,
+    "club": "Inter",
+    "clubLogo": "https://media.api-sports.io/football/teams/505.png",
+    "league": "Coppa Italia",
+    "leagueCountry": "Italy",
+    "photoUrl": "https://media.api-sports.io/football/players/1640.png"
+  },
+  "484112": {
+    "fifaId": "484112",
+    "name": "Kenan YILDIZ",
+    "apifId": 339883,
+    "club": "Juventus",
+    "clubLogo": "https://media.api-sports.io/football/teams/496.png",
+    "league": "Coppa Italia",
+    "leagueCountry": "Italy",
+    "photoUrl": "https://media.api-sports.io/football/players/339883.png"
+  },
+  "441180": {
+    "fifaId": "441180",
+    "name": "Altay BAYINDIR",
+    "apifId": 50132,
+    "club": "Manchester United",
+    "clubLogo": "https://media.api-sports.io/football/teams/33.png",
+    "league": "Premier League",
+    "leagueCountry": "England",
+    "photoUrl": "https://media.api-sports.io/football/players/50132.png"
+  },
+  "484065": {
+    "fifaId": "484065",
+    "name": "Eren ELMALI",
+    "apifId": 50057,
+    "club": "Galatasaray",
+    "clubLogo": "https://media.api-sports.io/football/teams/645.png",
+    "league": "Super Cup",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/50057.png"
+  },
+  "484082": {
+    "fifaId": "484082",
+    "name": "Abdulkerim BARDAKCI",
+    "apifId": 61837,
+    "club": "Galatasaray",
+    "clubLogo": "https://media.api-sports.io/football/teams/645.png",
+    "league": "Türkiye Kupası",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/61837.png"
+  },
+  "406249": {
+    "fifaId": "406249",
+    "name": "Ozan KABAK",
+    "apifId": 26300,
+    "club": "1899 Hoffenheim",
+    "clubLogo": "https://media.api-sports.io/football/teams/167.png",
+    "league": "DFB Pokal",
+    "leagueCountry": "Germany",
+    "photoUrl": "https://media.api-sports.io/football/players/26300.png"
+  },
+  "484092": {
+    "fifaId": "484092",
+    "name": "Ismail YUKSEK",
+    "apifId": 214463,
+    "club": "Fenerbahçe",
+    "clubLogo": "https://media.api-sports.io/football/teams/611.png",
+    "league": "Super Cup",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/214463.png"
+  },
+  "472877": {
+    "fifaId": "472877",
+    "name": "Irfan Can KAHVECI",
+    "apifId": 49857,
+    "club": "Fenerbahçe",
+    "clubLogo": "https://media.api-sports.io/football/teams/611.png",
+    "league": "Süper Lig",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/49857.png"
+  },
+  "430120": {
+    "fifaId": "430120",
+    "name": "Mert MULDUR",
+    "apifId": 1719,
+    "club": "Fenerbahçe",
+    "clubLogo": "https://media.api-sports.io/football/teams/611.png",
+    "league": "Super Cup",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/1719.png"
+  },
+  "406231": {
+    "fifaId": "406231",
+    "name": "Yunus AKGUN",
+    "apifId": 454,
+    "club": "Galatasaray",
+    "clubLogo": "https://media.api-sports.io/football/teams/645.png",
+    "league": "Super Cup",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/454.png"
+  },
+  "484113": {
+    "fifaId": "484113",
+    "name": "Ferdi KADIOGLU",
+    "apifId": 1361,
+    "club": "Brighton",
+    "clubLogo": "https://media.api-sports.io/football/teams/51.png",
+    "league": "League Cup",
+    "leagueCountry": "England",
+    "photoUrl": "https://media.api-sports.io/football/players/1361.png"
+  },
+  "484139": {
+    "fifaId": "484139",
+    "name": "Baris Alper YILMAZ",
+    "apifId": 63274,
+    "club": "Galatasaray",
+    "clubLogo": "https://media.api-sports.io/football/teams/645.png",
+    "league": "Super Cup",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/63274.png"
+  },
+  "336170": {
+    "fifaId": "336170",
+    "name": "Kaan Ayhan",
+    "apifId": 25448,
+    "club": "Galatasaray",
+    "clubLogo": "https://media.api-sports.io/football/teams/645.png",
+    "league": "Super Cup",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/25448.png"
+  },
+  "441181": {
+    "fifaId": "441181",
+    "name": "Ugurcan CAKIR",
+    "apifId": 49866,
+    "club": "Galatasaray",
+    "clubLogo": "https://media.api-sports.io/football/teams/645.png",
+    "league": "Super Cup",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/49866.png"
+  },
+  "486076": {
+    "fifaId": "486076",
+    "name": "Oguz AYDIN",
+    "apifId": 134590,
+    "club": "Fenerbahçe",
+    "clubLogo": "https://media.api-sports.io/football/teams/611.png",
+    "league": "Super Cup",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/134590.png"
+  },
+  "484072": {
+    "fifaId": "484072",
+    "name": "Samet AKAYDIN",
+    "apifId": 62490,
+    "club": "Rizespor",
+    "clubLogo": "https://media.api-sports.io/football/teams/1007.png",
+    "league": "Türkiye Kupası",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/62490.png"
+  },
+  "486074": {
+    "fifaId": "486074",
+    "name": "Can UZUN",
+    "apifId": 339887,
+    "club": "Eintracht Frankfurt",
+    "clubLogo": "https://media.api-sports.io/football/teams/169.png",
+    "league": "DFB Pokal",
+    "leagueCountry": "Germany",
+    "photoUrl": "https://media.api-sports.io/football/players/339887.png"
+  },
+  "482978": {
+    "fifaId": "482978",
+    "name": "Nikola VASILJ",
+    "apifId": 9026,
+    "club": "FC St. Pauli",
+    "clubLogo": "https://media.api-sports.io/football/teams/186.png",
+    "league": "DFB Pokal",
+    "leagueCountry": "Germany",
+    "photoUrl": "https://media.api-sports.io/football/players/9026.png"
+  },
+  "482969": {
+    "fifaId": "482969",
+    "name": "Nihad MUJAKIC",
+    "apifId": 76867,
+    "club": "Eyüpspor",
+    "clubLogo": "https://media.api-sports.io/football/teams/3588.png",
+    "league": "Süper Lig",
+    "leagueCountry": "Turkey",
+    "photoUrl": "https://media.api-sports.io/football/players/76867.png"
+  },
+  "430194": {
+    "fifaId": "430194",
+    "name": "Dennis HADZIKADUNIC",
+    "apifId": 53517,
+    "club": "Sampdoria",
+    "clubLogo": "https://media.api-sports.io/football/teams/498.png",
+    "league": "Serie B",
+    "leagueCountry": "Italy",
+    "photoUrl": "https://media.api-sports.io/football/players/53517.png"
+  },
+  "484022": {
+    "fifaId": "484022",
+    "name": "Tarik MUHAREMOVIC",
+    "apifId": 271350,
+    "club": "Sassuolo",
+    "clubLogo": "https://media.api-sports.io/football/teams/488.png",
+    "league": "Coppa Italia",
+    "leagueCountry": "Italy",
+    "photoUrl": "https://media.api-sports.io/football/players/271350.png"
+  },
+  "376230": {
+    "fifaId": "376230",
+    "name": "Sead KOLASINAC",
+    "apifId": 1442,
+    "club": "Atalanta",
+    "clubLogo": "https://media.api-sports.io/football/teams/499.png",
+    "league": "Coppa Italia",
+    "leagueCountry": "Italy",
+    "photoUrl": "https://media.api-sports.io/football/players/1442.png"
+  },
+  "483966": {
+    "fifaId": "483966",
+    "name": "Benjamin TAHIROVIC",
+    "apifId": 264094,
+    "club": "Brondby",
+    "clubLogo": "https://media.api-sports.io/football/teams/407.png",
+    "league": "Superliga",
+    "leagueCountry": "Denmark",
+    "photoUrl": "https://media.api-sports.io/football/players/264094.png"
+  },
+  "482976": {
+    "fifaId": "482976",
+    "name": "Amar DEDIC",
+    "apifId": 7318,
+    "club": "Benfica",
+    "clubLogo": "https://media.api-sports.io/football/teams/211.png",
+    "league": "Taça de Portugal",
+    "leagueCountry": "Portugal",
+    "photoUrl": "https://media.api-sports.io/football/players/7318.png"
+  },
+  "489523": {
+    "fifaId": "489523",
+    "name": "Armin GIGOVIC",
+    "apifId": 70514,
+    "club": "BSC Young Boys",
+    "clubLogo": "https://media.api-sports.io/football/teams/565.png",
+    "league": "Super League",
+    "leagueCountry": "Switzerland",
+    "photoUrl": "https://media.api-sports.io/football/players/70514.png"
+  },
+  "485063": {
+    "fifaId": "485063",
+    "name": "Samed BAZDAR",
+    "apifId": 314377,
+    "club": "Jagiellonia",
+    "clubLogo": "https://media.api-sports.io/football/teams/336.png",
+    "league": "Ekstraklasa",
+    "leagueCountry": "Poland",
+    "photoUrl": "https://media.api-sports.io/football/players/314377.png"
+  },
+  "436743": {
+    "fifaId": "436743",
+    "name": "Ermedin DEMIROVIC",
+    "apifId": 46930,
+    "club": "VfB Stuttgart",
+    "clubLogo": "https://media.api-sports.io/football/teams/172.png",
+    "league": "Super Cup",
+    "leagueCountry": "Germany",
+    "photoUrl": "https://media.api-sports.io/football/players/46930.png"
+  },
+  "300409": {
+    "fifaId": "300409",
+    "name": "Edin DZEKO",
+    "apifId": 790,
+    "club": "Fiorentina",
+    "clubLogo": "https://media.api-sports.io/football/teams/502.png",
+    "league": "Serie A",
+    "leagueCountry": "Italy",
+    "photoUrl": "https://media.api-sports.io/football/players/790.png"
+  },
+  "522842": {
+    "fifaId": "522842",
+    "name": "Mladen JURKAS",
+    "apifId": 446130,
+    "club": null,
+    "clubLogo": null,
+    "league": null,
+    "leagueCountry": null,
+    "photoUrl": "https://media.api-sports.io/football/players/446130.png"
+  },
+  "482974": {
+    "fifaId": "482974",
+    "name": "Ivan BASIC",
+    "apifId": 162222,
+    "club": "FC Astana",
+    "clubLogo": "https://media.api-sports.io/football/teams/562.png",
+    "league": "Premier League",
+    "leagueCountry": "Kazakhstan",
+    "photoUrl": "https://media.api-sports.io/football/players/162222.png"
+  },
+  "372436": {
+    "fifaId": "372436",
+    "name": "Ivan SUNJIC",
+    "apifId": 1324,
+    "club": "Pafos",
+    "clubLogo": "https://media.api-sports.io/football/teams/3403.png",
+    "league": "1. Division",
+    "leagueCountry": "Cyprus",
+    "photoUrl": "https://media.api-sports.io/football/players/1324.png"
+  },
+  "494640": {
+    "fifaId": "494640",
+    "name": "Amar MEMIC",
+    "apifId": 322101,
+    "club": "Plzen",
+    "clubLogo": "https://media.api-sports.io/football/teams/567.png",
+    "league": "Czech Liga",
+    "leagueCountry": "Czech-Republic",
+    "photoUrl": "https://media.api-sports.io/football/players/322101.png"
+  },
+  "430196": {
+    "fifaId": "430196",
+    "name": "Amir HADZIAHMETOVIC",
+    "apifId": 50006,
+    "club": "Hull City",
+    "clubLogo": "https://media.api-sports.io/football/teams/64.png",
+    "league": "FA Cup",
+    "leagueCountry": "England",
+    "photoUrl": "https://media.api-sports.io/football/players/50006.png"
+  },
+  "389886": {
+    "fifaId": "389886",
+    "name": "Dzenis BURNIC",
+    "apifId": 25129,
+    "club": "Karlsruher SC",
+    "clubLogo": "https://media.api-sports.io/football/teams/785.png",
+    "league": "2. Bundesliga",
+    "leagueCountry": "Germany",
+    "photoUrl": "https://media.api-sports.io/football/players/25129.png"
+  },
+  "489520": {
+    "fifaId": "489520",
+    "name": "Nikola KATIC",
+    "apifId": 1741,
+    "club": "FC Schalke 04",
+    "clubLogo": "https://media.api-sports.io/football/teams/174.png",
+    "league": "DFB Pokal",
+    "leagueCountry": "Germany",
+    "photoUrl": "https://media.api-sports.io/football/players/1741.png"
+  },
+  "504990": {
+    "fifaId": "504990",
+    "name": "Kerim ALAJBEGOVIC",
+    "apifId": 395559,
+    "club": "Red Bull Salzburg",
+    "clubLogo": "https://media.api-sports.io/football/teams/571.png",
+    "league": "Bundesliga",
+    "leagueCountry": "Austria",
+    "photoUrl": "https://media.api-sports.io/football/players/395559.png"
+  },
+  "464566": {
+    "fifaId": "464566",
+    "name": "Esmir BAJRAKTAREVIC",
+    "apifId": 329409,
+    "club": "PSV Eindhoven",
+    "clubLogo": "https://media.api-sports.io/football/teams/197.png",
+    "league": "KNVB Beker",
+    "leagueCountry": "Netherlands",
+    "photoUrl": "https://media.api-sports.io/football/players/329409.png"
+  },
+  "489521": {
+    "fifaId": "489521",
+    "name": "Stjepan RADELJIC",
+    "apifId": 14301,
+    "club": "HNK Rijeka",
+    "clubLogo": "https://media.api-sports.io/football/teams/561.png",
+    "league": "HNL",
+    "leagueCountry": "Croatia",
+    "photoUrl": "https://media.api-sports.io/football/players/14301.png"
+  },
+  "491228": {
+    "fifaId": "491228",
+    "name": "Martin ZLOMISLIC",
+    "apifId": 108370,
+    "club": "HNK Rijeka",
+    "clubLogo": "https://media.api-sports.io/football/teams/561.png",
+    "league": "HNL",
+    "leagueCountry": "Croatia",
+    "photoUrl": "https://media.api-sports.io/football/players/108370.png"
+  },
+  "482984": {
+    "fifaId": "482984",
+    "name": "Haris TABAKOVIC",
+    "apifId": 28382,
+    "club": "Borussia Mönchengladbach",
+    "clubLogo": "https://media.api-sports.io/football/teams/163.png",
+    "league": "DFB Pokal",
+    "leagueCountry": "Germany",
+    "photoUrl": "https://media.api-sports.io/football/players/28382.png"
+  },
+  "492367": {
+    "fifaId": "492367",
+    "name": "Nidal CELIK",
+    "apifId": 395589,
+    "club": "Lens",
+    "clubLogo": "https://media.api-sports.io/football/teams/116.png",
+    "league": "Coupe de France",
+    "leagueCountry": "France",
+    "photoUrl": "https://media.api-sports.io/football/players/395589.png"
+  },
+  "519954": {
+    "fifaId": "519954",
+    "name": "Jovo LUKIC",
+    "apifId": 77037,
+    "club": "Universitatea Cluj",
+    "clubLogo": "https://media.api-sports.io/football/teams/2599.png",
+    "league": "Liga I",
+    "leagueCountry": "Romania",
+    "photoUrl": "https://media.api-sports.io/football/players/77037.png"
+  },
+  "522846": {
+    "fifaId": "522846",
+    "name": "Ermin MAHMIC",
+    "apifId": 340173,
+    "club": "Slovan Liberec",
+    "clubLogo": "https://media.api-sports.io/football/teams/782.png",
+    "league": "Czech Liga",
+    "leagueCountry": "Czech-Republic",
+    "photoUrl": "https://media.api-sports.io/football/players/340173.png"
   }
 }

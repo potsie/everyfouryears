@@ -144,7 +144,7 @@ export default async function TeamPage({
     pos: p.position,
     age: p.age ?? 0,
     height: p.displayHeight ?? '',
-    photoUrl: clubsMap[p.fifaId]?.photoUrl ?? null,
+    photoUrl: clubsMap[p.fifaId]?.photoUrl ?? p.pictureUrl ?? null,
   }));
 
   // Group standings for mini table

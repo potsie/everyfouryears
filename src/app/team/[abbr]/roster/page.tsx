@@ -86,7 +86,7 @@ export default async function RosterPage({
     displayHeight: p.displayHeight,
     preferredFoot: p.preferredFoot,
     club: clubsMap[p.fifaId]?.club ?? null,
-    photoUrl: clubsMap[p.fifaId]?.photoUrl ?? null,
+    photoUrl: clubsMap[p.fifaId]?.photoUrl ?? p.pictureUrl ?? null,
   }));
 
   return (
