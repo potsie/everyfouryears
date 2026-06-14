@@ -43,7 +43,7 @@ const EMPTY_STATS: TournamentStats = {
   tallies: [
     { k: 'Goals scored',  v: '—', sub: 'this tournament' },
     { k: 'Goals / match', v: '—', sub: 'avg' },
-    { k: 'Penalties',     v: '—', sub: 'scored' },
+    { k: 'Penalties',     v: '—', sub: 'scored / taken' },
     { k: 'Clean sheets',  v: '—', sub: 'by goalkeepers' },
     { k: 'Red cards',     v: '—', sub: 'this tournament' },
     { k: 'Hat-tricks',    v: '—', sub: 'this tournament' },

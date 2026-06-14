@@ -61,6 +61,7 @@ export function buildTournamentStats(
   const players = new Map<string, PlayerAcc>();
   const teamAccum = new Map<string, { gf: number; ga: number; poss: number; shots: number; matches: number }>();
   let totalPens = 0;
+  let totalPensTaken = 0;
   let totalRedCards = 0;
   let totalCleanSheets = 0;
   let hatTricks = 0;
@@ -76,16 +77,27 @@ export function buildTournamentStats(
     }
 
     // Penalties per player in this match (from keyEvents)
+    // ESPN uses "Penalty - Scored", "Penalty - Missed", "Penalty - Saved" event types
     const playerPens = new Map<string, number>();
     let matchPens = 0;
+    let matchPensTaken = 0;
     for (const evt of summary.keyEvents ?? []) {
-      if (evt.type.text === 'Penalty Kick Goal' && !evt.shootout) {
-        matchPens++;
-        const id = evt.participants?.[0]?.athlete.id;
-        if (id) playerPens.set(id, (playerPens.get(id) ?? 0) + 1);
+      if (!evt.shootout && (
+        evt.type.text === 'Penalty - Scored' ||
+        evt.type.text === 'Penalty - Missed' ||
+        evt.type.text === 'Penalty - Saved' ||
+        evt.type.text === 'Penalty Kick Goal'  // legacy fallback
+      )) {
+        matchPensTaken++;
+        if (evt.type.text === 'Penalty - Scored' || evt.type.text === 'Penalty Kick Goal') {
+          matchPens++;
+          const id = evt.participants?.[0]?.athlete.id;
+          if (id) playerPens.set(id, (playerPens.get(id) ?? 0) + 1);
+        }
       }
     }
     totalPens += matchPens;
+    totalPensTaken += matchPensTaken;
 
     // Per-player from rosters
     for (const teamRoster of summary.rosters ?? []) {
@@ -165,7 +177,7 @@ export function buildTournamentStats(
   const tallies: TallyItem[] = [
     { k: 'Goals scored',  v: matchCount > 0 ? String(totalGoalsFromScoreboard) : '—', sub: 'this tournament' },
     { k: 'Goals / match', v: matchCount > 0 ? goalsPerMatch : '—',                   sub: 'avg' },
-    { k: 'Penalties',     v: matchCount > 0 ? String(totalPens) : '—',               sub: 'scored' },
+    { k: 'Penalties',     v: matchCount > 0 ? (totalPensTaken > 0 ? `${totalPens}/${totalPensTaken}` : String(totalPens)) : '—', sub: 'scored / taken' },
     { k: 'Clean sheets',  v: matchCount > 0 ? String(totalCleanSheets) : '—',        sub: 'by goalkeepers' },
     { k: 'Red cards',     v: matchCount > 0 ? String(totalRedCards) : '—',           sub: 'this tournament' },
     { k: 'Hat-tricks',    v: matchCount > 0 ? String(hatTricks) : '—',              sub: 'this tournament' },

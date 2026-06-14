@@ -461,7 +461,7 @@ function eventType(e: ESPNKeyEvent): MatchKeyEvent['type'] | null {
     !e.shootout &&
     e.scoringPlay !== false &&
     (e.scoringPlay === true || text.startsWith('Goal'));
-  if (isGoal) return text === 'Penalty Kick Goal' ? 'pen' : 'goal';
+  if (isGoal) return (text === 'Penalty - Scored' || text === 'Penalty Kick Goal') ? 'pen' : 'goal';
   if (text === 'Yellow Card') return 'yellow';
   if (text === 'Red Card') return 'red';
   if (text === 'Substitution') return 'sub';
@@ -598,7 +598,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
       if (type === 'sub') {
         detail = second ? `for ${second}` : '';
       } else if (type === 'goal' || type === 'pen') {
-        detail = second ? `assist ${second}` : e.type.text === 'Penalty Kick Goal' ? 'penalty' : '';
+        detail = second ? `assist ${second}` : (e.type.text === 'Penalty - Scored' || e.type.text === 'Penalty Kick Goal') ? 'penalty' : '';
       }
       return {
         at, extra, type, team, player, detail,
@@ -723,7 +723,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
       .map(e => ({
         minute: e.clock?.displayValue ?? '',
         player: e.participants?.[0]?.athlete.displayName ?? '',
-        detail: e.participants?.[1] ? `assist ${e.participants[1].athlete.displayName}` : e.type.text === 'Penalty Kick Goal' ? 'penalty' : '',
+        detail: e.participants?.[1] ? `assist ${e.participants[1].athlete.displayName}` : (e.type.text === 'Penalty - Scored' || e.type.text === 'Penalty Kick Goal') ? 'penalty' : '',
       }));
     return {
       id: teamId,
