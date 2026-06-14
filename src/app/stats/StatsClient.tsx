@@ -45,7 +45,7 @@ const EMPTY_STATS: TournamentStats = {
     { k: 'Goals / match', v: '—', sub: 'avg' },
     { k: 'Penalties',     v: '—', sub: 'scored / taken' },
     { k: 'Clean sheets',  v: '—', sub: 'by goalkeepers' },
-    { k: 'Yellow cards',  v: '—', sub: 'this tournament', v2: '—', k2: 'Red cards' },
+    { k: 'Yellow',        v: '—', sub: 'cards this tournament', v2: '—', k2: 'Red' },
     { k: 'Hat-tricks',    v: '—', sub: 'this tournament' },
   ],
   goldenBoot: [],

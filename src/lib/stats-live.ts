@@ -181,7 +181,7 @@ export function buildTournamentStats(
     { k: 'Goals / match', v: matchCount > 0 ? goalsPerMatch : '—',                   sub: 'avg' },
     { k: 'Penalties',     v: matchCount > 0 ? (totalPensTaken > 0 ? `${totalPens}/${totalPensTaken}` : String(totalPens)) : '—', sub: 'scored / taken' },
     { k: 'Clean sheets',  v: matchCount > 0 ? String(totalCleanSheets) : '—',        sub: 'by goalkeepers' },
-    { k: 'Yellow cards',  v: matchCount > 0 ? String(totalYellowCards) : '—',        sub: 'this tournament', v2: matchCount > 0 ? String(totalRedCards) : '—', k2: 'Red cards' },
+    { k: 'Yellow',        v: matchCount > 0 ? String(totalYellowCards) : '—',        sub: 'cards this tournament', v2: matchCount > 0 ? String(totalRedCards) : '—', k2: 'Red' },
     { k: 'Hat-tricks',    v: matchCount > 0 ? String(hatTricks) : '—',              sub: 'this tournament' },
   ];
 
