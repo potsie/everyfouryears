@@ -91,7 +91,7 @@ export default async function PlayerPage({
 
             <div className="ph-id">
               <div className="ph-shot">
-                <Shot size={88} name={player.name} headshotUrl={clubData?.photoUrl ?? undefined} dark />
+                <Shot size={88} name={player.name} headshotUrl={clubData?.photoUrl ?? player.pictureUrl ?? undefined} dark />
               </div>
               <div className="ph-titles">
                 <div className="num2">{player.positionCode} · {teamCountryCode}</div>
