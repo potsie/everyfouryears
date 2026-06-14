@@ -27,3 +27,7 @@ dist/
 
 # Vercel
 .vercel/
+
+# Design handoff folders (not part of the app)
+handoff-*/
+design_handoff_*/
