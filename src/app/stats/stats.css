@@ -7,7 +7,8 @@
 .tally-strip .ts-cell .v { font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 1; color: #fff; }
 .tally-strip .ts-cell .k { font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: rgba(255,255,255,.72); margin-top: 7px; }
 .tally-strip .ts-cell .s { font-size: 11px; color: rgba(255,255,255,.45); font-weight: 500; margin-top: 2px; }
-.tally-strip .ts-split { display: flex; gap: 12px; align-items: flex-start; }
+.tally-strip .ts-split { display: flex; gap: 10px; align-items: flex-start; }
+.tally-strip .ts-split .k { font-size: 9.5px; }
 .tally-strip .ts-divider { width: 1px; background: rgba(255,255,255,.15); align-self: stretch; margin-top: 2px; }
 @media (max-width: 900px) { .tally-strip { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 480px) { .tally-strip { grid-template-columns: repeat(2, 1fr); } }
