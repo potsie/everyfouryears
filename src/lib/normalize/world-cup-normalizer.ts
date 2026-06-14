@@ -373,6 +373,22 @@ export interface H2HGame {
   score: string;
 }
 
+// One past fixture in a team's recent form, from the team's perspective.
+export interface FormGame {
+  result: 'W' | 'D' | 'L';
+  oppAbbr: string;
+  homeAway: 'H' | 'A';
+  score: string;   // team-perspective scoreline, e.g. '0–1'
+  comp: string;    // shortened competition label
+  date: string;    // e.g. 'Mar'
+}
+export interface TeamForm {
+  games: FormGame[];   // chronological, oldest → newest (newest = last)
+  w: number;
+  d: number;
+  l: number;
+}
+
 export interface MatchBroadcast {
   name: string;
   lang: string; // abbreviated: 'EN' | 'ES' | '' (unknown)
@@ -437,6 +453,8 @@ export interface MatchCenterData {
   winProbHome: number | null;    // 0-100 latest win prob for home
   winProbDraw: number | null;
   h2h: H2HGame[];
+  formHome: TeamForm | null;
+  formAway: TeamForm | null;
   groupStandings: { abbr: string; logo: string; played: number; gd: string; pts: number; status: 'advancing' | 'bubble' | 'out' | '' }[];
   motmName: string | null;
   motmLine: string | null;
@@ -566,6 +584,44 @@ function groupRosters(
   return { lines, bench };
 }
 
+// Collapse ESPN's verbose competition names into a compact label for form chips.
+function shortComp(name?: string): string {
+  if (!name) return '';
+  if (/friendly/i.test(name)) return 'Friendly';
+  if (/qualif/i.test(name)) return 'Qualifier';
+  if (/nations league/i.test(name)) return 'Nations League';
+  if (/world cup/i.test(name)) return 'World Cup';
+  if (/euro/i.test(name)) return 'Euros';
+  if (/copa/i.test(name)) return 'Copa América';
+  return name.replace(/^\d{4}\s+/, '');
+}
+
+// Build a team's recent form from ESPN's `lastFiveGames` block. `gameResult` is
+// authoritative (from the team's perspective); fall back to comparing scores.
+function buildForm(blocks: ESPNMatchSummaryFull['lastFiveGames'], teamId: string): TeamForm | null {
+  const blk = blocks?.find(b => b.team?.id === teamId);
+  if (!blk?.events?.length) return null;
+  let w = 0, d = 0, l = 0;
+  const games: FormGame[] = blk.events.slice(0, 5).map(e => {
+    const isHome = e.homeTeamId === teamId;
+    const tg = Number(isHome ? e.homeTeamScore : e.awayTeamScore) || 0;
+    const og = Number(isHome ? e.awayTeamScore : e.homeTeamScore) || 0;
+    const r = e.gameResult === 'W' || e.gameResult === 'D' || e.gameResult === 'L'
+      ? e.gameResult
+      : tg > og ? 'W' : tg < og ? 'L' : 'D';
+    if (r === 'W') w++; else if (r === 'D') d++; else l++;
+    return {
+      result: r as FormGame['result'],
+      oppAbbr: e.opponent?.abbreviation ?? '',
+      homeAway: e.atVs === '@' ? 'A' : 'H',
+      score: `${tg}–${og}`,
+      comp: shortComp(e.competitionName),
+      date: new Date(e.gameDate).toLocaleString('en-US', { month: 'short' }),
+    };
+  });
+  return { games, w, d, l };
+}
+
 export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull): MatchCenterData {
   const comp = data.header.competitions[0];
   const homeComp = comp.competitors.find(c => c.homeAway === 'home')!;
@@ -682,6 +738,10 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     };
   }).filter((g): g is H2HGame => g !== null);
 
+  // Recent form (last five) per team, from the team's own perspective
+  const formHome = buildForm(data.lastFiveGames, homeId);
+  const formAway = buildForm(data.lastFiveGames, awayId);
+
   // Group standings (from embedded standings in summary)
   const groupStandings: MatchCenterData['groupStandings'] = [];
 
@@ -778,6 +838,8 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     winProbHome,
     winProbDraw,
     h2h,
+    formHome,
+    formAway,
     groupStandings,
     motmName,
     motmLine,

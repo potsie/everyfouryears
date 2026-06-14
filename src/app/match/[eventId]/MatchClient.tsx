@@ -16,6 +16,7 @@ import type {
   MatchBroadcast,
   MatchBenchPlayer,
   ShotEvent,
+  TeamForm,
 } from '@/lib/normalize/world-cup-normalizer';
 
 /* ---- inline SVG icons ---- */
@@ -714,6 +715,81 @@ function Empty({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Longest run of the same result ending at the most recent game (newest = last).
+function currentStreak(form: TeamForm | null): { n: number; r: 'W' | 'D' | 'L' } | null {
+  if (!form || form.games.length === 0) return null;
+  const last = form.games[form.games.length - 1].result;
+  let n = 0;
+  for (let i = form.games.length - 1; i >= 0 && form.games[i].result === last; i--) n++;
+  return n >= 2 ? { n, r: last } : null;
+}
+
+function formPhrase(form: TeamForm | null): string {
+  if (!form) return 'arrive with no recent form on record';
+  const s = currentStreak(form);
+  if (s?.r === 'W') return `arrive on a ${s.n}-match winning run`;
+  if (s?.r === 'L') return `come in having lost their last ${s.n}`;
+  if (s?.r === 'D') return `have drawn their last ${s.n}`;
+  return `bring ${form.w}W-${form.d}D-${form.l}L form from their last five`;
+}
+
+// Data-driven preview prose built from the odds (betting favorite), recent
+// form, and head-to-head record already on the match. No editorial text comes
+// from ESPN, so this synthesises a unique line per fixture from the numbers.
+function PreviewNarrative({ match }: { match: MatchCenterData }) {
+  const { home, away, odds } = match;
+
+  // Favourite from moneyline: the more negative price is the shorter-priced side.
+  let favLine: React.ReactNode = null;
+  if (odds) {
+    const h = parseInt(odds.homeMoneyline, 10);
+    const a = parseInt(odds.awayMoneyline, 10);
+    if (!Number.isNaN(h) && !Number.isNaN(a) && h !== a) {
+      const homeFav = h < a;
+      const fav = homeFav ? home : away;
+      const price = homeFav ? odds.homeMoneyline : odds.awayMoneyline;
+      favLine = <> <b style={{ color: 'var(--ink)' }}>{fav.name}</b> go in as the bookmakers&rsquo; favorite ({price}).</>;
+    } else {
+      favLine = <> The bookmakers can barely separate them.</>;
+    }
+  }
+
+  const h2hLine = match.h2h.length > 0
+    ? <> The two last met in {match.h2h[0].date}.</>
+    : null;
+
+  return (
+    <>
+      {match.round} clash at {match.venue}, {match.venueCity}. <b style={{ color: 'var(--ink)' }}>{home.name}</b> {formPhrase(match.formHome)}, while <b style={{ color: 'var(--ink)' }}>{away.name}</b> {formPhrase(match.formAway)}.{favLine}{h2hLine} Kick-off is {formatKickoffTime(match.kickoffISO)}.
+    </>
+  );
+}
+
+function FormRow({ team, form }: { team: MatchCenterTeam; form: TeamForm | null }) {
+  return (
+    <div className="fg-row">
+      <div className="fg-team">
+        <Flag logo={team.logo} abbr={team.abbr} size={18} />
+        <span className="ab">{team.abbr}</span>
+      </div>
+      <div className="fg-chips">
+        {form
+          ? form.games.map((g, i) => (
+              <span
+                key={i}
+                className={`fdot ${g.result.toLowerCase()}`}
+                title={`${g.homeAway === 'H' ? 'vs' : '@'} ${g.oppAbbr} ${g.score} · ${g.comp} (${g.date})`}
+              >
+                {g.result}
+              </span>
+            ))
+          : <span className="fg-none">No recent matches</span>}
+      </div>
+      {form && <div className="fg-tally">{form.w}-{form.d}-{form.l}</div>}
+    </div>
+  );
+}
+
 function MainColumn({ tab, match, onSelectTab }: { tab: string; match: MatchCenterData; onSelectTab: (t: Tab) => void }) {
   const { state, stats, home, away, clock } = match;
 
@@ -756,9 +832,16 @@ function MainColumn({ tab, match, onSelectTab }: { tab: string; match: MatchCent
             <h3>Match preview</h3>
             {match.group && <span className="sub">Group {match.group}</span>}
           </div>
-          <div style={{ padding: '16px', fontSize: 14, lineHeight: 1.6, color: 'var(--ink-2)' }}>
-            {match.round} clash at {match.venue}. <b style={{ color: 'var(--ink)' }}>{home.name}</b> face <b style={{ color: 'var(--ink)' }}>{away.name}</b> in what promises to be a must-watch fixture. Kick-off is {formatKickoffTime(match.kickoffISO)}.
+          <div className="preview-lede">
+            <PreviewNarrative match={match} />
           </div>
+          {(match.formHome || match.formAway) && (
+            <div className="form-guide">
+              <div className="fg-head">Recent form <span>Last 5</span></div>
+              <FormRow team={home} form={match.formHome} />
+              <FormRow team={away} form={match.formAway} />
+            </div>
+          )}
         </div>
         <Lineups match={match} />
       </>

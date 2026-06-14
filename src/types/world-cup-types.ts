@@ -160,11 +160,33 @@ export interface ESPNLeader {
   }[];
 }
 
+// Recent form — ESPN's `lastFiveGames` is an array of two blocks (one per team),
+// each with an `events` list of that team's most recent fixtures. `gameResult`
+// is from the team's perspective; the `score` string is just ordered goals, so
+// derive the team-perspective scoreline from home/away ids + scores.
+export interface ESPNLastFiveEvent {
+  gameDate: string;
+  score: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  homeTeamScore: string;
+  awayTeamScore: string;
+  gameResult?: string;        // 'W' | 'D' | 'L'
+  atVs?: string;              // 'vs' (home) | '@' (away)
+  competitionName?: string;
+  opponent?: { abbreviation?: string; displayName?: string };
+}
+export interface ESPNLastFiveBlock {
+  team: { id: string; abbreviation?: string };
+  events?: ESPNLastFiveEvent[];
+}
+
 // Extended summary response shape
 export interface ESPNMatchSummaryFull extends ESPNWorldCupSummaryResponse {
   commentary?: ESPNCommentaryEntry[];
   pickcenter?: ESPNPickcenterEntry[];
   headToHeadGames?: { events?: ESPNHeadToHeadGame[] };
+  lastFiveGames?: ESPNLastFiveBlock[];
   leaders?: ESPNLeader[];
   article?: { story?: string };
   videos?: { source?: { HD?: { href: string } }; thumbnail?: string; description?: string; duration?: number }[];
