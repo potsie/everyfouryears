@@ -6,7 +6,8 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "pmsr": "node --experimental-strip-types scripts/pmsr_ingest.mjs"
   },
   "dependencies": {
     "@alloc/quick-lru": "^5.2.0",
