@@ -131,7 +131,9 @@ export function MatchCard({ match }: MatchCardProps) {
                 >
                   <span>⚽</span>
                   <span>{g.minute}</span>
-                  <span className="font-semibold" style={{ color: 'var(--ink)' }}>{g.scorer}</span>
+                  <span className="font-semibold" style={{ color: 'var(--ink)' }}>
+                    {g.scorer}{g.ownGoal ? ' (OG)' : ''}
+                  </span>
                   <span style={{ color: 'var(--ink-3)' }}>· {g.team}</span>
                 </div>
               ))}

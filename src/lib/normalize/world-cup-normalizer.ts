@@ -1,6 +1,4 @@
 import type {
-  ESPNWorldCupSummaryResponse,
-  ESPNSoccerTeamStat,
   ESPNKeyEvent,
   ESPNWorldCupRosterTeam,
   ESPNMatchDetail,
@@ -11,6 +9,7 @@ export interface WorldCupGoal {
   minute: string;
   scorer: string;
   assist?: string;
+  ownGoal?: boolean;
 }
 
 export interface WorldCupCard {
@@ -135,15 +134,21 @@ export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
         // "Goal - Header", "Penalty - Scored"...) and a strict === 'Goal'
         // check silently drops headers and other goal types.
         const isGoal = d.scoringPlay === true && !d.shootout;
-        const teamMatch =
-          d.team?.id === teamId ||
-          d.athletesInvolved?.[0]?.team?.id === teamId;
+        // d.team is the team the goal counts FOR — including own goals, where
+        // it's the beneficiary, not the scorer's team. Trust it when present.
+        // The athlete-team fallback only covers details that omit d.team, and
+        // must never fire on own goals (the scorer plays for the opponent), or
+        // the own goal gets double-credited to both sides.
+        const teamMatch = d.team?.id
+          ? d.team.id === teamId
+          : !d.ownGoal && d.athletesInvolved?.[0]?.team?.id === teamId;
         return isGoal && teamMatch;
       })
       .map(d => ({
         minute: d.clock?.displayValue ?? '',
         scorer: d.athletesInvolved?.[0]?.displayName ?? '',
         assist: d.athletesInvolved?.[1]?.displayName,
+        ownGoal: d.ownGoal === true,
       }));
   }
 
@@ -185,113 +190,6 @@ export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
     broadcaster: comp.geoBroadcasts?.[0]?.media?.shortName ?? '',
     home: buildTeam(homeComp),
     away: buildTeam(awayComp),
-  };
-}
-
-// --- Summary response normalizer (for match detail pages) ---
-
-function teamStat(stats: ESPNSoccerTeamStat[], name: string): string {
-  return stats.find(s => s.name === name)?.displayValue ?? '0';
-}
-
-function extractGoalsFromEvents(events: ESPNKeyEvent[], teamId: string): WorldCupGoal[] {
-  return events
-    .filter(e => e.type.text.startsWith('Goal') && e.team?.id === teamId && !e.shootout)
-    .map(e => {
-      const participants = e.participants ?? [];
-      return {
-        minute: e.clock?.displayValue ?? '',
-        scorer: participants[0]?.athlete.displayName ?? 'Unknown',
-        assist: participants.length > 1 ? participants[1]?.athlete.displayName : undefined,
-      };
-    });
-}
-
-function extractCards(events: ESPNKeyEvent[], teamId: string): WorldCupCard[] {
-  return events
-    .filter(e => (e.type.text === 'Yellow Card' || e.type.text === 'Red Card') && e.team?.id === teamId)
-    .map(e => ({
-      minute: e.clock?.displayValue ?? '',
-      player: e.participants?.[0]?.athlete.displayName ?? '',
-      type: e.type.text === 'Red Card' ? ('red' as const) : ('yellow' as const),
-    }));
-}
-
-function extractRoster(rosters: ESPNWorldCupRosterTeam[] | undefined, teamId: string): WorldCupPlayer[] {
-  if (!rosters) return [];
-  const teamRoster = rosters.find(r => r.team.id === teamId);
-  if (!teamRoster) return [];
-  return (teamRoster.roster ?? []).map(player => ({
-    id: player.athlete.id,
-    name: player.athlete.shortName || player.athlete.displayName,
-    jersey: player.jersey,
-    isStarter: player.starter,
-    position: player.position?.abbreviation ?? 'SUB',
-  }));
-}
-
-export function normalizeWorldCupGame(
-  eventId: string,
-  data: ESPNWorldCupSummaryResponse,
-): WorldCupMatchNormalized {
-  const comp = data.header.competitions[0];
-  const keyEvents = data.keyEvents ?? [];
-  const rosters = data.rosters;
-
-  const broadcaster = comp.geoBroadcasts?.[0]?.media?.shortName ?? '';
-  const venue = data.gameInfo.venue?.fullName ?? '';
-  const venueCity = data.gameInfo.venue?.address?.city ?? '';
-  const seasonTypeId = Number(data.header.season?.type?.id ?? 1);
-
-  const stage = STAGE_NAMES[seasonTypeId] ?? 'Match';
-
-  function buildTeam(homeAway: 'home' | 'away'): WorldCupTeamBoxScore {
-    const competitor = comp.competitors.find(c => c.homeAway === homeAway);
-    if (!competitor) throw new Error(`No ${homeAway} competitor found for event ${eventId}`);
-    const teamEntry = data.boxscore.teams.find(t => t.homeAway === homeAway);
-    const teamStats = teamEntry?.statistics ?? [];
-    const teamId = competitor.team.id;
-
-    return {
-      id: teamId,
-      name: competitor.team.displayName,
-      abbr: competitor.team.abbreviation,
-      logo: competitor.team.logo ?? competitor.team.logos?.[0]?.href ?? '',
-      score: competitor.score,
-      stats: {
-        possession: teamStat(teamStats, 'possessionPct'),
-        shots: teamStat(teamStats, 'totalShots'),
-        shotsOnTarget: teamStat(teamStats, 'shotsOnTarget'),
-        saves: teamStat(teamStats, 'saves'),
-        corners: teamStat(teamStats, 'wonCorners'),
-        fouls: teamStat(teamStats, 'foulsCommitted'),
-        offsides: teamStat(teamStats, 'offsides'),
-        passes: teamStat(teamStats, 'totalPasses'),
-        passPct: teamStat(teamStats, 'passPct'),
-      },
-      goals: extractGoalsFromEvents(keyEvents, teamId),
-      linescore: halvesFromGoals(extractGoalsFromEvents(keyEvents, teamId)),
-      cards: extractCards(keyEvents, teamId),
-      roster: extractRoster(rosters, teamId),
-    };
-  }
-
-  return {
-    eventId,
-    date: comp.date,
-    stage,
-    groupLetter: '',
-    seasonTypeId,
-    status: {
-      state: comp.status.type.state,
-      clock: comp.status.displayClock,
-      isHalftime: comp.status.type.name === 'STATUS_HALFTIME',
-    },
-    venue,
-    venueCity,
-    broadcaster,
-    home: buildTeam('home'),
-    away: buildTeam('away'),
   };
 }
 
@@ -479,7 +377,10 @@ function eventType(e: ESPNKeyEvent): MatchKeyEvent['type'] | null {
     !e.shootout &&
     e.scoringPlay !== false &&
     (e.scoringPlay === true || text.startsWith('Goal'));
-  if (isGoal) return (text === 'Penalty - Scored' || text === 'Penalty Kick Goal') ? 'pen' : 'goal';
+  if (isGoal) {
+    if (e.ownGoal === true || text === 'Own Goal') return 'og';
+    return (text === 'Penalty - Scored' || text === 'Penalty Kick Goal') ? 'pen' : 'goal';
+  }
   if (text === 'Yellow Card') return 'yellow';
   if (text === 'Red Card') return 'red';
   if (text === 'Substitution') return 'sub';
@@ -646,20 +547,25 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
       // on a substitution ("X replaces Y").
       const player = e.participants?.[0]?.athlete.displayName ?? '';
       const second = e.participants?.[1]?.athlete.displayName;
-      if (type === 'goal' || type === 'pen') {
+      const isGoal = type === 'goal' || type === 'pen' || type === 'og';
+      if (isGoal) {
+        // team is the side the goal counts FOR — the beneficiary on an own
+        // goal, even though `player` is the opponent who scored it.
         if (team === 'home') runningHome++;
         else if (team === 'away') runningAway++;
       }
       let detail = '';
       if (type === 'sub') {
         detail = second ? `for ${second}` : '';
+      } else if (type === 'og') {
+        detail = 'own goal';
       } else if (type === 'goal' || type === 'pen') {
         detail = second ? `assist ${second}` : (e.type.text === 'Penalty - Scored' || e.type.text === 'Penalty Kick Goal') ? 'penalty' : '';
       }
       return {
         at, extra, type, team, player, detail,
-        scoreHome: (type === 'goal' || type === 'pen') ? runningHome : null,
-        scoreAway: (type === 'goal' || type === 'pen') ? runningAway : null,
+        scoreHome: isGoal ? runningHome : null,
+        scoreAway: isGoal ? runningAway : null,
       };
     })
     .filter((e): e is MatchKeyEvent => e !== null);

@@ -26,6 +26,7 @@ export interface ESPNMatchDetail {
   }[];
   scoringPlay?: boolean;
   shootout?: boolean;
+  ownGoal?: boolean;
 }
 
 export interface ESPNWorldCupCompetition {
@@ -72,6 +73,7 @@ export interface ESPNKeyEvent {
   text?: string;
   shootout?: boolean;
   scoringPlay?: boolean;
+  ownGoal?: boolean;
 }
 
 export interface ESPNWorldCupRosterPlayer {

@@ -282,7 +282,7 @@ function Timeline({ match }: { match: MatchCenterData }) {
     // Insert HT marker before first event at/after minute 46
     if (!htInserted && e.at >= 46 && e.type !== 'whistle') {
       // Find score at HT from the last goal before minute 46
-      const htGoals = events.filter(ev => (ev.type === 'goal' || ev.type === 'pen') && ev.at < 46);
+      const htGoals = events.filter(ev => (ev.type === 'goal' || ev.type === 'pen' || ev.type === 'og') && ev.at < 46);
       const lastHT = htGoals[htGoals.length - 1];
       const htH = lastHT?.scoreHome ?? 0;
       const htA = lastHT?.scoreAway ?? 0;
