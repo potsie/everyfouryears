@@ -581,6 +581,13 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
   const hStats = homeEntry?.statistics ?? [];
   const aStats = awayEntry?.statistics ?? [];
   const getStat = (stats: typeof hStats, name: string) => Number(stats.find(s => s.name === name)?.displayValue ?? 0);
+  // ESPN's passPct is a 0–1 fraction rounded to one decimal (e.g. "0.8"), so
+  // rendering it as a percent gives a nonsense "0.8%". Derive accuracy from the
+  // exact accurate/total counts instead — same 0–100 scale as possessionPct.
+  const pctOf = (stats: typeof hStats, num: string, den: string) => {
+    const total = getStat(stats, den);
+    return total > 0 ? Math.round((getStat(stats, num) / total) * 100) : 0;
+  };
 
   const stats: MatchStat[] = [
     { label: 'Possession', home: getStat(hStats, 'possessionPct'), away: getStat(aStats, 'possessionPct'), unit: '%', pct: true },
@@ -591,7 +598,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     { label: 'Fouls', home: getStat(hStats, 'foulsCommitted'), away: getStat(aStats, 'foulsCommitted') },
     { label: 'Offsides', home: getStat(hStats, 'offsides'), away: getStat(aStats, 'offsides') },
     { label: 'Passes', home: getStat(hStats, 'totalPasses'), away: getStat(aStats, 'totalPasses') },
-    { label: 'Pass accuracy', home: getStat(hStats, 'passPct'), away: getStat(aStats, 'passPct'), unit: '%', pct: true },
+    { label: 'Pass accuracy', home: pctOf(hStats, 'accuratePasses', 'totalPasses'), away: pctOf(aStats, 'accuratePasses', 'totalPasses'), unit: '%', pct: true },
     { label: 'Yellow cards', home: getStat(hStats, 'yellowCards'), away: getStat(aStats, 'yellowCards') },
     { label: 'Red cards', home: getStat(hStats, 'redCards'), away: getStat(aStats, 'redCards') },
   ].filter(s => s.home > 0 || s.away > 0 || s.pct);
