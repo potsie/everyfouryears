@@ -72,11 +72,14 @@ changing parse/join logic.
 - **Match → ESPN event ID.** From the filename's `(HOME, AWAY)` codes, find the
   ESPN scoreboard event with matching home/away abbreviations. Pairings are unique
   across the tournament, so this is unambiguous. The event ID is the JSON filename.
-- **Player name → ESPN athlete ID.** Fetch the match's ESPN roster (from the
-  summary endpoint), normalize both sides (uppercase, strip diacritics, spaces,
-  punctuation), and match each physical row within the correct team's roster.
-  Small N per squad makes this reliable. Each physical row gets `athleteId`
-  (nullable).
+- **Player name → FIFA player ID.** The `/player/[athleteId]` route is keyed by
+  FIFA player id (`fifaId`), not the ESPN athlete id, so the join resolves
+  against the **FIFA squads** endpoint (keyed by `IdCountry` = team abbr), not the
+  ESPN roster. Normalize both sides (uppercase, strip diacritics, spaces,
+  punctuation) and match each physical row within the team's squad. Because PMSR
+  and the FIFA squads are both FIFA-sourced, the ALL-CAPS romanized names match
+  almost perfectly (the 15-match backfill resolved every player with no
+  overrides). Each physical row gets `athleteId` (the FIFA id; nullable).
 - **Misses are explicit.** Unresolved names are logged at ingest and stored as
   `athleteId: null` (player still renders, just unlinked). A hand-maintained
   `data/pmsr/name-overrides.json` (`"FIFA NAME": "<espnId>"`) forces stubborn

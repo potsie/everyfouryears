@@ -16,4 +16,10 @@ for (const r of rows) assert.ok('athleteId' in r, `missing athleteId key: ${r.na
 const resolved = rows.filter(r => r.athleteId);
 assert.ok(resolved.length >= 28, `expected >=28 resolved ids, got ${resolved.length}`);
 
+// athleteId must be the FIFA player id (what /player/[athleteId] is keyed on),
+// NOT the ESPN summary-roster id. Noor Al-Rawabdeh's FIFA id is 431230.
+const noor = rows.find(r => r.name.toUpperCase().includes('RAWABDEH'));
+assert.ok(noor, 'expected a row for Al-Rawabdeh');
+assert.equal(noor.athleteId, '431230', `Noor athleteId should be FIFA id 431230, got ${noor.athleteId}`);
+
 console.log('ingest-output.test.mjs PASS');

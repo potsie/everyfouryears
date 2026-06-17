@@ -13,8 +13,7 @@ const HUB = 'https://www.fifatrainingcentre.com/en/fifa-world-cup-2026/match-rep
 const HOST = 'https://www.fifatrainingcentre.com';
 const SCOREBOARD =
   'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260611-20260720&limit=200';
-const SUMMARY = id =>
-  `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${id}`;
+const FIFA_SQUADS = 'https://api.fifa.com/api/v3/teams/squads/all/17/285023?language=en';
 const DATA_DIR = 'data/pmsr';
 const OVERRIDES = JSON.parse(readFileSync(`${DATA_DIR}/name-overrides.json`, 'utf8'));
 const UA = { headers: { 'User-Agent': 'Mozilla/5.0' } };
@@ -52,17 +51,21 @@ async function eventIndex() {
   return idx;
 }
 
-// abbr -> [{ id, name }] roster, from the summary endpoint's rosters block.
-async function rostersByAbbr(eventId) {
-  const sum = await getJson(SUMMARY(eventId));
-  const comp = sum.header?.competitions?.[0];
-  const teamIdToAbbr = new Map();
-  for (const c of comp?.competitors ?? []) teamIdToAbbr.set(c.team?.id, c.team?.abbreviation);
+// abbr (FIFA country code) -> [{ id, name }] from the FIFA squads endpoint.
+// The /player/[athleteId] route is keyed by FIFA player id, so PMSR names must
+// resolve to FIFA ids (not ESPN athlete ids). PMSR and the squads are both
+// FIFA-sourced, so the ALL-CAPS names match cleanly after normalization.
+async function fifaRostersByCountry() {
+  const data = await getJson(FIFA_SQUADS);
+  const teams = data?.Results ?? data ?? [];
   const out = {};
-  for (const tr of sum.rosters ?? []) {
-    const abbr = teamIdToAbbr.get(tr.team?.id);
+  for (const t of teams) {
+    const abbr = t.IdCountry;
     if (!abbr) continue;
-    out[abbr] = (tr.roster ?? []).map(p => ({ id: p.athlete?.id, name: p.athlete?.displayName }));
+    out[abbr] = (t.Players ?? []).map(p => ({
+      id: String(p.IdPlayer),
+      name: p.PlayerName?.[0]?.Description ?? '',
+    }));
   }
   return out;
 }
@@ -80,7 +83,7 @@ function resolveTeam(team, roster) {
 
 async function main() {
   mkdirSync(DATA_DIR, { recursive: true });
-  const [pdfs, idx] = await Promise.all([discoverPdfs(), eventIndex()]);
+  const [pdfs, idx, fifaRosters] = await Promise.all([discoverPdfs(), eventIndex(), fifaRostersByCountry()]);
   console.log(`hub: ${pdfs.length} report(s) available`);
 
   for (const { url, home, away } of pdfs) {
@@ -96,9 +99,8 @@ async function main() {
     execFileSync('python3', ['scripts/parse_pmsr.py', pdfPath, eventId, rawPath], { stdio: 'inherit' });
     const data = JSON.parse(readFileSync(rawPath, 'utf8'));
 
-    const rosters = await rostersByAbbr(eventId);
-    const h = resolveTeam(data.home, rosters[data.home.abbr]);
-    const a = resolveTeam(data.away, rosters[data.away.abbr]);
+    const h = resolveTeam(data.home, fifaRosters[data.home.abbr]);
+    const a = resolveTeam(data.away, fifaRosters[data.away.abbr]);
     writeFileSync(outFile, JSON.stringify(data, null, 2));
     console.log(`+ ${home} v ${away} (${eventId}) — resolved ${h.resolved + a.resolved} ids`);
     const missed = [...h.missed, ...a.missed];
