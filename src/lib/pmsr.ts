@@ -10,6 +10,7 @@
 export interface PmsrPlayerPhysical {
   number: string;
   name: string;
+  athleteId: string | null;
   total_distance_m: number;
   zone1_0_7_m: number;
   zone2_7_15_m: number;
@@ -65,4 +66,26 @@ export function physicalLeaders(data: PmsrData): PmsrLeaders {
     mostSprints: best(p => p.sprints),
     mostDistance: best(p => p.total_distance_m),
   };
+}
+
+// Normalize a player name for cross-source matching: strip diacritics, uppercase,
+// drop everything that isn't a letter or digit. "Yazan Al-Arab" and "YAZAN ALARAB"
+// both collapse to "YAZANALARAB".
+export function normalizePmsrName(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '') // strip combining diacritical marks (accents)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '');
+}
+
+// Resolve a FIFA physical-row name to an ESPN athlete id within one team's roster.
+// Returns the id on a normalized match, else null (never a wrong id).
+export function resolveAthleteId(
+  fifaName: string,
+  roster: { id: string; name: string }[],
+): string | null {
+  const target = normalizePmsrName(fifaName);
+  const hit = roster.find(r => normalizePmsrName(r.name) === target);
+  return hit?.id ?? null;
 }
