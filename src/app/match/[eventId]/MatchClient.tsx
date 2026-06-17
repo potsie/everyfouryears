@@ -444,8 +444,8 @@ function PhysicalCard({ pmsr }: { pmsr: PmsrData }) {
             <div style={{ fontSize: 11, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.03em' }}>{label}</div>
             <div className="tnum" style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)', marginTop: 2 }}>{fmt(leader.value)}</div>
             <div style={{ fontSize: 12, color: 'var(--ink-2)', marginTop: 2 }}>
-              {leader.athleteId
-                ? <Link href={`/player/${leader.athleteId}`} style={{ color: 'var(--ink-2)' }}>{leader.name}</Link>
+              {leader.fifaId
+                ? <Link href={`/player/${leader.fifaId}`} style={{ color: 'var(--ink-2)' }}>{leader.name}</Link>
                 : leader.name}
               {leader.abbr ? <span style={{ color: 'var(--ink-3)' }}> · {leader.abbr}</span> : null}
             </div>

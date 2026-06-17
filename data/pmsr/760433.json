@@ -18,7 +18,7 @@
         "high_speed_runs": 8,
         "sprints": 2,
         "top_speed_kmh": 21.3,
-        "athleteId": "308300"
+        "fifaId": "308300"
       },
       {
         "number": "4",
@@ -32,7 +32,7 @@
         "high_speed_runs": 54,
         "sprints": 14,
         "top_speed_kmh": 31.3,
-        "athleteId": "402926"
+        "fifaId": "402926"
       },
       {
         "number": "6",
@@ -46,7 +46,7 @@
         "high_speed_runs": 61,
         "sprints": 16,
         "top_speed_kmh": 27.8,
-        "athleteId": "402921"
+        "fifaId": "402921"
       },
       {
         "number": "7",
@@ -60,7 +60,7 @@
         "high_speed_runs": 84,
         "sprints": 47,
         "top_speed_kmh": 30.9,
-        "athleteId": "428882"
+        "fifaId": "428882"
       },
       {
         "number": "10",
@@ -74,7 +74,7 @@
         "high_speed_runs": 60,
         "sprints": 29,
         "top_speed_kmh": 29.4,
-        "athleteId": "229397"
+        "fifaId": "229397"
       },
       {
         "number": "13",
@@ -88,7 +88,7 @@
         "high_speed_runs": 50,
         "sprints": 13,
         "top_speed_kmh": 29.9,
-        "athleteId": "431196"
+        "fifaId": "431196"
       },
       {
         "number": "16",
@@ -102,7 +102,7 @@
         "high_speed_runs": 77,
         "sprints": 35,
         "top_speed_kmh": 29.9,
-        "athleteId": "418975"
+        "fifaId": "418975"
       },
       {
         "number": "20",
@@ -116,7 +116,7 @@
         "high_speed_runs": 123,
         "sprints": 24,
         "top_speed_kmh": 27.9,
-        "athleteId": "430628"
+        "fifaId": "430628"
       },
       {
         "number": "22",
@@ -130,7 +130,7 @@
         "high_speed_runs": 71,
         "sprints": 23,
         "top_speed_kmh": 30.4,
-        "athleteId": "402920"
+        "fifaId": "402920"
       },
       {
         "number": "24",
@@ -144,7 +144,7 @@
         "high_speed_runs": 148,
         "sprints": 51,
         "top_speed_kmh": 30.5,
-        "athleteId": "448252"
+        "fifaId": "448252"
       },
       {
         "number": "25",
@@ -158,7 +158,7 @@
         "high_speed_runs": 124,
         "sprints": 37,
         "top_speed_kmh": 31.2,
-        "athleteId": "418963"
+        "fifaId": "418963"
       },
       {
         "number": "9",
@@ -172,7 +172,7 @@
         "high_speed_runs": 56,
         "sprints": 28,
         "top_speed_kmh": 29.9,
-        "athleteId": "416081"
+        "fifaId": "416081"
       },
       {
         "number": "15",
@@ -186,7 +186,7 @@
         "high_speed_runs": 36,
         "sprints": 16,
         "top_speed_kmh": 33.4,
-        "athleteId": "430631"
+        "fifaId": "430631"
       },
       {
         "number": "18",
@@ -200,7 +200,7 @@
         "high_speed_runs": 29,
         "sprints": 5,
         "top_speed_kmh": 30,
-        "athleteId": "441422"
+        "fifaId": "441422"
       },
       {
         "number": "19",
@@ -214,7 +214,7 @@
         "high_speed_runs": 18,
         "sprints": 3,
         "top_speed_kmh": 26.2,
-        "athleteId": "310116"
+        "fifaId": "310116"
       },
       {
         "number": "26",
@@ -228,7 +228,7 @@
         "high_speed_runs": 64,
         "sprints": 26,
         "top_speed_kmh": 33.7,
-        "athleteId": "402925"
+        "fifaId": "402925"
       }
     ]
   },
@@ -249,7 +249,7 @@
         "high_speed_runs": 8,
         "sprints": 1,
         "top_speed_kmh": 22,
-        "athleteId": "389879"
+        "fifaId": "389879"
       },
       {
         "number": "2",
@@ -263,7 +263,7 @@
         "high_speed_runs": 83,
         "sprints": 18,
         "top_speed_kmh": 29.5,
-        "athleteId": "376285"
+        "fifaId": "376285"
       },
       {
         "number": "9",
@@ -277,7 +277,7 @@
         "high_speed_runs": 96,
         "sprints": 31,
         "top_speed_kmh": 26.2,
-        "athleteId": "405877"
+        "fifaId": "405877"
       },
       {
         "number": "10",
@@ -291,7 +291,7 @@
         "high_speed_runs": 124,
         "sprints": 42,
         "top_speed_kmh": 32.7,
-        "athleteId": "477795"
+        "fifaId": "477795"
       },
       {
         "number": "11",
@@ -305,7 +305,7 @@
         "high_speed_runs": 97,
         "sprints": 30,
         "top_speed_kmh": 28.7,
-        "athleteId": "482874"
+        "fifaId": "482874"
       },
       {
         "number": "14",
@@ -319,7 +319,7 @@
         "high_speed_runs": 112,
         "sprints": 33,
         "top_speed_kmh": 29.6,
-        "athleteId": "441350"
+        "fifaId": "441350"
       },
       {
         "number": "15",
@@ -333,7 +333,7 @@
         "high_speed_runs": 104,
         "sprints": 52,
         "top_speed_kmh": 29.3,
-        "athleteId": "431858"
+        "fifaId": "431858"
       },
       {
         "number": "17",
@@ -347,7 +347,7 @@
         "high_speed_runs": 128,
         "sprints": 47,
         "top_speed_kmh": 33,
-        "athleteId": "511009"
+        "fifaId": "511009"
       },
       {
         "number": "19",
@@ -361,7 +361,7 @@
         "high_speed_runs": 120,
         "sprints": 25,
         "top_speed_kmh": 30.9,
-        "athleteId": "379939"
+        "fifaId": "379939"
       },
       {
         "number": "21",
@@ -375,7 +375,7 @@
         "high_speed_runs": 77,
         "sprints": 28,
         "top_speed_kmh": 29.8,
-        "athleteId": "395113"
+        "fifaId": "395113"
       },
       {
         "number": "22",
@@ -389,7 +389,7 @@
         "high_speed_runs": 126,
         "sprints": 35,
         "top_speed_kmh": 28.4,
-        "athleteId": "494291"
+        "fifaId": "494291"
       },
       {
         "number": "6",
@@ -403,7 +403,7 @@
         "high_speed_runs": 24,
         "sprints": 5,
         "top_speed_kmh": 25.3,
-        "athleteId": "433679"
+        "fifaId": "433679"
       },
       {
         "number": "7",
@@ -417,7 +417,7 @@
         "high_speed_runs": 42,
         "sprints": 14,
         "top_speed_kmh": 30.3,
-        "athleteId": "379942"
+        "fifaId": "379942"
       },
       {
         "number": "8",
@@ -431,7 +431,7 @@
         "high_speed_runs": 50,
         "sprints": 16,
         "top_speed_kmh": 31.5,
-        "athleteId": "430698"
+        "fifaId": "430698"
       },
       {
         "number": "18",
@@ -445,7 +445,7 @@
         "high_speed_runs": 57,
         "sprints": 24,
         "top_speed_kmh": 29,
-        "athleteId": "477790"
+        "fifaId": "477790"
       },
       {
         "number": "20",
@@ -459,7 +459,7 @@
         "high_speed_runs": 29,
         "sprints": 9,
         "top_speed_kmh": 24.6,
-        "athleteId": "512132"
+        "fifaId": "512132"
       }
     ]
   }

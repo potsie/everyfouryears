@@ -22,7 +22,7 @@ foundation.
 ## Goals
 
 - Ingest PMSR data for every completed match via a repeatable, idempotent script.
-- Resolve FIFA reports to ESPN event IDs and FIFA player names to ESPN athlete IDs
+- Resolve FIFA reports to ESPN event IDs and FIFA player names to FIFA player IDs
   **at ingest time**, so committed JSON is self-contained and pages read IDs only.
 - Surface xG + physical on: match detail, `/stats`, player pages, and match cards.
 
@@ -60,7 +60,7 @@ Orchestrator `scripts/pmsr_ingest.mjs`:
    cheap to re-run.
 2. **Parse.** Shell out to `scripts/parse_pmsr.py` per new PDF to get the raw
    xG + physical JSON.
-3. **Join & write.** Resolve the ESPN event ID and player athlete IDs (below),
+3. **Join & write.** Resolve the ESPN event ID and FIFA player IDs (below),
    then write `data/pmsr/<espnEventId>.json`. The operator commits the JSON.
 
 Pages and SSG read the committed JSON. Nothing runs at request time or during the
@@ -79,10 +79,10 @@ changing parse/join logic.
   punctuation) and match each physical row within the team's squad. Because PMSR
   and the FIFA squads are both FIFA-sourced, the ALL-CAPS romanized names match
   almost perfectly (the 15-match backfill resolved every player with no
-  overrides). Each physical row gets `athleteId` (the FIFA id; nullable).
+  overrides). Each physical row gets `fifaId` (nullable).
 - **Misses are explicit.** Unresolved names are logged at ingest and stored as
-  `athleteId: null` (player still renders, just unlinked). A hand-maintained
-  `data/pmsr/name-overrides.json` (`"FIFA NAME": "<espnId>"`) forces stubborn
+  `fifaId: null` (player still renders, just unlinked). A hand-maintained
+  `data/pmsr/name-overrides.json` (`"FIFA NAME": "<fifaId>"`) forces stubborn
   cases without code changes.
 
 ### 3. Data shape (committed per match)
@@ -99,7 +99,7 @@ changing parse/join logic.
     "totalDistanceKm": 120.4,
     "physical": [
       {
-        "number": "5", "name": "Stefan POSCH", "athleteId": "…",
+        "number": "5", "name": "Stefan POSCH", "fifaId": "…",
         "total_distance_m": 11970.4,
         "zone1_0_7_m": 3782.7, "zone2_7_15_m": 5002.7, "zone3_15_20_m": 1983.6,
         "zone4_20_25_m": 752.9, "zone5_25plus_m": 448.5,
@@ -111,7 +111,7 @@ changing parse/join logic.
 }
 ```
 
-`athleteId` is the only addition to the prototype's shape.
+`fifaId` is the only addition to the prototype's shape.
 
 ### 4. Access & aggregation layer
 
@@ -133,7 +133,7 @@ Unifying principle: **physical = per-player story; xG = per-team story.**
 
 1. **Match detail** (`/match/[eventId]`). Already built for one match; lights up
    automatically once a match has JSON. Changes: physical-card leaders link to
-   player pages via `athleteId`; works for all matches.
+   player pages via `fifaId`; works for all matches.
 
 2. **`/stats`** (Leaderboard view). Add a **"Running & physical"** block — three
    leader lists (top speed, total distance, total sprints), rows linking to
@@ -150,7 +150,7 @@ Unifying principle: **physical = per-player story; xG = per-team story.**
 ## Build order (phased; one foundation, then surfaces)
 
 1. **Foundation + match detail (all matches).** Ingestion orchestrator, joins,
-   `athleteId` in JSON, `getAllPmsr()`, leader→player links. Delivers the prototype
+   `fifaId` in JSON, `getAllPmsr()`, leader→player links. Delivers the prototype
    generalized to every completed match. Prerequisite for everything else.
 2. **`/stats`** physical leaderboards + team xG table.
 3. **Player pages** physical section.
@@ -176,7 +176,7 @@ Each phase is independently shippable once phase 1 lands.
 
 - **Parser/join:** unit-test against the committed AUT v JOR fixture — assert
   xG (1.93 / 0.53), team distance (120.4 / 119.2), 16 players/side, and a known
-  name→athleteId resolution.
+  name→fifaId resolution.
 - **Aggregators:** pure-function tests over a small multi-match fixture set
   (top-speed record, cumulative distance/sprints, team xG vs goals).
 - **Surfaces:** typecheck + a render smoke check per surface (the prototype's

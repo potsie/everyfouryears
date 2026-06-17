@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { normalizePmsrName, resolveAthleteId } from '../src/lib/pmsr.ts';
+import { normalizePmsrName, resolveFifaId } from '../src/lib/pmsr.ts';
 
 const HUB = 'https://www.fifatrainingcentre.com/en/fifa-world-cup-2026/match-report-hub.php';
 const HOST = 'https://www.fifatrainingcentre.com';
@@ -73,9 +73,9 @@ async function fifaRostersByCountry() {
 function resolveTeam(team, roster) {
   let resolved = 0, missed = [];
   for (const p of team.physical) {
-    let id = roster ? resolveAthleteId(p.name, roster) : null;
+    let id = roster ? resolveFifaId(p.name, roster) : null;
     if (!id) id = OVERRIDES[normalizePmsrName(p.name)] ?? null;
-    p.athleteId = id;
+    p.fifaId = id;
     if (id) resolved++; else missed.push(p.name);
   }
   return { resolved, missed };

@@ -10,7 +10,7 @@
 export interface PmsrPlayerPhysical {
   number: string;
   name: string;
-  athleteId: string | null;
+  fifaId: string | null;
   total_distance_m: number;
   zone1_0_7_m: number;
   zone2_7_15_m: number;
@@ -39,7 +39,7 @@ export interface PmsrData {
 export interface PmsrLeader {
   name: string;
   abbr: string | null;
-  athleteId: string | null;
+  fifaId: string | null;
   value: number;
 }
 
@@ -59,7 +59,7 @@ export function physicalLeaders(data: PmsrData): PmsrLeaders {
 
   const best = (pick: (p: PmsrPlayerPhysical) => number): PmsrLeader =>
     tagged
-      .map(({ p, abbr }) => ({ name: p.name, abbr, athleteId: p.athleteId, value: pick(p) }))
+      .map(({ p, abbr }) => ({ name: p.name, abbr, fifaId: p.fifaId, value: pick(p) }))
       .reduce((a, b) => (b.value > a.value ? b : a));
 
   return {
@@ -80,9 +80,9 @@ export function normalizePmsrName(name: string): string {
     .replace(/[^A-Z0-9]/g, '');
 }
 
-// Resolve a FIFA physical-row name to an ESPN athlete id within one team's roster.
+// Resolve a FIFA physical-row name to a FIFA player id within one team's squad.
 // Returns the id on a normalized match, else null (never a wrong id).
-export function resolveAthleteId(
+export function resolveFifaId(
   fifaName: string,
   roster: { id: string; name: string }[],
 ): string | null {
