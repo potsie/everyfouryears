@@ -39,6 +39,7 @@ export interface PmsrData {
 export interface PmsrLeader {
   name: string;
   abbr: string | null;
+  athleteId: string | null;
   value: number;
 }
 
@@ -58,7 +59,7 @@ export function physicalLeaders(data: PmsrData): PmsrLeaders {
 
   const best = (pick: (p: PmsrPlayerPhysical) => number): PmsrLeader =>
     tagged
-      .map(({ p, abbr }) => ({ name: p.name, abbr, value: pick(p) }))
+      .map(({ p, abbr }) => ({ name: p.name, abbr, athleteId: p.athleteId, value: pick(p) }))
       .reduce((a, b) => (b.value > a.value ? b : a));
 
   return {
