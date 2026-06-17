@@ -5,15 +5,16 @@ Pulls the two things we want to surface first: team Expected Goals (xG) and
 per-player physical/running data. Uses `pdftotext -layout` (poppler) so it has
 no PyMuPDF dependency.
 
-Usage: python3 extract_pmsr.py <report.pdf> <event_id> [out.json]
+Usage: python3 parse_pmsr.py <report.pdf> <event_id> [out.json]
 """
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-PDFTOTEXT = "/usr/local/bin/pdftotext"
+PDFTOTEXT = shutil.which("pdftotext") or "/usr/local/bin/pdftotext"
 
 
 def pdf_text(pdf_path: str) -> str:
