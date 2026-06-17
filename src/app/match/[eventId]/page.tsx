@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { fetchMatchSummary } from '@/lib/espn/wc-fetchers';
 import { getVenueByName } from '@/lib/venues';
 import { fetchVenueWeather } from '@/lib/weather';
+import { getPmsr } from '@/lib/pmsr.server';
 import { Nav } from '@/components/Nav';
 import { MatchClient } from './MatchClient';
 
@@ -14,6 +15,7 @@ export default async function MatchPage({ params }: { params: Promise<{ eventId:
     const match = await fetchMatchSummary(eventId);
     const venue = getVenueByName(match.venue);
     const weatherData = venue ? await fetchVenueWeather(venue.lat, venue.lng) : null;
+    const pmsr = await getPmsr(eventId);
 
     return (
       <>
@@ -26,6 +28,7 @@ export default async function MatchPage({ params }: { params: Promise<{ eventId:
             venueLat={venue?.lat}
             venueLng={venue?.lng}
             weatherData={weatherData}
+            pmsr={pmsr}
           />
         </div>
       </>

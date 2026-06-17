@@ -7,6 +7,7 @@ import { Shot } from '@/components/Shot';
 import { GroupMini, type GroupMiniRow } from '@/components/GroupMini';
 import { VenueWeather } from '@/components/VenueWeather';
 import type { WeatherData } from '@/lib/weather';
+import { physicalLeaders, type PmsrData } from '@/lib/pmsr';
 import type {
   MatchCenterData,
   MatchKeyEvent,
@@ -378,6 +379,75 @@ function PossessionHeader({ stats, homeAbbr, awayAbbr }: { stats: MatchStat[]; h
       <div className="poss-side a">
         <div className="p tnum">{p.away}%</div>
         <div className="l">{awayAbbr}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ==============================================================
+   FIFA PMSR: EXPECTED GOALS + PHYSICAL
+   ============================================================== */
+// xG comes from FIFA's Post-Match Summary Report, not ESPN. Rendered with the
+// same proportional bar as the team stats, but to 2 decimals (xG convention).
+function XgBar({ home, away }: { home: number; away: number }) {
+  const total = home + away || 1;
+  return (
+    <div className="sbar">
+      <div className="sbar-top">
+        <span className={'v' + (home < away ? ' dim' : '')}>{home.toFixed(2)}</span>
+        <span className="lab">Expected goals (xG)</span>
+        <span className={'v away' + (away < home ? ' dim' : '')}>{away.toFixed(2)}</span>
+      </div>
+      <div className="sbar-track">
+        <span className="hbg"><i style={{ width: `${(home / total) * 100}%` }} /></span>
+        <span className="abg"><i style={{ width: `${(away / total) * 100}%` }} /></span>
+      </div>
+    </div>
+  );
+}
+
+function PhysicalCard({ pmsr }: { pmsr: PmsrData }) {
+  const leaders = physicalLeaders(pmsr);
+  const dh = pmsr.home.totalDistanceKm;
+  const da = pmsr.away.totalDistanceKm;
+  const highlights: Array<{ label: string; leader: typeof leaders.topSpeed; fmt: (v: number) => string }> = [
+    { label: 'Top speed', leader: leaders.topSpeed, fmt: v => `${v.toFixed(1)} km/h` },
+    { label: 'Most sprints', leader: leaders.mostSprints, fmt: v => `${v}` },
+    { label: 'Most distance', leader: leaders.mostDistance, fmt: v => `${(v / 1000).toFixed(1)} km` },
+  ];
+  return (
+    <div className="mc-card">
+      <div className="mc-head">
+        <h3 style={{ textTransform: 'uppercase' }}>Running &amp; physical</h3>
+        <span className="sub" style={{ fontSize: 11, fontWeight: 600 }}>FIFA report</span>
+      </div>
+
+      {dh != null && da != null && (
+        <div className="stats-wrap">
+          <div className="sbar">
+            <div className="sbar-top">
+              <span className={'v' + (dh < da ? ' dim' : '')}>{dh.toFixed(1)} km</span>
+              <span className="lab">Distance covered</span>
+              <span className={'v away' + (da < dh ? ' dim' : '')}>{da.toFixed(1)} km</span>
+            </div>
+            <div className="sbar-track">
+              <span className="hbg"><i style={{ width: `${(dh / (dh + da)) * 100}%` }} /></span>
+              <span className="abg"><i style={{ width: `${(da / (dh + da)) * 100}%` }} /></span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, padding: '4px 16px 14px' }}>
+        {highlights.map(({ label, leader, fmt }) => leader && (
+          <div key={label} style={{ background: 'var(--surface-2, rgba(0,0,0,.03))', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ fontSize: 11, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.03em' }}>{label}</div>
+            <div className="tnum" style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)', marginTop: 2 }}>{fmt(leader.value)}</div>
+            <div style={{ fontSize: 12, color: 'var(--ink-2)', marginTop: 2 }}>
+              {leader.name}{leader.abbr ? <span style={{ color: 'var(--ink-3)' }}> · {leader.abbr}</span> : null}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -790,23 +860,28 @@ function FormRow({ team, form }: { team: MatchCenterTeam; form: TeamForm | null 
   );
 }
 
-function MainColumn({ tab, match, onSelectTab }: { tab: string; match: MatchCenterData; onSelectTab: (t: Tab) => void }) {
+function MainColumn({ tab, match, onSelectTab, pmsr }: { tab: string; match: MatchCenterData; onSelectTab: (t: Tab) => void; pmsr?: PmsrData | null }) {
   const { state, stats, home, away, clock } = match;
+  const hasXg = !!pmsr && pmsr.home.xg != null && pmsr.away.xg != null;
 
   if (tab === 'Stats') {
     if (state === 'pre') return <Empty>Match stats appear once the match kicks off.</Empty>;
     return (
-      <div className="mc-card">
-        <div className="mc-head">
-          <h3>Team stats</h3>
-          <span className="sub">{state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'FULL TIME'}</span>
+      <>
+        <div className="mc-card">
+          <div className="mc-head">
+            <h3>Team stats</h3>
+            <span className="sub">{state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'FULL TIME'}</span>
+          </div>
+          <PossessionHeader stats={stats} homeAbbr={home.abbr} awayAbbr={away.abbr} />
+          <div className="stats-wrap">
+            {hasXg && <XgBar home={pmsr!.home.xg!} away={pmsr!.away.xg!} />}
+            {stats.slice(1).map(s => <StatBar key={s.label} s={s} />)}
+          </div>
+          <ShotChart shots={match.shots} home={home} away={away} />
         </div>
-        <PossessionHeader stats={stats} homeAbbr={home.abbr} awayAbbr={away.abbr} />
-        <div className="stats-wrap">
-          {stats.slice(1).map(s => <StatBar key={s.label} s={s} />)}
-        </div>
-        <ShotChart shots={match.shots} home={home} away={away} />
-      </div>
+        {pmsr && <PhysicalCard pmsr={pmsr} />}
+      </>
     );
   }
 
@@ -1200,9 +1275,10 @@ interface MatchClientProps {
   venueLat?: number;
   venueLng?: number;
   weatherData?: WeatherData | null;
+  pmsr?: PmsrData | null;
 }
 
-export function MatchClient({ match, venueSlug, venueRoof, venueLat, venueLng, weatherData }: MatchClientProps) {
+export function MatchClient({ match, venueSlug, venueRoof, venueLat, venueLng, weatherData, pmsr }: MatchClientProps) {
   const [activeTab, setActiveTab] = useState<Tab>('Summary');
 
   const eventCount =
@@ -1233,7 +1309,7 @@ export function MatchClient({ match, venueSlug, venueRoof, venueLat, venueLng, w
       {/* Two-column layout */}
       <div className="cols mcols">
         <div>
-          <MainColumn tab={activeTab} match={match} onSelectTab={setActiveTab} />
+          <MainColumn tab={activeTab} match={match} onSelectTab={setActiveTab} pmsr={pmsr} />
         </div>
         <Shelf
           match={match}
