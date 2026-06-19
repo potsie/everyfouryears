@@ -1,5 +1,6 @@
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
+import type { PmsrData } from './pmsr';
 
 export interface TallyItem { k: string; v: string; sub: string; v2?: string; k2?: string; }
 export interface ScorerEntry { p: string; t: string; g: number; a: number; pens: number; mp: number; fifaId?: string; photo?: string; }
@@ -7,6 +8,20 @@ export interface LeadEntry { p: string; t: string; v: number; fifaId?: string; }
 export interface DisciplineEntry { p: string; t: string; y: number; r: number; fifaId?: string; }
 export interface YoungEntry { p: string; t: string; age: number; g: number; a: number; fifaId?: string; }
 export interface TeamStatEntry { t: string; gf: number; ga: number; poss: number; shots: number; }
+
+export interface PhysicalLeaderEntry {
+  p: string;             // player name
+  t: string;             // team abbreviation (ESPN/FIFA code)
+  fifaId: string | null;
+  value: number;         // km/h for speed, metres for distance, count for sprints
+}
+
+export interface XgTeamEntry {
+  t: string;    // team abbreviation
+  xg: number;   // cumulative expected goals (rounded to 2 dp)
+  goals: number; // actual goals scored
+  matches: number;
+}
 
 export interface TournamentStats {
   tallies: TallyItem[];
@@ -17,6 +32,12 @@ export interface TournamentStats {
   discipline: DisciplineEntry[];
   young: YoungEntry[];
   teamStats: TeamStatEntry[];
+  physicalLeaders: {
+    topSpeed: PhysicalLeaderEntry[];
+    mostDistance: PhysicalLeaderEntry[];
+    mostSprints: PhysicalLeaderEntry[];
+  };
+  xgPerformance: XgTeamEntry[];
 }
 
 interface PlayerAcc {
@@ -360,4 +381,95 @@ export function buildPlayerWorldCupLog(
   );
 
   return { isGK, rows, totals };
+}
+
+// ─── PMSR aggregation ──────────────────────────────────────────────────────
+
+interface MatchScore {
+  homeAbbr: string;
+  homeGoals: number;
+  awayAbbr: string;
+  awayGoals: number;
+}
+
+export function buildPmsrStats(
+  pmsrData: PmsrData[],
+  matchScores: Map<string, MatchScore>,
+): {
+  physicalLeaders: TournamentStats['physicalLeaders'];
+  xgPerformance: XgTeamEntry[];
+} {
+  const playerMap = new Map<
+    string,
+    { name: string; abbr: string; fifaId: string | null; totalDistanceM: number; sprints: number; topSpeedKmh: number }
+  >();
+  const teamMap = new Map<string, { xg: number; goals: number; matches: number }>();
+
+  for (const pmsr of pmsrData) {
+    const score = matchScores.get(pmsr.eventId);
+    const sides: [typeof pmsr.home, boolean][] = [
+      [pmsr.home, true],
+      [pmsr.away, false],
+    ];
+
+    for (const [team, isHome] of sides) {
+      if (!team.abbr) continue;
+
+      // xG accumulation (team-level)
+      if (team.xg !== null) {
+        if (!teamMap.has(team.abbr)) teamMap.set(team.abbr, { xg: 0, goals: 0, matches: 0 });
+        const t = teamMap.get(team.abbr)!;
+        t.xg += team.xg;
+        t.matches++;
+        if (score) t.goals += isHome ? score.homeGoals : score.awayGoals;
+      }
+
+      // Player physical accumulation
+      for (const p of team.physical) {
+        const key = p.fifaId ?? `${team.abbr}|${p.name}`;
+        if (!playerMap.has(key)) {
+          playerMap.set(key, {
+            name: p.name,
+            abbr: team.abbr,
+            fifaId: p.fifaId,
+            totalDistanceM: 0,
+            sprints: 0,
+            topSpeedKmh: 0,
+          });
+        }
+        const acc = playerMap.get(key)!;
+        acc.totalDistanceM += p.total_distance_m;   // cumulative
+        acc.sprints += p.sprints;                    // cumulative
+        if (p.top_speed_kmh > acc.topSpeedKmh) acc.topSpeedKmh = p.top_speed_kmh;  // max
+      }
+    }
+  }
+
+  const players = Array.from(playerMap.values());
+
+  const top = (pick: (p: (typeof players)[0]) => number, n = 8): PhysicalLeaderEntry[] =>
+    [...players]
+      .sort((a, b) => pick(b) - pick(a))
+      .slice(0, n)
+      .map(p => ({ p: p.name, t: p.abbr, fifaId: p.fifaId, value: pick(p) }));
+
+  const physicalLeaders =
+    players.length === 0
+      ? { topSpeed: [], mostDistance: [], mostSprints: [] }
+      : {
+          topSpeed: top(p => p.topSpeedKmh),
+          mostDistance: top(p => p.totalDistanceM),
+          mostSprints: top(p => p.sprints),
+        };
+
+  const xgPerformance: XgTeamEntry[] = Array.from(teamMap.entries())
+    .map(([abbr, t]) => ({
+      t: abbr,
+      xg: Math.round(t.xg * 100) / 100,
+      goals: t.goals,
+      matches: t.matches,
+    }))
+    .sort((a, b) => b.xg - a.xg);
+
+  return { physicalLeaders, xgPerformance };
 }
