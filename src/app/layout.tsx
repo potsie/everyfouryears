@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Archivo } from 'next/font/google';
 import { MyTeamProvider } from '@/contexts/my-team-context';
+import { XgProvider } from '@/contexts/xg-context';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import './globals.css';
 
@@ -26,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={archivo.variable}
         style={{ fontFamily: 'var(--font-archivo), system-ui, sans-serif' }}
       >
-        <MyTeamProvider>{children}</MyTeamProvider>
+        <XgProvider><MyTeamProvider>{children}</MyTeamProvider></XgProvider>
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
         )}

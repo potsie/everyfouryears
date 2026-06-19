@@ -2,6 +2,7 @@
 
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 import { linescoreCells } from '@/lib/normalize/world-cup-normalizer';
+import { useXg } from '@/contexts/xg-context';
 import { Flag } from './Flag';
 
 interface MatchCardProps {
@@ -29,6 +30,7 @@ function stageLabel(match: WorldCupMatchNormalized): string {
 export function MatchCard({ match }: MatchCardProps) {
   const isLive = match.status.state === 'in';
   const isPost = match.status.state === 'post';
+  const xg = useXg(match.eventId);
   const isPre = match.status.state === 'pre';
 
   const homeScore = parseInt(match.home.score) || 0;
@@ -155,7 +157,22 @@ export function MatchCard({ match }: MatchCardProps) {
               {match.venueCity ? ` · ${match.venueCity}` : ''}
             </span>
           </div>
-          {match.broadcaster && (
+          {isPost && xg && (
+            <span
+              className="font-bold text-[11px] flex-shrink-0 tnum"
+              style={{
+                padding: '3px 8px',
+                borderRadius: 6,
+                background: 'var(--inset)',
+                border: '1px solid var(--line)',
+                letterSpacing: '.02em',
+                color: 'var(--ink-2)',
+              }}
+            >
+              xG {xg.home.toFixed(2)}–{xg.away.toFixed(2)}
+            </span>
+          )}
+          {!isPost && match.broadcaster && (
             <span
               className="font-bold text-[11px] flex-shrink-0"
               style={{
