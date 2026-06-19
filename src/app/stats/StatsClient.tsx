@@ -310,15 +310,25 @@ function XgTeamCard({ rows }: { rows: XgTeamEntry[] }) {
         <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>xG · actual</span>
       </div>
       <div className="xg-grid">
-        {rows.map((t, i) => (
-          <div className="xg-row" key={t.t}>
-            <span className="xg-rank tnum">{i + 1}</span>
-            <span className="xg-team">
-              <Flag logo={teamFlagUrl(t.t)} abbr={t.t} size={16} />
-              {countryName(t.t)}
-            </span>
-            <span className="xg-val tnum">{t.xg.toFixed(1)}</span>
-            <span className="xg-goals tnum">{t.goals}</span>
+        {[0, 16, 32].map(offset => (
+          <div key={offset} className="xg-col">
+            <div className="xg-col-head">
+              <span>#</span>
+              <span>Team</span>
+              <span>xG</span>
+              <span>Goals</span>
+            </div>
+            {rows.slice(offset, offset + 16).map((t, i) => (
+              <div className="xg-row" key={t.t}>
+                <span className="xg-rank tnum">{offset + i + 1}</span>
+                <span className="xg-team">
+                  <Flag logo={teamFlagUrl(t.t)} abbr={t.t} size={16} />
+                  {countryName(t.t)}
+                </span>
+                <span className="xg-val tnum">{t.xg.toFixed(1)}</span>
+                <span className="xg-goals tnum">{t.goals}</span>
+              </div>
+            ))}
           </div>
         ))}
       </div>
