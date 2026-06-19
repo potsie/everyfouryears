@@ -3,9 +3,13 @@ import path from 'path';
 import { notFound } from 'next/navigation';
 import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings, fetchFifaTeamBio, fetchFifaCoaches, fetchFifaSquads } from '@/lib/espn/wc-fetchers';
 import { fetchTeamNewsMerged } from '@/lib/news';
+import { espnFetch } from '@/lib/espn/core';
+import { getAllPmsr } from '@/lib/pmsr.server';
 import { Nav } from '@/components/Nav';
 import TeamClient from './TeamClient';
 import type { GroupMiniRow } from '@/components/GroupMini';
+import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
+import type { TeamTournamentStats } from './TeamClient';
 
 export const revalidate = 300;
 
@@ -119,6 +123,71 @@ export default async function TeamPage({
     };
   });
 
+  // Aggregate tournament stats from completed match summaries
+  let teamTournamentStats: TeamTournamentStats | null = null;
+  if (completedMatches.length > 0) {
+    const [summaries, allPmsr] = await Promise.all([
+      Promise.all(
+        completedMatches.map(m =>
+          espnFetch<ESPNMatchSummaryFull>(
+            `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${m.eventId}`,
+            `wc-match-${m.eventId}`,
+            undefined,
+          ).catch(() => null),
+        ),
+      ),
+      getAllPmsr(),
+    ]);
+
+    let gf = 0, ga = 0, poss = 0, possCount = 0;
+    let totalShots = 0, soT = 0, accPasses = 0, totPasses = 0;
+    let xgTotal = 0, xgCount = 0;
+
+    for (let i = 0; i < completedMatches.length; i++) {
+      const m = completedMatches[i];
+      const summary = summaries[i];
+      const isHome = m.home.abbr.toUpperCase() === upperAbbr;
+
+      gf += Number(isHome ? m.home.score : m.away.score) || 0;
+      ga += Number(isHome ? m.away.score : m.home.score) || 0;
+
+      if (summary?.boxscore?.teams) {
+        const entry = summary.boxscore.teams.find(
+          t => t.team.abbreviation.toUpperCase() === upperAbbr,
+        );
+        if (entry) {
+          const stat = (name: string) => {
+            const s = entry.statistics.find(s => s.name === name);
+            return s ? parseFloat(s.displayValue) || 0 : 0;
+          };
+          const p = stat('possessionPct');
+          if (p > 0) { poss += p; possCount++; }
+          totalShots += stat('totalShots');
+          soT += stat('shotsOnTarget');
+          accPasses += stat('accuratePasses');
+          totPasses += stat('totalPasses');
+        }
+      }
+
+      const pmsr = allPmsr.find(d => d.eventId === m.eventId);
+      if (pmsr) {
+        const sideXg = isHome ? pmsr.home.xg : pmsr.away.xg;
+        if (sideXg !== null) { xgTotal += sideXg; xgCount++; }
+      }
+    }
+
+    teamTournamentStats = {
+      matches: completedMatches.length,
+      gf,
+      ga,
+      avgPoss: possCount > 0 ? Math.round(poss / possCount) : 0,
+      totalShots,
+      shotsOnTarget: soT,
+      passPct: totPasses > 0 ? Math.round((accPasses / totPasses) * 100) : 0,
+      xg: xgCount > 0 ? xgTotal : null,
+    };
+  }
+
   // Next match
   const nextMatch = teamMatches.find(m => m.status.state === 'pre');
   const nextMatchData = nextMatch
@@ -195,6 +264,7 @@ export default async function TeamPage({
           teamColorPrimary={teamColors?.primary ?? null}
           teamColorAlt={teamColors?.alt ?? null}
           teamNews={teamNews}
+          teamTournamentStats={teamTournamentStats}
         />
       </div>
     </>

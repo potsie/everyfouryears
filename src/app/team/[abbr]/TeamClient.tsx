@@ -8,6 +8,17 @@ import type { GroupMiniRow } from '@/components/GroupMini';
 import PinMyTeamButton from '@/components/PinMyTeamButton';
 import type { NewsItem } from '@/lib/news';
 
+export interface TeamTournamentStats {
+  matches: number;
+  gf: number;
+  ga: number;
+  avgPoss: number;
+  totalShots: number;
+  shotsOnTarget: number;
+  passPct: number;
+  xg: number | null;
+}
+
 interface FormEntry {
   res: 'W' | 'D' | 'L';
   score: string;
@@ -55,6 +66,7 @@ interface TeamClientProps {
   teamColorPrimary: string | null;
   teamColorAlt: string | null;
   teamNews: NewsItem[];
+  teamTournamentStats: TeamTournamentStats | null;
 }
 
 function ordinal(n: number): string {
@@ -99,6 +111,7 @@ export default function TeamClient({
   teamColorPrimary,
   teamColorAlt,
   teamNews,
+  teamTournamentStats,
 }: TeamClientProps) {
   const previewSquad = squad.slice(0, 6);
 
@@ -279,6 +292,57 @@ export default function TeamClient({
                     <div className="vs">v {f.opp}</div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tournament stats */}
+          {teamTournamentStats && teamTournamentStats.matches > 0 && (
+            <div className="t-card">
+              <div
+                className="t-card-head"
+                style={teamColorPrimary ? { background: `color-mix(in srgb, ${teamColorPrimary} 25%, var(--navy))` } : undefined}
+              >
+                <h3>Tournament stats</h3>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-3)' }}>
+                  {teamTournamentStats.matches} match{teamTournamentStats.matches !== 1 ? 'es' : ''}
+                </span>
+              </div>
+              <div className="facts">
+                <div className="fact-row">
+                  <span className="k">Goals scored</span>
+                  <span className="v tnum">{teamTournamentStats.gf}</span>
+                </div>
+                <div className="fact-row">
+                  <span className="k">Goals conceded</span>
+                  <span className="v tnum">{teamTournamentStats.ga}</span>
+                </div>
+                {teamTournamentStats.avgPoss > 0 && (
+                  <div className="fact-row">
+                    <span className="k">Avg possession</span>
+                    <span className="v tnum">{teamTournamentStats.avgPoss}%</span>
+                  </div>
+                )}
+                <div className="fact-row">
+                  <span className="k">Total shots</span>
+                  <span className="v tnum">{teamTournamentStats.totalShots}</span>
+                </div>
+                <div className="fact-row">
+                  <span className="k">Shots on target</span>
+                  <span className="v tnum">{teamTournamentStats.shotsOnTarget}</span>
+                </div>
+                {teamTournamentStats.passPct > 0 && (
+                  <div className="fact-row">
+                    <span className="k">Pass accuracy</span>
+                    <span className="v tnum">{teamTournamentStats.passPct}%</span>
+                  </div>
+                )}
+                {teamTournamentStats.xg !== null && (
+                  <div className="fact-row">
+                    <span className="k">xG (FIFA)</span>
+                    <span className="v tnum">{teamTournamentStats.xg.toFixed(2)}</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
