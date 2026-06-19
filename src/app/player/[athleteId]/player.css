@@ -54,6 +54,8 @@
 .wc-log-scroll { overflow-x: auto; }
 .wc-log { min-width: 540px; }
 .wc-log.gk { min-width: 440px; }
+.wc-log.phys { min-width: 360px; }
+.wc-log.phys .wc-log-row { grid-template-columns: 58px 90px 70px 60px 80px; }
 .wc-log-row { display: grid; grid-template-columns: 58px 80px 80px repeat(9, 1fr); align-items: center; gap: 4px; padding: 9px 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink); text-decoration: none; }
 .wc-log-row.gk { grid-template-columns: 58px 80px 80px repeat(6, 1fr); }
 .wc-log-row:not(.head):hover { background: var(--inset); }

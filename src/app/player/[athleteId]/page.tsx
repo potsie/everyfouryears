@@ -11,6 +11,8 @@ import { espnFetch } from '@/lib/espn/core';
 import { buildPlayerWorldCupLog } from '@/lib/stats-live';
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
 import { PlayerWorldCup } from './PlayerWorldCup';
+import { getAllPmsr } from '@/lib/pmsr.server';
+import { buildPlayerPmsr } from '@/lib/pmsr';
 
 interface PlayerClubEntry {
   fifaId: string;
@@ -32,9 +34,10 @@ export default async function PlayerPage({
 }) {
   const { athleteId } = await params;
 
-  const [allSquads, { matches, teamDict }] = await Promise.all([
+  const [allSquads, { matches, teamDict }, allPmsr] = await Promise.all([
     fetchFifaSquads(),
     fetchAllMatches(),
+    getAllPmsr(),
   ]);
 
 
@@ -76,6 +79,9 @@ export default async function PlayerPage({
       m.status.state === 'post' &&
       (m.home.abbr.toUpperCase() === teamCountryCode || m.away.abbr.toUpperCase() === teamCountryCode),
   );
+  const matchDates = new Map(teamMatches.map(m => [m.eventId, m.date]));
+  const pmsr = buildPlayerPmsr(allPmsr, athleteId, teamCountryCode, matchDates);
+
   const matchSummaries = await Promise.all(
     teamMatches.map(async m => ({
       match: m,
@@ -164,7 +170,7 @@ export default async function PlayerPage({
 
         <div className="cols">
           <div>
-            <PlayerWorldCup log={wcLog} />
+            <PlayerWorldCup log={wcLog} pmsr={pmsr} />
           </div>
 
           <div className="shelf">
