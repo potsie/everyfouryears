@@ -376,86 +376,9 @@ function TeamStatsCard({ rows }: { rows: TeamStatEntry[] }) {
   );
 }
 
-function GBHero({ rows }: { rows: ScorerEntry[] }) {
-  const top = rows.slice(0, 3);
-  return (
-    <div className="gb-hero">
-      <div className="gh-grain" />
-      <div className="gh-in">
-        <div className="gh-eyebrow">
-          <span className="gh-dot" />
-          Race for the Golden Boot
-        </div>
-        <div className="gh-podium">
-          {top.map((p, i) => (
-            <RowLink className={`ghp${i === 0 ? ' lead' : ''}`} key={p.p} fifaId={p.fifaId}>
-              <div className="gp-top">
-                <span className="gp-rank tnum">#{i + 1}</span>
-                {i === 0 && <span className="gp-medal">Golden Boot</span>}
-              </div>
-              <div className="gp-name">{p.p}</div>
-              <div className="gp-meta">
-                <Flag logo={teamFlagUrl(p.t)} abbr={p.t} size={14} />
-                {countryName(p.t)}
-              </div>
-              <div className="gp-goals tnum">
-                {p.g}<span className="u">goals</span>
-              </div>
-            </RowLink>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FullScorerList({ rows }: { rows: ScorerEntry[] }) {
-  if (rows.length === 0) return (
-    <div style={{ padding: '16px', color: 'var(--ink-3)', fontStyle: 'italic', fontSize: 13 }}>
-      No goals scored yet
-    </div>
-  );
-  return (
-    <div className="lead-table" style={{ marginTop: 18 }}>
-      <div className="lt-row head">
-        <span className="lt-rank">#</span>
-        <span>Player</span>
-        <span className="lt-num head lt-hide">MP</span>
-        <span className="lt-num head lt-hide">A</span>
-        <span className="lt-num head" style={{ textAlign: 'center' }}>Goals</span>
-      </div>
-      {rows.map((p, i) => (
-        <RowLink className="lt-row" key={p.p} fifaId={p.fifaId}>
-          <span className="lt-rank tnum">{i + 1}</span>
-          <span className="lt-player">
-            <Shot name={p.p} size={34} headshotUrl={p.photo} />
-            <span className="lt-info">
-              <span className="lt-name">{p.p}</span>
-              <span className="lt-club">
-                <Flag logo={teamFlagUrl(p.t)} abbr={p.t} size={14} />
-                <span>{countryName(p.t)}</span>
-              </span>
-            </span>
-          </span>
-          <span className="lt-num tnum lt-hide">{p.mp}</span>
-          <span className="lt-num tnum lt-hide">{p.a}</span>
-          <span className="lt-main tnum">{p.g}</span>
-        </RowLink>
-      ))}
-    </div>
-  );
-}
 
 export function StatsClient() {
   const [stats, setStats] = useState<TournamentStats>(EMPTY_STATS);
-  const [view, setView] = useState<'Leaderboard' | 'Spotlight'>('Leaderboard');
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('wc-stats-view') as 'Leaderboard' | 'Spotlight';
-      if (saved === 'Spotlight') setView('Spotlight');
-    } catch {}
-  }, []);
 
   useEffect(() => {
     fetch('/api/stats')
@@ -463,11 +386,6 @@ export function StatsClient() {
       .then((data: TournamentStats) => setStats(data))
       .catch(() => {}); // keep empty/dash state on error
   }, []);
-
-  const handleView = (v: 'Leaderboard' | 'Spotlight') => {
-    setView(v);
-    try { localStorage.setItem('wc-stats-view', v); } catch {}
-  };
 
   const { tallies, goldenBoot, assists, cleanSheets, saves, discipline, young, teamStats, physicalLeaders, xgPerformance } = stats;
   const hasScorerPodium = goldenBoot.length >= 3;
@@ -478,41 +396,6 @@ export function StatsClient() {
       <PageHero
         eyebrow="2026 FIFA World Cup"
         title="Tournament Stats"
-        titleRight={
-          <div
-            role="tablist"
-            style={{
-              display: 'flex',
-              background: 'rgba(255,255,255,.10)',
-              border: '1px solid rgba(255,255,255,.16)',
-              borderRadius: 'var(--r-sm)',
-              padding: 3,
-              gap: 2,
-            }}
-          >
-            {([
-              { v: 'Leaderboard' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="5" width="18" height="3.2" rx="1.6" /><rect x="3" y="10.4" width="13" height="3.2" rx="1.6" /><rect x="3" y="15.8" width="8" height="3.2" rx="1.6" /></svg> },
-              { v: 'Spotlight' as const, icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.5 5.6 6.1.6-4.6 4 1.4 6L12 18.7 6.6 22l1.4-6-4.6-4 6.1-.6z" /></svg> },
-            ]).map(({ v, icon }) => (
-              <button
-                key={v}
-                role="tab"
-                aria-selected={view === v}
-                onClick={() => handleView(v)}
-                style={{
-                  fontFamily: 'var(--ui)', fontWeight: 600, fontSize: 12.5,
-                  border: 'none', cursor: 'pointer', borderRadius: 7,
-                  padding: '6px 13px', display: 'flex', alignItems: 'center', gap: 5,
-                  background: view === v ? 'rgba(255,255,255,.18)' : 'none',
-                  color: view === v ? '#fff' : 'rgba(255,255,255,.6)',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {icon} {v}
-              </button>
-            ))}
-          </div>
-        }
       />
 
       <div className="tally-strip">
@@ -538,71 +421,44 @@ export function StatsClient() {
         ))}
       </div>
 
-      {view === 'Leaderboard' ? (
-        <>
-          <div className="section-head" style={{ marginTop: 28 }}>
-            <h2>Golden Boot</h2>
-            <span className="eyebrow">Top scorers</span>
+      <>
+        <div className="section-head" style={{ marginTop: 28 }}>
+          <h2>Golden Boot</h2>
+          <span className="eyebrow">Top scorers</span>
+        </div>
+        {hasScorerPodium ? (
+          <div className="gb-podium" style={{ marginTop: 14 }}>
+            <Podium p={goldenBoot[0]} rank={1} />
+            <Podium p={goldenBoot[1]} rank={2} />
+            <Podium p={goldenBoot[2]} rank={3} />
           </div>
-          {hasScorerPodium ? (
-            <div className="gb-podium" style={{ marginTop: 14 }}>
-              <Podium p={goldenBoot[0]} rank={1} />
-              <Podium p={goldenBoot[1]} rank={2} />
-              <Podium p={goldenBoot[2]} rank={3} />
-            </div>
-          ) : (
-            <div style={{ padding: '20px 0', color: 'var(--ink-3)', fontStyle: 'italic', fontSize: 14 }}>
-              No goals scored yet — check back after the first match
-            </div>
-          )}
-          <GoldenBootTable rows={goldenBoot.slice(3)} />
-          <TeamStatsCard rows={teamStats} />
-          <div className="stats-duo">
-            <CatPanel assists={assists} cleanSheets={cleanSheets} saves={saves} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <DisciplinePanel rows={discipline} />
-              <YoungPanel rows={young} />
-            </div>
+        ) : (
+          <div style={{ padding: '20px 0', color: 'var(--ink-3)', fontStyle: 'italic', fontSize: 14 }}>
+            No goals scored yet — check back after the first match
           </div>
-          {hasPmsr && (
-            <>
-              <div className="section-head" style={{ marginTop: 28 }}>
-                <h2>Running &amp; physical</h2>
-                <span className="eyebrow">FIFA match report data</span>
-              </div>
-              <div className="stats-duo" style={{ marginTop: 14 }}>
-                <XgTeamCard rows={xgPerformance} />
-                <PhysicalPanel leaders={physicalLeaders} />
-              </div>
-            </>
-          )}
-        </>
-      ) : (
-        <>
-          {hasScorerPodium ? <GBHero rows={goldenBoot} /> : null}
-          <FullScorerList rows={goldenBoot} />
-          <TeamStatsCard rows={teamStats} />
-          <div className="stats-duo">
-            <CatPanel assists={assists} cleanSheets={cleanSheets} saves={saves} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <DisciplinePanel rows={discipline} />
-              <YoungPanel rows={young} />
-            </div>
+        )}
+        <GoldenBootTable rows={goldenBoot.slice(3)} />
+        <TeamStatsCard rows={teamStats} />
+        <div className="stats-duo">
+          <CatPanel assists={assists} cleanSheets={cleanSheets} saves={saves} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <DisciplinePanel rows={discipline} />
+            <YoungPanel rows={young} />
           </div>
-          {hasPmsr && (
-            <>
-              <div className="section-head" style={{ marginTop: 28 }}>
-                <h2>Running &amp; physical</h2>
-                <span className="eyebrow">FIFA match report data</span>
-              </div>
-              <div className="stats-duo" style={{ marginTop: 14 }}>
-                <XgTeamCard rows={xgPerformance} />
-                <PhysicalPanel leaders={physicalLeaders} />
-              </div>
-            </>
-          )}
-        </>
-      )}
+        </div>
+        {hasPmsr && (
+          <>
+            <div className="section-head" style={{ marginTop: 28 }}>
+              <h2>Running &amp; physical</h2>
+              <span className="eyebrow">FIFA match report data</span>
+            </div>
+            <div className="stats-duo" style={{ marginTop: 14 }}>
+              <XgTeamCard rows={xgPerformance} />
+              <PhysicalPanel leaders={physicalLeaders} />
+            </div>
+          </>
+        )}
+      </>
 
       <div className="foot-note" style={{ marginTop: 32 }}>
         <span>Stats update after each completed match</span>
