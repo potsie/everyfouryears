@@ -15,6 +15,9 @@ import type {
   TallyItem,
   PhysicalLeaderEntry,
   XgTeamEntry,
+  ShotsTeamEntry,
+  PassingTeamEntry,
+  OwnGoalEntry,
 } from '@/lib/stats-live';
 
 function teamFlagUrl(abbr: string) {
@@ -69,6 +72,8 @@ const EMPTY_STATS: TournamentStats = {
     { k: 'Clean sheets',  v: '—', sub: 'by goalkeepers' },
     { k: 'Yellow',        v: '—', sub: 'cards this tournament', v2: '—', k2: 'Red' },
     { k: 'Hat-tricks',    v: '—', sub: 'this tournament' },
+    { k: 'Own goals',     v: '—', sub: 'this tournament' },
+    { k: 'VAR decisions', v: '—', sub: 'this tournament' },
   ],
   goldenBoot: [],
   assists: [],
@@ -77,6 +82,9 @@ const EMPTY_STATS: TournamentStats = {
   discipline: [],
   young: [],
   teamStats: [],
+  shotsLeaders: [],
+  passingLeaders: [],
+  ownGoals: [],
   physicalLeaders: { topSpeed: [], mostDistance: [], mostSprints: [] },
   xgPerformance: [],
 };
@@ -336,6 +344,99 @@ function XgTeamCard({ rows }: { rows: XgTeamEntry[] }) {
   );
 }
 
+function ShotsPanel({ rows }: { rows: ShotsTeamEntry[] }) {
+  const maxShots = rows.length > 0 ? Math.max(...rows.map(r => r.totalShots)) : 1;
+  return (
+    <div className="t-card" style={{ marginTop: 18 }}>
+      <div className="t-card-head">
+        <h3>Shots</h3>
+        <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>Total · on target</span>
+      </div>
+      <div className="tstat-row head">
+        <span className="ts-rank">#</span>
+        <span>Team</span>
+        <span className="ts-num">Total</span>
+        <span className="ts-num" style={{ textAlign: 'right' }}>On target</span>
+      </div>
+      {rows.length === 0 ? (
+        <div style={{ padding: '12px 16px', color: 'var(--ink-3)', fontStyle: 'italic', fontSize: 13 }}>No matches played yet</div>
+      ) : rows.map((t, i) => (
+        <div className="tstat-row" key={t.t}>
+          <span className="ts-rank tnum">{i + 1}</span>
+          <span className="ts-team">
+            <Flag logo={teamFlagUrl(t.t)} abbr={t.t} size={18} />
+            {countryName(t.t)}
+          </span>
+          <span className="ts-num" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="ts-bar" style={{ flex: 1 }}>
+              <i style={{ width: `${(t.totalShots / maxShots) * 100}%` }} />
+            </span>
+            <span className="tnum" style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{t.totalShots}</span>
+          </span>
+          <span className="ts-poss tnum">{t.soT}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PassingPanel({ rows }: { rows: PassingTeamEntry[] }) {
+  return (
+    <div className="t-card" style={{ marginTop: 18 }}>
+      <div className="t-card-head">
+        <h3>Passing</h3>
+        <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>Accuracy · total</span>
+      </div>
+      <div className="tstat-row head">
+        <span className="ts-rank">#</span>
+        <span>Team</span>
+        <span className="ts-num">Acc %</span>
+        <span className="ts-num" style={{ textAlign: 'right' }}>Passes</span>
+      </div>
+      {rows.length === 0 ? (
+        <div style={{ padding: '12px 16px', color: 'var(--ink-3)', fontStyle: 'italic', fontSize: 13 }}>No matches played yet</div>
+      ) : rows.map((t, i) => (
+        <div className="tstat-row" key={t.t}>
+          <span className="ts-rank tnum">{i + 1}</span>
+          <span className="ts-team">
+            <Flag logo={teamFlagUrl(t.t)} abbr={t.t} size={18} />
+            {countryName(t.t)}
+          </span>
+          <span className="ts-num tnum" style={{ fontWeight: 700, color: 'var(--ink)' }}>{t.passPct}%</span>
+          <span className="ts-poss tnum">{t.totalPasses.toLocaleString()}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function OwnGoalsPanel({ rows }: { rows: OwnGoalEntry[] }) {
+  if (rows.length === 0) return null;
+  return (
+    <div className="panel" style={{ marginTop: 18 }}>
+      <div className="panel-head">
+        <h3>Own goals</h3>
+        <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>{rows.length} this tournament</span>
+      </div>
+      {rows.map((og, i) => (
+        <a key={i} href={`/match/${og.eventId}`} className="lead-card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderTop: i === 0 ? 'none' : '1px solid var(--line)', textDecoration: 'none', color: 'inherit' }}>
+          <span className="lc-rank tnum" style={{ fontFamily: 'var(--display)', fontWeight: 700, color: 'var(--ink-3)', minWidth: 18 }}>{i + 1}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>{og.player}</div>
+            <div style={{ fontSize: 12, color: 'var(--ink-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Flag logo={teamFlagUrl(og.ownTeam)} abbr={og.ownTeam} size={13} />
+              {countryName(og.ownTeam)} · {og.minute}
+            </div>
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--ink-3)', textAlign: 'right', whiteSpace: 'nowrap' }}>
+            vs <strong style={{ color: 'var(--ink)' }}>{og.oppTeam}</strong>
+          </div>
+        </a>
+      ))}
+    </div>
+  );
+}
+
 function TeamStatsCard({ rows }: { rows: TeamStatEntry[] }) {
   const maxGoals = rows.length > 0 ? Math.max(...rows.map(t => t.gf)) : 1;
   return (
@@ -385,7 +486,7 @@ export function StatsClient() {
       .catch(() => {}); // keep empty/dash state on error
   }, []);
 
-  const { tallies, goldenBoot, assists, cleanSheets, saves, discipline, young, teamStats, physicalLeaders, xgPerformance } = stats;
+  const { tallies, goldenBoot, assists, cleanSheets, saves, discipline, young, teamStats, shotsLeaders, passingLeaders, ownGoals, physicalLeaders, xgPerformance } = stats;
   const hasScorerPodium = goldenBoot.length >= 3;
   const hasPmsr = xgPerformance.length > 0 || physicalLeaders.topSpeed.length > 0;
 
@@ -444,7 +545,12 @@ export function StatsClient() {
           <DisciplinePanel rows={discipline.slice(0, 5)} />
           <YoungPanel rows={young} />
         </div>
+        <OwnGoalsPanel rows={ownGoals} />
         <TeamStatsCard rows={teamStats} />
+        <div className="stats-duo">
+          <ShotsPanel rows={shotsLeaders} />
+          <PassingPanel rows={passingLeaders} />
+        </div>
         {hasPmsr && <XgTeamCard rows={xgPerformance} />}
       </>
 

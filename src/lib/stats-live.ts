@@ -8,6 +8,9 @@ export interface LeadEntry { p: string; t: string; v: number; fifaId?: string; }
 export interface DisciplineEntry { p: string; t: string; y: number; r: number; fifaId?: string; }
 export interface YoungEntry { p: string; t: string; age: number; g: number; a: number; fifaId?: string; }
 export interface TeamStatEntry { t: string; gf: number; ga: number; poss: number; shots: number; }
+export interface ShotsTeamEntry { t: string; totalShots: number; soT: number; }
+export interface PassingTeamEntry { t: string; passPct: number; totalPasses: number; }
+export interface OwnGoalEntry { player: string; ownTeam: string; oppTeam: string; minute: string; eventId: string; }
 
 export interface PhysicalLeaderEntry {
   p: string;             // player name
@@ -32,6 +35,9 @@ export interface TournamentStats {
   discipline: DisciplineEntry[];
   young: YoungEntry[];
   teamStats: TeamStatEntry[];
+  shotsLeaders: ShotsTeamEntry[];
+  passingLeaders: PassingTeamEntry[];
+  ownGoals: OwnGoalEntry[];
   physicalLeaders: {
     topSpeed: PhysicalLeaderEntry[];
     mostDistance: PhysicalLeaderEntry[];
@@ -84,17 +90,23 @@ export function buildTournamentStats(
   // ESPN rosters carry ESPN athlete ids; player pages key on FIFA ids, so we
   // bridge by jersey + team (same join used for match-center lineups).
   fifaIdByKey: Map<string, string> = new Map(),
+  eventIds: string[] = [],
 ): TournamentStats {
   const players = new Map<string, PlayerAcc>();
-  const teamAccum = new Map<string, { gf: number; ga: number; poss: number; shots: number; matches: number }>();
+  const teamAccum = new Map<string, { gf: number; ga: number; poss: number; shots: number; soT: number; accuratePasses: number; totalPasses: number; matches: number }>();
   let totalPens = 0;
   let totalPensTaken = 0;
   let totalYellowCards = 0;
   let totalRedCards = 0;
   let totalCleanSheets = 0;
   let hatTricks = 0;
+  let totalOwnGoals = 0;
+  let totalVAR = 0;
+  const ownGoalsList: OwnGoalEntry[] = [];
 
-  for (const summary of summaries) {
+  for (let si = 0; si < summaries.length; si++) {
+    const summary = summaries[si];
+    const eventId = eventIds[si] ?? '';
     const comp = summary.header?.competitions?.[0];
     if (!comp) continue;
 
@@ -103,6 +115,7 @@ export function buildTournamentStats(
     for (const c of comp.competitors ?? []) {
       teamAbbrMap.set(c.team.id, c.team.abbreviation);
     }
+    const allTeamAbbrs = Array.from(teamAbbrMap.values());
 
     // Penalties per player in this match (from keyEvents)
     // ESPN uses "Penalty - Scored", "Penalty - Missed", "Penalty - Saved" event types
@@ -110,19 +123,30 @@ export function buildTournamentStats(
     let matchPens = 0;
     let matchPensTaken = 0;
     for (const evt of summary.keyEvents ?? []) {
+      const text: string = evt.type?.text ?? '';
       if (!evt.shootout && (
-        evt.type.text === 'Penalty - Scored' ||
-        evt.type.text === 'Penalty - Missed' ||
-        evt.type.text === 'Penalty - Saved' ||
-        evt.type.text === 'Penalty Kick Goal'  // legacy fallback
+        text === 'Penalty - Scored' ||
+        text === 'Penalty - Missed' ||
+        text === 'Penalty - Saved' ||
+        text === 'Penalty Kick Goal'
       )) {
         matchPensTaken++;
-        if (evt.type.text === 'Penalty - Scored' || evt.type.text === 'Penalty Kick Goal') {
+        if (text === 'Penalty - Scored' || text === 'Penalty Kick Goal') {
           matchPens++;
           const id = evt.participants?.[0]?.athlete.id;
           if (id) playerPens.set(id, (playerPens.get(id) ?? 0) + 1);
         }
       }
+      if (text === 'Own Goal') {
+        totalOwnGoals++;
+        const player = evt.participants?.[0]?.athlete?.displayName ?? 'Unknown';
+        const ownTeamId = evt.team?.id ?? '';
+        const ownTeam = teamAbbrMap.get(ownTeamId) ?? '';
+        const oppTeam = allTeamAbbrs.find(a => a !== ownTeam) ?? '';
+        const minute = evt.clock?.displayValue ?? '';
+        ownGoalsList.push({ player, ownTeam, oppTeam, minute, eventId });
+      }
+      if (text.includes('VAR')) totalVAR++;
     }
     totalPens += matchPens;
     totalPensTaken += matchPensTaken;
@@ -187,13 +211,19 @@ export function buildTournamentStats(
       const ga = Number(oppComp?.score ?? 0);
       const poss = teamStatNum(teamEntry.statistics, 'possessionPct');
       const shots = teamStatNum(teamEntry.statistics, 'totalShots');
+      const soT = teamStatNum(teamEntry.statistics, 'shotsOnTarget');
+      const accuratePasses = teamStatNum(teamEntry.statistics, 'accuratePasses');
+      const totalPasses = teamStatNum(teamEntry.statistics, 'totalPasses');
 
-      if (!teamAccum.has(abbr)) teamAccum.set(abbr, { gf: 0, ga: 0, poss: 0, shots: 0, matches: 0 });
+      if (!teamAccum.has(abbr)) teamAccum.set(abbr, { gf: 0, ga: 0, poss: 0, shots: 0, soT: 0, accuratePasses: 0, totalPasses: 0, matches: 0 });
       const t = teamAccum.get(abbr)!;
       t.gf += gf;
       t.ga += ga;
       t.poss += poss;
       t.shots += shots;
+      t.soT += soT;
+      t.accuratePasses += accuratePasses;
+      t.totalPasses += totalPasses;
       t.matches++;
     }
   }
@@ -211,6 +241,8 @@ export function buildTournamentStats(
     { k: 'Clean sheets',  v: matchCount > 0 ? String(totalCleanSheets) : '—',        sub: 'by goalkeepers' },
     { k: 'Yellow',        v: matchCount > 0 ? String(totalYellowCards) : '—',        sub: 'cards this tournament', v2: matchCount > 0 ? String(totalRedCards) : '—', k2: 'Red' },
     { k: 'Hat-tricks',    v: matchCount > 0 ? String(hatTricks) : '—',              sub: 'this tournament' },
+    { k: 'Own goals',     v: matchCount > 0 ? String(totalOwnGoals) : '—',           sub: 'this tournament' },
+    { k: 'VAR decisions', v: matchCount > 0 ? String(totalVAR) : '—',               sub: 'this tournament' },
   ];
 
   const fifaId = (p: PlayerAcc): string | undefined =>
@@ -255,8 +287,9 @@ export function buildTournamentStats(
     .slice(0, 6)
     .map(p => ({ p: p.name, t: p.abbr, age: calcAge(p.dob!), g: p.goals, a: p.assists, fifaId: fifaId(p) }));
 
-  const teamStats: TeamStatEntry[] = Array.from(teamAccum.entries())
-    .filter(([, t]) => t.matches > 0)
+  const teamAccumEntries = Array.from(teamAccum.entries()).filter(([, t]) => t.matches > 0);
+
+  const teamStats: TeamStatEntry[] = teamAccumEntries
     .sort(([, a], [, b]) => b.gf - a.gf || a.ga - b.ga)
     .slice(0, 12)
     .map(([abbr, t]) => ({
@@ -267,8 +300,28 @@ export function buildTournamentStats(
       shots: t.shots,
     }));
 
+  const shotsLeaders: ShotsTeamEntry[] = [...teamAccumEntries]
+    .sort(([, a], [, b]) => b.shots - a.shots)
+    .slice(0, 12)
+    .map(([abbr, t]) => ({ t: abbr, totalShots: t.shots, soT: t.soT }));
+
+  const passingLeaders: PassingTeamEntry[] = [...teamAccumEntries]
+    .filter(([, t]) => t.totalPasses > 0)
+    .sort(([, a], [, b]) => {
+      const pctA = a.totalPasses > 0 ? a.accuratePasses / a.totalPasses : 0;
+      const pctB = b.totalPasses > 0 ? b.accuratePasses / b.totalPasses : 0;
+      return pctB - pctA;
+    })
+    .slice(0, 12)
+    .map(([abbr, t]) => ({
+      t: abbr,
+      passPct: t.totalPasses > 0 ? Math.round((t.accuratePasses / t.totalPasses) * 100) : 0,
+      totalPasses: t.totalPasses,
+    }));
+
   return {
-    tallies, goldenBoot, assists, cleanSheets, saves, discipline, young, teamStats,
+    tallies, goldenBoot, assists, cleanSheets, saves, discipline, young,
+    teamStats, shotsLeaders, passingLeaders, ownGoals: ownGoalsList,
     physicalLeaders: { topSpeed: [], mostDistance: [], mostSprints: [] },
     xgPerformance: [],
   };

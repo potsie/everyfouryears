@@ -57,7 +57,7 @@ export async function GET() {
       console.warn('[/api/stats] FIFA squad join skipped:', e);
     }
 
-    const stats = buildTournamentStats(summaries, dobMap, totalGoals, fifaIdByKey);
+    const stats = buildTournamentStats(summaries, dobMap, totalGoals, fifaIdByKey, completed.map(m => m.eventId));
 
     // Build matchScores map for PMSR join
     const matchScores = new Map<
