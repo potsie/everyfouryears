@@ -3,7 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { fetchAllMatches, fetchFifaSquads } from '@/lib/espn/wc-fetchers';
 import { espnFetch } from '@/lib/espn/core';
-import { buildTournamentStats } from '@/lib/stats-live';
+import { buildTournamentStats, buildPmsrStats } from '@/lib/stats-live';
+import { getAllPmsr } from '@/lib/pmsr.server';
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
 
 export async function GET() {
@@ -28,16 +29,19 @@ export async function GET() {
       return sum + (parseInt(m.home.score) || 0) + (parseInt(m.away.score) || 0);
     }, 0);
 
-    // Fetch summaries for completed matches; no TTL = cache forever
-    const summaries = await Promise.all(
-      completed.map(m =>
-        espnFetch<ESPNMatchSummaryFull>(
-          `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${m.eventId}`,
-          `wc-match-${m.eventId}`,
-          undefined,
+    // Fetch summaries + all PMSR data in parallel
+    const [summaries, allPmsr] = await Promise.all([
+      Promise.all(
+        completed.map(m =>
+          espnFetch<ESPNMatchSummaryFull>(
+            `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${m.eventId}`,
+            `wc-match-${m.eventId}`,
+            undefined,
+          ),
         ),
       ),
-    );
+      getAllPmsr(),
+    ]);
 
     // Build `${teamAbbr}|${jersey}` → FIFA player id map so leaders can link to
     // /player/{fifaId}. Best-effort — never fail stats if FIFA squads are down.
@@ -55,6 +59,21 @@ export async function GET() {
 
     const stats = buildTournamentStats(summaries, dobMap, totalGoals, fifaIdByKey);
 
+    // Build matchScores map for PMSR join
+    const matchScores = new Map<
+      string,
+      { homeAbbr: string; homeGoals: number; awayAbbr: string; awayGoals: number }
+    >();
+    for (const m of completed) {
+      matchScores.set(m.eventId, {
+        homeAbbr: m.home.abbr,
+        homeGoals: parseInt(m.home.score) || 0,
+        awayAbbr: m.away.abbr,
+        awayGoals: parseInt(m.away.score) || 0,
+      });
+    }
+    const { physicalLeaders, xgPerformance } = buildPmsrStats(allPmsr, matchScores);
+
     // Attach scorer headshots from players-clubs.json (keyed by FIFA id), the
     // same source the team roster pages use. Best-effort.
     try {
@@ -68,9 +87,10 @@ export async function GET() {
       console.warn('[/api/stats] player photo join skipped:', e);
     }
 
-    return NextResponse.json(stats, {
-      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
-    });
+    return NextResponse.json(
+      { ...stats, physicalLeaders, xgPerformance },
+      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } },
+    );
   } catch (err) {
     console.error('[/api/stats]', err);
     return NextResponse.json({ error: 'Failed to build stats' }, { status: 500 });

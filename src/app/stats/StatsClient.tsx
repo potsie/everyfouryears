@@ -75,6 +75,8 @@ const EMPTY_STATS: TournamentStats = {
   discipline: [],
   young: [],
   teamStats: [],
+  physicalLeaders: { topSpeed: [], mostDistance: [], mostSprints: [] },
+  xgPerformance: [],
 };
 
 function Podium({ p, rank }: { p: ScorerEntry; rank: 1 | 2 | 3 }) {
