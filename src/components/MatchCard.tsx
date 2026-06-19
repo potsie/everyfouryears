@@ -107,19 +107,17 @@ export function MatchCard({ match }: MatchCardProps) {
               >
                 <Flag logo={t.logo} abbr={t.abbr} size={32} />
                 <div className="min-w-0">
-                  <span className="font-display font-bold text-[17px] block leading-tight">{t.abbr}</span>
+                  <div className="flex items-baseline gap-[7px]">
+                    <span className="font-display font-bold text-[17px] leading-tight">{t.abbr}</span>
+                    {sideXg !== undefined && (
+                      <span className="text-[11px] font-bold tnum" style={{ color: 'var(--ink-3)' }}>xG {sideXg.toFixed(2)}</span>
+                    )}
+                  </div>
                   <span className="text-[12px] font-semibold block" style={{ color: 'var(--ink-3)' }}>{t.name}</span>
                 </div>
                 <span className="font-display font-bold text-[15px] tnum text-center" style={{ color: 'var(--ink-3)' }}>{h1}</span>
                 <span className="font-display font-bold text-[15px] tnum text-center" style={{ color: 'var(--ink-3)' }}>{h2}</span>
-                <div className="flex flex-col items-center">
-                  <span className="font-display font-black text-[24px] tnum" style={{ letterSpacing: '.02em', lineHeight: 1 }}>{tot}</span>
-                  {sideXg !== undefined && (
-                    <span className="text-[10px] font-bold tnum" style={{ color: 'var(--ink-3)', marginTop: 2 }}>
-                      {sideXg.toFixed(2)} xG
-                    </span>
-                  )}
-                </div>
+                <span className="font-display font-black text-[24px] tnum text-center" style={{ letterSpacing: '.02em' }}>{tot}</span>
               </div>
             );
           })}
