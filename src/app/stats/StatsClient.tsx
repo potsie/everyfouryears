@@ -310,7 +310,7 @@ function XgTeamCard({ rows }: { rows: XgTeamEntry[] }) {
         <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>xG · actual</span>
       </div>
       <div className="xg-grid">
-        {rows.slice(0, 16).map((t, i) => (
+        {rows.map((t, i) => (
           <div className="xg-row" key={t.t}>
             <span className="xg-rank tnum">{i + 1}</span>
             <span className="xg-team">

@@ -77,14 +77,14 @@
 .tstat-row .ts-bar { height: 7px; border-radius: 999px; background: var(--inset); overflow: hidden; position: relative; }
 .tstat-row .ts-bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
 .tstat-row .ts-poss { font-family: var(--display); font-weight: 800; font-size: 14px; color: var(--ink); text-align: right; }
-.xg-grid { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 24px; padding: 0 16px 12px; }
+.xg-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(16, auto); grid-auto-flow: column; column-gap: 24px; padding: 0 16px 12px; }
 .xg-row { display: grid; grid-template-columns: 20px 1fr 36px 28px; align-items: center; column-gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 13px; }
-.xg-row:nth-child(-n+3) { border-top: none; }
+.xg-row:nth-child(16n+1) { border-top: none; }
 .xg-row .xg-rank { font-family: var(--display); font-weight: 700; color: var(--ink-3); font-size: 11px; }
 .xg-row .xg-team { display: flex; align-items: center; gap: 7px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-family: var(--display); font-weight: 700; font-size: 13px; }
 .xg-row .xg-val { font-weight: 700; font-size: 13px; text-align: right; }
 .xg-row .xg-goals { font-family: var(--display); font-weight: 800; font-size: 15px; color: var(--accent); text-align: right; }
-@media (max-width: 600px) { .xg-grid { grid-template-columns: 1fr; } .xg-row:nth-child(-n+3) { border-top: 1px solid var(--line); } .xg-row:first-child { border-top: none; } }
+@media (max-width: 600px) { .xg-grid { grid-template-columns: 1fr; grid-template-rows: auto; grid-auto-flow: row; } .xg-row:nth-child(16n+1) { border-top: 1px solid var(--line); } .xg-row:first-child { border-top: none; } }
 .gb-hero { background: linear-gradient(150deg, var(--navy), var(--navy-700)); color: #fff; border-radius: var(--r-lg); box-shadow: var(--sh-2); overflow: hidden; position: relative; margin-top: 18px; }
 .gb-hero .gh-grain { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(900px 360px at 90% -12%, rgba(255,255,255,.08), transparent 60%), radial-gradient(640px 420px at 0% 120%, rgba(22,163,74,.18), transparent 55%); }
 .gb-hero .gh-in { position: relative; padding: 24px 28px; }
