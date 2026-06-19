@@ -107,7 +107,7 @@ export function MatchCard({ match }: MatchCardProps) {
               >
                 <Flag logo={t.logo} abbr={t.abbr} size={32} />
                 <div className="min-w-0">
-                  <div className="flex items-baseline gap-[7px]">
+                  <div className="flex items-baseline gap-[14px]">
                     <span className="font-display font-bold text-[17px] leading-tight">{t.abbr}</span>
                     {sideXg !== undefined && (
                       <span className="text-[11px] font-bold tnum" style={{ color: 'var(--ink-3)' }}>xG {sideXg.toFixed(2)}</span>
