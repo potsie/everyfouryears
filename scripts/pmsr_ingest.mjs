@@ -12,7 +12,7 @@ import { normalizePmsrName, resolveFifaId } from '../src/lib/pmsr.ts';
 const HUB = 'https://www.fifatrainingcentre.com/en/fifa-world-cup-2026/match-report-hub.php';
 const HOST = 'https://www.fifatrainingcentre.com';
 const SCOREBOARD =
-  'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260611-20260720&limit=200';
+  'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260610-20260720&limit=200';
 const FIFA_SQUADS = 'https://api.fifa.com/api/v3/teams/squads/all/17/285023?language=en';
 const DATA_DIR = 'data/pmsr';
 const OVERRIDES = JSON.parse(readFileSync(`${DATA_DIR}/name-overrides.json`, 'utf8'));
