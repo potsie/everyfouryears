@@ -303,37 +303,25 @@ function PhysicalPanel({
 
 function XgTeamCard({ rows }: { rows: XgTeamEntry[] }) {
   if (rows.length === 0) return null;
-  const maxXg = Math.max(...rows.map(r => r.xg));
   return (
-    <div className="panel">
+    <div className="panel" style={{ marginTop: 18 }}>
       <div className="panel-head">
         <h3>Expected goals</h3>
         <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>xG · actual</span>
       </div>
-      <div className="tstat-row head">
-        <span className="ts-rank">#</span>
-        <span>Team</span>
-        <span className="ts-num">xG</span>
-        <span className="ts-num" style={{ textAlign: 'right' }}>Goals</span>
+      <div className="xg-grid">
+        {rows.slice(0, 16).map((t, i) => (
+          <div className="xg-row" key={t.t}>
+            <span className="xg-rank tnum">{i + 1}</span>
+            <span className="xg-team">
+              <Flag logo={teamFlagUrl(t.t)} abbr={t.t} size={16} />
+              {countryName(t.t)}
+            </span>
+            <span className="xg-val tnum">{t.xg.toFixed(1)}</span>
+            <span className="xg-goals tnum">{t.goals}</span>
+          </div>
+        ))}
       </div>
-      {rows.map((t, i) => (
-        <div className="tstat-row" key={t.t}>
-          <span className="ts-rank tnum">{i + 1}</span>
-          <span className="ts-team">
-            <Flag logo={teamFlagUrl(t.t)} abbr={t.t} size={18} />
-            {countryName(t.t)}
-          </span>
-          <span className="ts-num" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span className="ts-bar" style={{ flex: 1 }}>
-              <i style={{ width: `${(t.xg / maxXg) * 100}%` }} />
-            </span>
-            <span className="tnum" style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>
-              {t.xg.toFixed(1)}
-            </span>
-          </span>
-          <span className="ts-poss tnum">{t.goals}</span>
-        </div>
-      ))}
     </div>
   );
 }
@@ -446,10 +434,8 @@ export function StatsClient() {
           <DisciplinePanel rows={discipline.slice(0, 5)} />
           <YoungPanel rows={young} />
         </div>
-        <div className="stats-duo">
-          <TeamStatsCard rows={teamStats} />
-          {hasPmsr && <XgTeamCard rows={xgPerformance} />}
-        </div>
+        <TeamStatsCard rows={teamStats} />
+        {hasPmsr && <XgTeamCard rows={xgPerformance} />}
       </>
 
       <div className="foot-note" style={{ marginTop: 32 }}>
