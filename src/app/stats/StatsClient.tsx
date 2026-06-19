@@ -438,26 +438,16 @@ export function StatsClient() {
           </div>
         )}
         <GoldenBootTable rows={goldenBoot.slice(3)} />
-        <TeamStatsCard rows={teamStats} />
         <div className="stats-duo">
           <CatPanel assists={assists} cleanSheets={cleanSheets} saves={saves} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            <DisciplinePanel rows={discipline} />
-            <YoungPanel rows={young} />
-          </div>
+          {hasPmsr && <PhysicalPanel leaders={physicalLeaders} />}
         </div>
-        {hasPmsr && (
-          <>
-            <div className="section-head" style={{ marginTop: 28 }}>
-              <h2>Running &amp; physical</h2>
-              <span className="eyebrow">FIFA match report data</span>
-            </div>
-            <div className="stats-duo" style={{ marginTop: 14 }}>
-              <XgTeamCard rows={xgPerformance} />
-              <PhysicalPanel leaders={physicalLeaders} />
-            </div>
-          </>
-        )}
+        <div className="stats-duo">
+          <DisciplinePanel rows={discipline} />
+          <YoungPanel rows={young} />
+        </div>
+        <TeamStatsCard rows={teamStats} />
+        {hasPmsr && <XgTeamCard rows={xgPerformance} />}
       </>
 
       <div className="foot-note" style={{ marginTop: 32 }}>
