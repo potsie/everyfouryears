@@ -32,7 +32,7 @@ async function getJson(url) {
 // Discover available report PDFs from the hub. Filenames are PMSR-M<n>-<HOME>-V-<AWAY>.pdf.
 async function discoverPdfs() {
   const html = await getText(HUB);
-  const re = /\/media\/native\/[^"')]*PMSR-M\d+-([A-Z]{3})-V-([A-Z]{3})\.pdf/g;
+  const re = /\/media\/native\/[^"')]*PMSR-M\d+[-\s]([A-Z]{3})[-\s]V[-\s]([A-Z]{3})[^"')]*\.pdf/g;
   const out = new Map(); // url -> { home, away }
   for (const m of html.matchAll(re)) out.set(HOST + m[0], { home: m[1], away: m[2] });
   return [...out].map(([url, teams]) => ({ url, ...teams }));
