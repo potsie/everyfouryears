@@ -98,6 +98,7 @@ export function MatchCard({ match }: MatchCardProps) {
             const t = match[side];
             const dim = side === 'home' ? homeDim : awayDim;
             const [h1, h2, tot] = cells[side];
+            const sideXg = isPost && xg ? (side === 'home' ? xg.home : xg.away) : undefined;
             return (
               <div
                 key={side}
@@ -111,7 +112,14 @@ export function MatchCard({ match }: MatchCardProps) {
                 </div>
                 <span className="font-display font-bold text-[15px] tnum text-center" style={{ color: 'var(--ink-3)' }}>{h1}</span>
                 <span className="font-display font-bold text-[15px] tnum text-center" style={{ color: 'var(--ink-3)' }}>{h2}</span>
-                <span className="font-display font-black text-[24px] tnum text-center" style={{ letterSpacing: '.02em' }}>{tot}</span>
+                <div className="flex flex-col items-center">
+                  <span className="font-display font-black text-[24px] tnum" style={{ letterSpacing: '.02em', lineHeight: 1 }}>{tot}</span>
+                  {sideXg !== undefined && (
+                    <span className="text-[10px] font-bold tnum" style={{ color: 'var(--ink-3)', marginTop: 2 }}>
+                      {sideXg.toFixed(2)} xG
+                    </span>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -157,22 +165,7 @@ export function MatchCard({ match }: MatchCardProps) {
               {match.venueCity ? ` · ${match.venueCity}` : ''}
             </span>
           </div>
-          {isPost && xg && (
-            <span
-              className="font-bold text-[11px] flex-shrink-0 tnum"
-              style={{
-                padding: '3px 8px',
-                borderRadius: 6,
-                background: 'var(--inset)',
-                border: '1px solid var(--line)',
-                letterSpacing: '.02em',
-                color: 'var(--ink-2)',
-              }}
-            >
-              xG {xg.home.toFixed(2)}–{xg.away.toFixed(2)}
-            </span>
-          )}
-          {!isPost && match.broadcaster && (
+          {match.broadcaster && (
             <span
               className="font-bold text-[11px] flex-shrink-0"
               style={{
