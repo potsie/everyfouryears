@@ -13,6 +13,8 @@ import type {
   YoungEntry,
   TeamStatEntry,
   TallyItem,
+  PhysicalLeaderEntry,
+  XgTeamEntry,
 } from '@/lib/stats-live';
 
 function teamFlagUrl(abbr: string) {
@@ -240,6 +242,102 @@ function YoungPanel({ rows }: { rows: YoungEntry[] }) {
   );
 }
 
+type PhysTab = 'Top speed' | 'Distance' | 'Sprints';
+
+function PhysicalPanel({
+  leaders,
+}: {
+  leaders: TournamentStats['physicalLeaders'];
+}) {
+  const [tab, setTab] = useState<PhysTab>('Top speed');
+  const TABS: Array<{ key: PhysTab; rows: PhysicalLeaderEntry[]; unit: string }> = [
+    { key: 'Top speed', rows: leaders.topSpeed,    unit: 'km/h' },
+    { key: 'Distance',  rows: leaders.mostDistance, unit: 'km' },
+    { key: 'Sprints',   rows: leaders.mostSprints,  unit: '' },
+  ];
+  const active = TABS.find(t => t.key === tab)!;
+
+  return (
+    <div className="panel">
+      <div className="panel-head"><h3>Running &amp; physical</h3></div>
+      <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--line)' }}>
+        <div className="seg" style={{ width: 'fit-content' }}>
+          {TABS.map(t => (
+            <button key={t.key} className={tab === t.key ? 'on' : ''} onClick={() => setTab(t.key)}>
+              {t.key}
+            </button>
+          ))}
+        </div>
+      </div>
+      {active.rows.length === 0 ? (
+        <EmptyLeaders label="physical data" />
+      ) : (
+        active.rows.slice(0, 6).map((r, i) => (
+          <RowLink className="lead-card" key={`${r.fifaId ?? r.p}-${r.t}`} fifaId={r.fifaId ?? undefined}>
+            <span className="lc-rank tnum">{i + 1}</span>
+            <div className="lc-info">
+              <div className="lc-name">{r.p}</div>
+              <div className="lc-meta">
+                <Flag logo={teamFlagUrl(r.t)} abbr={r.t} size={13} />
+                {countryName(r.t)}
+              </div>
+            </div>
+            <span className="lc-val tnum">
+              {tab === 'Distance'
+                ? (r.value / 1000).toFixed(1)
+                : tab === 'Top speed'
+                ? r.value.toFixed(1)
+                : r.value}
+              {active.unit && (
+                <span style={{ fontSize: 11, color: 'var(--ink-3)', fontWeight: 600, marginLeft: 3 }}>
+                  {active.unit}
+                </span>
+              )}
+            </span>
+          </RowLink>
+        ))
+      )}
+    </div>
+  );
+}
+
+function XgTeamCard({ rows }: { rows: XgTeamEntry[] }) {
+  if (rows.length === 0) return null;
+  const maxXg = Math.max(...rows.map(r => r.xg));
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <h3>Expected goals</h3>
+        <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>xG · actual</span>
+      </div>
+      <div className="tstat-row head">
+        <span className="ts-rank">#</span>
+        <span>Team</span>
+        <span className="ts-num">xG</span>
+        <span className="ts-num" style={{ textAlign: 'right' }}>Goals</span>
+      </div>
+      {rows.map((t, i) => (
+        <div className="tstat-row" key={t.t}>
+          <span className="ts-rank tnum">{i + 1}</span>
+          <span className="ts-team">
+            <Flag logo={teamFlagUrl(t.t)} abbr={t.t} size={18} />
+            {countryName(t.t)}
+          </span>
+          <span className="ts-num" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="ts-bar" style={{ flex: 1 }}>
+              <i style={{ width: `${(t.xg / maxXg) * 100}%` }} />
+            </span>
+            <span className="tnum" style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>
+              {t.xg.toFixed(1)}
+            </span>
+          </span>
+          <span className="ts-poss tnum">{t.goals}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function TeamStatsCard({ rows }: { rows: TeamStatEntry[] }) {
   const maxGoals = rows.length > 0 ? Math.max(...rows.map(t => t.gf)) : 1;
   return (
@@ -371,8 +469,9 @@ export function StatsClient() {
     try { localStorage.setItem('wc-stats-view', v); } catch {}
   };
 
-  const { tallies, goldenBoot, assists, cleanSheets, saves, discipline, young, teamStats } = stats;
+  const { tallies, goldenBoot, assists, cleanSheets, saves, discipline, young, teamStats, physicalLeaders, xgPerformance } = stats;
   const hasScorerPodium = goldenBoot.length >= 3;
+  const hasPmsr = xgPerformance.length > 0 || physicalLeaders.topSpeed.length > 0;
 
   return (
     <>
@@ -465,6 +564,18 @@ export function StatsClient() {
               <YoungPanel rows={young} />
             </div>
           </div>
+          {hasPmsr && (
+            <>
+              <div className="section-head" style={{ marginTop: 28 }}>
+                <h2>Running &amp; physical</h2>
+                <span className="eyebrow">FIFA match report data</span>
+              </div>
+              <div className="stats-duo" style={{ marginTop: 14 }}>
+                <XgTeamCard rows={xgPerformance} />
+                <PhysicalPanel leaders={physicalLeaders} />
+              </div>
+            </>
+          )}
         </>
       ) : (
         <>
@@ -478,6 +589,18 @@ export function StatsClient() {
               <YoungPanel rows={young} />
             </div>
           </div>
+          {hasPmsr && (
+            <>
+              <div className="section-head" style={{ marginTop: 28 }}>
+                <h2>Running &amp; physical</h2>
+                <span className="eyebrow">FIFA match report data</span>
+              </div>
+              <div className="stats-duo" style={{ marginTop: 14 }}>
+                <XgTeamCard rows={xgPerformance} />
+                <PhysicalPanel leaders={physicalLeaders} />
+              </div>
+            </>
+          )}
         </>
       )}
 
