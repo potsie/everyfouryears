@@ -437,17 +437,19 @@ export function StatsClient() {
             No goals scored yet — check back after the first match
           </div>
         )}
-        <GoldenBootTable rows={goldenBoot.slice(3)} />
+        <GoldenBootTable rows={goldenBoot.slice(3, 10)} />
         <div className="stats-duo">
           <CatPanel assists={assists} cleanSheets={cleanSheets} saves={saves} />
           {hasPmsr && <PhysicalPanel leaders={physicalLeaders} />}
         </div>
         <div className="stats-duo">
-          <DisciplinePanel rows={discipline} />
+          <DisciplinePanel rows={discipline.slice(0, 5)} />
           <YoungPanel rows={young} />
         </div>
-        <TeamStatsCard rows={teamStats} />
-        {hasPmsr && <XgTeamCard rows={xgPerformance} />}
+        <div className="stats-duo">
+          <TeamStatsCard rows={teamStats} />
+          {hasPmsr && <XgTeamCard rows={xgPerformance} />}
+        </div>
       </>
 
       <div className="foot-note" style={{ marginTop: 32 }}>
