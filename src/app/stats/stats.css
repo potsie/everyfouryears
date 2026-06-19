@@ -1,7 +1,7 @@
 /* ============================================================
    STATS — /stats
    ============================================================ */
-.tally-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--navy-600); border: 1px solid var(--navy-600); border-radius: var(--r-md); overflow: hidden; box-shadow: var(--sh-2); margin-top: 18px; }
+.tally-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--navy-600); border: 1px solid var(--navy-600); border-radius: var(--r-md); overflow: hidden; box-shadow: var(--sh-2); margin-top: 18px; }
 .tally-strip .ts-cell { background: var(--navy); padding: 16px 18px; position: relative; }
 .tally-strip .ts-cell::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(420px 160px at 50% -40%, rgba(255,255,255,.05), transparent 70%); }
 .tally-strip .ts-cell .v { font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 1; color: #fff; }
@@ -10,8 +10,7 @@
 .tally-strip .ts-split { display: flex; gap: 10px; align-items: flex-start; }
 .tally-strip .ts-split .k { font-size: 9.5px; }
 .tally-strip .ts-divider { width: 1px; background: rgba(255,255,255,.15); align-self: stretch; margin-top: 2px; }
-@media (max-width: 900px) { .tally-strip { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 480px) { .tally-strip { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .tally-strip { grid-template-columns: repeat(2, 1fr); } }
 .gb-podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
 @media (max-width: 720px) { .gb-podium { grid-template-columns: 1fr; } }
 .podium { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--sh-1); padding: 20px 18px 18px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; text-decoration: none; color: inherit; transition: box-shadow .14s, transform .08s; }
