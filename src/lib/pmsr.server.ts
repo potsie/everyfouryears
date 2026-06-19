@@ -1,3 +1,6 @@
+// Server-only loader for parsed FIFA PMSR JSON. Kept separate from pmsr.ts so
+// client components can import the pure helpers/types without bundling `fs`.
+
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { PmsrData } from './pmsr';

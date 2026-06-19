@@ -267,7 +267,11 @@ export function buildTournamentStats(
       shots: t.shots,
     }));
 
-  return { tallies, goldenBoot, assists, cleanSheets, saves, discipline, young, teamStats };
+  return {
+    tallies, goldenBoot, assists, cleanSheets, saves, discipline, young, teamStats,
+    physicalLeaders: { topSpeed: [], mostDistance: [], mostSprints: [] },
+    xgPerformance: [],
+  };
 }
 
 // ─── Per-player World Cup match log ────────────────────────────────────────
