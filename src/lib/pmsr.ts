@@ -49,6 +49,25 @@ export interface PmsrLeaders {
   mostDistance: PmsrLeader | null;
 }
 
+export interface PmsrMatchRow {
+  eventId: string;
+  oppAbbr: string;
+  date: string;              // ISO string from matchDates, or '' if unknown
+  total_distance_m: number;
+  sprints: number;
+  top_speed_kmh: number;
+}
+
+export interface PlayerPmsrSummary {
+  matches: PmsrMatchRow[]; // sorted newest-first (eventId descending)
+  totals: {
+    totalDistanceM: number; // cumulative sum
+    sprints: number;        // cumulative sum
+    topSpeedKmh: number;    // max single reading
+    matchCount: number;
+  };
+}
+
 // Highest value across both squads for each physical metric, tagged with team.
 export function physicalLeaders(data: PmsrData): PmsrLeaders {
   const tagged = [
@@ -89,4 +108,49 @@ export function resolveFifaId(
   const target = normalizePmsrName(fifaName);
   const hit = roster.find(r => normalizePmsrName(r.name) === target);
   return hit?.id ?? null;
+}
+
+// Build a player's PMSR summary from all available match reports.
+// Returns null when the player (by fifaId) has no PMSR data.
+export function buildPlayerPmsr(
+  allPmsr: PmsrData[],
+  fifaId: string,
+  teamAbbr: string,
+  matchDates?: Map<string, string>,
+): PlayerPmsrSummary | null {
+  const rows: PmsrMatchRow[] = [];
+
+  for (const pmsr of allPmsr) {
+    const isHome = pmsr.home.abbr === teamAbbr;
+    const isAway = pmsr.away.abbr === teamAbbr;
+    if (!isHome && !isAway) continue;
+
+    const team = isHome ? pmsr.home : pmsr.away;
+    const opp = isHome ? pmsr.away : pmsr.home;
+    const entry = team.physical.find(p => p.fifaId === fifaId);
+    if (!entry) continue;
+
+    rows.push({
+      eventId: pmsr.eventId,
+      oppAbbr: opp.abbr ?? '',
+      date: matchDates?.get(pmsr.eventId) ?? '',
+      total_distance_m: entry.total_distance_m,
+      sprints: entry.sprints,
+      top_speed_kmh: entry.top_speed_kmh,
+    });
+  }
+
+  if (rows.length === 0) return null;
+
+  rows.sort((a, b) => b.eventId.localeCompare(a.eventId));
+
+  return {
+    matches: rows,
+    totals: {
+      totalDistanceM: rows.reduce((s, r) => s + r.total_distance_m, 0),
+      sprints: rows.reduce((s, r) => s + r.sprints, 0),
+      topSpeedKmh: Math.max(...rows.map(r => r.top_speed_kmh)),
+      matchCount: rows.length,
+    },
+  };
 }
