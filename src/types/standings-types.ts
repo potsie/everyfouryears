@@ -1,4 +1,4 @@
-export type AdvancementStatus = 'advancing' | 'eliminated' | 'bubble' | 'pending';
+export type AdvancementStatus = 'clinched' | 'advancing' | 'eliminated' | 'bubble' | 'pending';
 
 export interface WorldCupTeamStanding {
   teamId: string;

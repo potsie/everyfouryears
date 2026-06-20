@@ -18,6 +18,7 @@
   --color-live-soft: #e6f6ec;
   --color-danger: #e0464b;
   --color-advance: #eaf7ef;
+  --color-clinched-border: #16a34a;
   --color-best3: #fff7e6;
 }
 
@@ -38,6 +39,7 @@
   --live-soft: #e6f6ec;
   --danger: #e0464b;
   --advance: #eaf7ef;
+  --clinched-border: #16a34a;
   --best3: #fff7e6;
   --accent: #0a2240;
   --accent-ink: #ffffff;

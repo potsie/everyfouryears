@@ -39,7 +39,8 @@ export function GroupTable({ group, myTeamId, compact = false }: GroupTableProps
 
       {/* Team rows */}
       {group.standings.map(team => {
-        const isAdv = team.status === 'advancing';
+        const isClinched = team.status === 'clinched';
+        const isAdv = team.status === 'advancing' || isClinched;
         const isBubble = team.status === 'bubble';
         const isMine = team.teamId === myTeamId;
         const gd = team.goalDiff;
@@ -54,7 +55,11 @@ export function GroupTable({ group, myTeamId, compact = false }: GroupTableProps
               padding: compact ? '5px 15px' : '7px 15px',
               borderTop: '1px solid var(--line)',
               background: isAdv ? 'var(--advance)' : isBubble ? 'var(--best3)' : undefined,
-              boxShadow: isMine ? 'inset 3px 0 0 var(--accent)' : undefined,
+              boxShadow: isClinched
+                ? 'inset 3px 0 0 var(--clinched-border)'
+                : isMine
+                ? 'inset 3px 0 0 var(--accent)'
+                : undefined,
             }}
           >
             <span
@@ -87,14 +92,26 @@ export function GroupTable({ group, myTeamId, compact = false }: GroupTableProps
       >
         <span className="flex items-center gap-[5px]">
           <span
-            className="rounded-[3px]"
+            className="rounded-[3px] flex-shrink-0"
+            style={{
+              width: 9,
+              height: 9,
+              background: 'var(--advance)',
+              boxShadow: 'inset 3px 0 0 var(--clinched-border)',
+            }}
+          />
+          Clinched
+        </span>
+        <span className="flex items-center gap-[5px]">
+          <span
+            className="rounded-[3px] flex-shrink-0"
             style={{ width: 9, height: 9, background: 'var(--advance)' }}
           />
           Advance
         </span>
         <span className="flex items-center gap-[5px]">
           <span
-            className="rounded-[3px]"
+            className="rounded-[3px] flex-shrink-0"
             style={{ width: 9, height: 9, background: 'var(--best3)' }}
           />
           Best 3rd

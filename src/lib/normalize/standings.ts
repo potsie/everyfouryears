@@ -66,7 +66,10 @@ export function normalizeGroupStandings(
     if (b.points !== a.points) return b.points - a.points;
     return b.goalDiff - a.goalDiff;
   });
-  standings.forEach((s, i) => { s.rank = i + 1; });
+  standings.forEach((s, i) => {
+    s.rank = i + 1;
+    if (s.status === 'advancing' && s.gamesPlayed === 3) s.status = 'clinched';
+  });
 
   return { groupId, groupName, standings };
 }
