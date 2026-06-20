@@ -60,6 +60,11 @@ export function normalizeGroupStandings(
 
   // ESPN returns entries in team-id order, not standings order — sort by the
   // official rank (falling back to points / goal difference), then renumber.
+  // NOTE: The fallback chain (points → GD) is intentionally incomplete. FIFA 2026
+  // changed tiebreaker rules to head-to-head first (H2H points → H2H GD → H2H GF),
+  // with overall GD only at step 4. Computing H2H correctly requires per-match data
+  // we don't have in this endpoint. We trust ESPN's rank field to handle ties correctly;
+  // the fallback only fires when rank is missing, which is rare.
   standings.sort((a, b) => {
     const ra = a.rank || 99, rb = b.rank || 99;
     if (ra !== rb) return ra - rb;
