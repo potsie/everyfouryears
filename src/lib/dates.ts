@@ -58,16 +58,29 @@ export function toISODate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-// Convert a UTC ISO string to a YYYY-MM-DD date key in Eastern Time.
-// Use this everywhere matches are bucketed by day so grouping and "today"
-// detection stay in sync (both use America/New_York as the reference timezone).
-export function isoToETDate(isoString: string): string {
+// Convert a UTC ISO string to a YYYY-MM-DD date key in a given IANA timezone.
+// Omit `timeZone` to use the runtime's local zone — on the client that's the
+// viewer's browser zone, so day-bucketing matches the local kickoff times we
+// render. Pass a zone (e.g. America/New_York) for a fixed reference.
+export function isoToDateKey(isoString: string, timeZone?: string): string {
   const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: SITE_TZ,
+    ...(timeZone ? { timeZone } : {}),
     year: 'numeric', month: '2-digit', day: '2-digit',
   }).formatToParts(new Date(isoString));
   const y = parts.find(p => p.type === 'year')!.value;
   const mo = parts.find(p => p.type === 'month')!.value;
   const d = parts.find(p => p.type === 'day')!.value;
   return `${y}-${mo}-${d}`;
+}
+
+// Today's YYYY-MM-DD key in a given IANA timezone (omit for local/browser zone).
+export function todayKeyInZone(timeZone?: string): string {
+  return isoToDateKey(new Date().toISOString(), timeZone);
+}
+
+// Convert a UTC ISO string to a YYYY-MM-DD date key in Eastern Time.
+// Use this everywhere matches are bucketed by day so grouping and "today"
+// detection stay in sync (both use America/New_York as the reference timezone).
+export function isoToETDate(isoString: string): string {
+  return isoToDateKey(isoString, SITE_TZ);
 }

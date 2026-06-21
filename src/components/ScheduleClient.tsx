@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Flag } from '@/components/Flag';
 import { PageHero } from '@/components/PageHero';
 import type { ScheduleDay, ScheduleMatch, ScheduleTeam, SeedTeam } from '@/lib/schedule-utils';
+import { useLocalDays } from '@/lib/use-local-days';
 
 // ── Icons ──────────────────────────────────────────────────────────────────
 
@@ -161,12 +162,22 @@ function DaySection({ day }: { day: ScheduleDay }) {
 interface ScheduleClientProps {
   days: ScheduleDay[];
   singleDay?: boolean;
+  // For single-day pages: the local-zone day key (YYYY-MM-DD) to show. After the
+  // client re-buckets into the viewer's zone, only this day is rendered.
+  selectedDate?: string;
   groupTeams?: Record<string, string[]>;
 }
 
-export function ScheduleClient({ days, singleDay = false, groupTeams = {} }: ScheduleClientProps) {
+export function ScheduleClient({ days: serverDays, singleDay = false, selectedDate, groupTeams = {} }: ScheduleClientProps) {
   const [stage, setStage] = useState<'all' | 'group' | 'ko'>('all');
   const [grp, setGrp] = useState('all');
+
+  // Re-bucket into the viewer's local timezone (seeded with the server's
+  // Eastern grouping for first paint).
+  const localDays = useLocalDays(serverDays);
+  const days = (singleDay && selectedDate)
+    ? localDays.filter(d => d.key === selectedDate)
+    : localDays;
 
   const jumpToday = useCallback(() => {
     const todayDay = days.find(d => d.isToday);

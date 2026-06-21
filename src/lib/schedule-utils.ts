@@ -1,5 +1,7 @@
-import { nowET, toISODate, isoToETDate } from '@/lib/dates';
+import { isoToDateKey, todayKeyInZone } from '@/lib/dates';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
+
+const SITE_TZ = 'America/New_York';
 
 export interface ScheduleTeam {
   abbr: string;
@@ -19,6 +21,7 @@ export interface ScheduleMatch {
   state: 'pre' | 'in' | 'post';
   clock: string;
   isHalftime: boolean;
+  stage: string;
   dateISO: string;
   score: [number, number] | null;
   home: ScheduleTeam | SeedTeam;
@@ -62,6 +65,7 @@ function toScheduleMatch(m: WorldCupMatchNormalized): ScheduleMatch {
     state: m.status.state,
     clock: m.status.clock,
     isHalftime: m.status.isHalftime,
+    stage: m.stage,
     dateISO: m.date,
     score,
     home: toScheduleTeam(m.home),
@@ -73,33 +77,49 @@ function toScheduleMatch(m: WorldCupMatchNormalized): ScheduleMatch {
   };
 }
 
-export function groupMatchesByDay(matches: WorldCupMatchNormalized[]): ScheduleDay[] {
-  const todayKey = toISODate(nowET());
+function buildDay(key: string, dayMatches: ScheduleMatch[], todayKey: string): ScheduleDay {
+  const [, mo, d] = key.split('-').map(Number);
+  const dateObj = new Date(Date.UTC(parseInt(key.slice(0, 4)), mo - 1, d, 12));
+  const dateLabel = `${DAYS[dateObj.getUTCDay()]}, ${MONTHS[dateObj.getUTCMonth()]} ${d}`;
 
-  const byDate = new Map<string, WorldCupMatchNormalized[]>();
-  for (const m of matches) {
-    const key = isoToETDate(m.date);
+  const stages = [...new Set(dayMatches.map(m => m.stage))];
+  const isGroup = dayMatches[0].seasonTypeId === 1;
+  const stageLabel = stages.length === 1 ? stages[0] : (isGroup ? 'Group Stage' : 'Knockout');
+
+  return { key, dateLabel, stageLabel, isToday: key === todayKey, matches: dayMatches };
+}
+
+// Bucket already-mapped ScheduleMatch[] into calendar days in a given timezone.
+// Omit `timeZone` to bucket in the runtime's local zone (the viewer's browser
+// zone on the client), so day grouping matches the local kickoff times shown.
+export function groupScheduleMatches(
+  scheduleMatches: ScheduleMatch[],
+  timeZone?: string,
+): ScheduleDay[] {
+  const todayKey = todayKeyInZone(timeZone);
+
+  const byDate = new Map<string, ScheduleMatch[]>();
+  for (const m of scheduleMatches) {
+    const key = isoToDateKey(m.dateISO, timeZone);
     if (!byDate.has(key)) byDate.set(key, []);
     byDate.get(key)!.push(m);
   }
 
   return [...byDate.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, dayMatches]) => {
-      const [y, mo, d] = key.split('-').map(Number);
-      const dateObj = new Date(Date.UTC(y, mo - 1, d, 12));
-      const dateLabel = `${DAYS[dateObj.getUTCDay()]}, ${MONTHS[dateObj.getUTCMonth()]} ${d}`;
+    .map(([key, dayMatches]) => buildDay(key, dayMatches, todayKey));
+}
 
-      const stages = [...new Set(dayMatches.map(m => m.stage))];
-      const isGroup = dayMatches[0].seasonTypeId === 1;
-      const stageLabel = stages.length === 1 ? stages[0] : (isGroup ? 'Group Stage' : 'Knockout');
+// Server-side grouping (Eastern reference zone). Used at build/request time to
+// produce the SSR seed; the client re-buckets into the viewer's zone on mount.
+export function groupMatchesByDay(matches: WorldCupMatchNormalized[]): ScheduleDay[] {
+  return groupScheduleMatches(matches.map(toScheduleMatch), SITE_TZ);
+}
 
-      return {
-        key,
-        dateLabel,
-        stageLabel,
-        isToday: key === todayKey,
-        matches: dayMatches.map(toScheduleMatch),
-      };
-    });
+// Client-side: re-bucket a server-grouped ScheduleDay[] into the viewer's local
+// zone. Flattens the day buckets back to matches (each carries dateISO) and
+// regroups with no fixed timeZone, so a late-Saturday-local match that crossed
+// into Sunday Eastern files under Saturday for a Central viewer.
+export function regroupDaysLocal(days: ScheduleDay[]): ScheduleDay[] {
+  return groupScheduleMatches(days.flatMap(d => d.matches));
 }
