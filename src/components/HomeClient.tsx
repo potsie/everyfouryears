@@ -35,16 +35,25 @@ function getDefaultDate(todayStr: string): string {
   return todayStr;
 }
 
+// Bucket a match into a calendar day in the VIEWER's local timezone, so day
+// grouping matches the local kickoff time we render in MatchCard (which also
+// uses the browser zone). No `timeZone` option = runtime/browser local zone.
+// A late-Saturday-night-local match that crosses into Sunday Eastern still
+// files under Saturday for a Central viewer — matching the clock they see.
 function getMatchDateKey(isoDate: string): string {
   if (!isoDate) return '';
   const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
     year: 'numeric', month: '2-digit', day: '2-digit',
   }).formatToParts(new Date(isoDate));
   const y = parts.find(p => p.type === 'year')!.value;
   const mo = parts.find(p => p.type === 'month')!.value;
   const d = parts.find(p => p.type === 'day')!.value;
   return `${y}${mo}${d}`;
+}
+
+// Today's date key in the viewer's local timezone.
+function localTodayKey(): string {
+  return getMatchDateKey(new Date().toISOString());
 }
 
 function buildDateRail(matches: WorldCupMatchNormalized[]): DateRailDay[] {
@@ -78,13 +87,28 @@ function buildDateRail(matches: WorldCupMatchNormalized[]): DateRailDay[] {
 }
 
 export function HomeClient({ allMatches, groupStandings, todayStr, news }: HomeClientProps) {
-  const defaultDate = getDefaultDate(todayStr);
+  // `todayStr` from the server is in US Eastern and identical for every visitor.
+  // Seed with it for a clean SSR/first paint, then on mount recompute "today"
+  // in the viewer's local timezone so the hero and default date match the local
+  // clock (and the local day buckets from getMatchDateKey).
+  const serverDefault = getDefaultDate(todayStr);
+  const [today, setToday] = useState(todayStr);
   const [matches, setMatches] = useState(allMatches);
-  const [selectedDate, setSelectedDate] = useState(defaultDate);
+  const [selectedDate, setSelectedDate] = useState(serverDefault);
   const [showAllGroups, setShowAllGroups] = useState(false);
   const [statCategory, setStatCategory] = useState('Goals');
 
   const { myTeam } = useMyTeam();
+
+  useEffect(() => {
+    const local = localTodayKey();
+    if (local === today) return;
+    setToday(local);
+    // Move the default selection to the local "today" only if the user hasn't
+    // already picked a different date from the rail.
+    setSelectedDate(prev => (prev === serverDefault ? getDefaultDate(local) : prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (showAllGroups) {
@@ -92,7 +116,7 @@ export function HomeClient({ allMatches, groupStandings, todayStr, news }: HomeC
     }
   }, [showAllGroups]);
 
-  const phase = getTournamentPhase(todayStr);
+  const phase = getTournamentPhase(today);
   const dateRailDays = buildDateRail(matches);
 
   // Matches for the selected date
@@ -102,7 +126,7 @@ export function HomeClient({ allMatches, groupStandings, todayStr, news }: HomeC
 
   // Today's matches for the hero (always uses real today, not selected date)
   const todayMatches = matches.filter(
-    m => getMatchDateKey(m.date) === todayStr,
+    m => getMatchDateKey(m.date) === today,
   );
 
   // Opening match for pre-phase hero
