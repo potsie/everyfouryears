@@ -3,6 +3,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, createContext, useContext } from 'react';
 import { Flag } from '@/components/Flag';
 import { PageHero } from '@/components/PageHero';
+import { useMyTeam } from '@/contexts/my-team-context';
 import { isTBD, hydrateClientBracket } from '@/lib/bracket-data';
 import type { Tie, PathResult, WCBracketData, BracketColumn, TieTeam, SerializableBracket } from '@/lib/bracket-data';
 
@@ -113,7 +114,10 @@ function BTie({ t, path, active, onHover }: BTieProps) {
     onPath ? 'on-path' : '',
     onFut ? 'on-future' : '',
     faded ? 'faded' : '',
+    hasMine ? 'has-mine' : '',
   ].filter(Boolean).join(' ');
+
+  const mineCode = hasMine ? bk.myTeam : '';
 
   return (
     <div
@@ -123,7 +127,15 @@ function BTie({ t, path, active, onHover }: BTieProps) {
       role="button"
       tabIndex={0}
     >
-      {hasMine && <span className="bt-mine"><CheckIco /></span>}
+      {hasMine && (
+        <span
+          className="bt-mine"
+          title={`${mineCode} — your team`}
+          aria-label={`${mineCode} is your team`}
+        >
+          <CheckIco />
+        </span>
+      )}
       <TeamRow s="a" />
       <TeamRow s="b" />
       {foot}
@@ -396,7 +408,11 @@ interface BracketClientProps {
 }
 
 export function BracketClient({ data: serialized }: BracketClientProps) {
-  const data = useMemo(() => hydrateClientBracket(serialized), [serialized]);
+  const { myTeam } = useMyTeam();
+  const data = useMemo(
+    () => hydrateClientBracket({ ...serialized, myTeam: myTeam ?? '' }),
+    [serialized, myTeam],
+  );
   const [view, setView] = useState<'Full' | 'Round'>(() => {
     if (typeof window === 'undefined') return 'Full';
     return (localStorage.getItem('wc-bracket-view') as 'Full' | 'Round') || 'Full';
@@ -486,6 +502,12 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
             <span className="k"><span className="sw" style={{ background: 'var(--inset)', border: '1px dashed var(--line-2)' }} /> Awaiting teams</span>
             <span className="k"><span className="ln" /> Confirmed path</span>
             <span className="k"><span className="ln dash" /> Possible route</span>
+            {myTeam && (
+              <span className="k">
+                <span className="bt-mine" style={{ position: 'static', width: 14, height: 14 }}><CheckIco /></span>
+                {' '}Your team
+              </span>
+            )}
           </div>
           <div className="bk-view-note">
             <p style={{ color: 'var(--ink-2)', fontSize: 13, padding: '20px 4px', textAlign: 'center' }}>

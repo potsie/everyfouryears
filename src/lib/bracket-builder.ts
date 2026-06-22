@@ -252,7 +252,7 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
       '3P': [TP],
     },
     roundMeta, all, byId, alive,
-    myTeam: 'USA',
+    myTeam: '',
     window,
   };
 }
