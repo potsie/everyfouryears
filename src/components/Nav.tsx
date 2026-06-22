@@ -66,6 +66,19 @@ export function Nav({ activePath = '/' }: { activePath?: string }) {
 
         {/* Tools */}
         <div className="ml-auto flex items-center gap-2">
+          {/* Contact — text link, hidden below 760px */}
+          <Link
+            href="/contact"
+            className="hidden [@media(min-width:760px)]:inline-flex font-semibold text-[13.5px] px-[11px] py-2 rounded-[8px] no-underline whitespace-nowrap transition-colors"
+            style={{
+              color: activePath === '/contact' ? 'var(--navy)' : 'var(--ink-2)',
+              background: activePath === '/contact' ? 'var(--inset)' : 'transparent',
+              textDecoration: 'none',
+            }}
+          >
+            Contact
+          </Link>
+
           {/* Search icon — hidden below 760px */}
           <button
             className="hidden [@media(min-width:760px)]:flex items-center justify-center cursor-pointer"
@@ -98,7 +111,7 @@ export function Nav({ activePath = '/' }: { activePath?: string }) {
           borderTop: '1px solid var(--line)',
         }}
       >
-        {NAV_LINKS.map(link => (
+        {[...NAV_LINKS, { href: '/contact', label: 'Contact' }].map(link => (
           <Link
             key={link.href}
             href={link.href}
