@@ -121,9 +121,19 @@ function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
   const homeLeads = homeScore > awayScore;
   const isPost = match.status.state === 'post';
   const isPre = match.status.state === 'pre';
+  const isDelayed = match.status.isDelayed;
   const cells = linescoreCells(match);
   const kickoff = new Date(match.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  const statusText = isPost ? 'FULL TIME' : isPre ? kickoff : match.status.isHalftime ? 'HALF TIME' : (match.status.clock || 'Live');
+  const statusText = isPost
+    ? 'FULL TIME'
+    : isPre
+      ? kickoff
+      : isDelayed
+        // Clock is frozen at the minute play halted (e.g. "45'+3'").
+        ? (match.status.clock ? `DELAYED · ${match.status.clock}` : 'DELAYED')
+        : match.status.isHalftime
+          ? 'HALF TIME'
+          : (match.status.clock || 'Live');
 
   const cols = '1fr 18px 18px 28px';
 
@@ -166,10 +176,10 @@ function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
       >
         <span className="tracking-[.04em] uppercase">{match.stage}</span>
         <span className="flex items-center gap-[6px]">
-          {match.status.state === 'in' && !match.status.isHalftime && (
+          {match.status.state === 'in' && !match.status.isHalftime && !isDelayed && (
             <span className="pulse-dot on-dark" style={{ width: 6, height: 6 }} />
           )}
-          <span style={match.status.isHalftime ? { color: '#7ee2a8' } : undefined}>{statusText}</span>
+          <span style={match.status.isHalftime ? { color: '#7ee2a8' } : isDelayed ? { color: '#f5b945' } : undefined}>{statusText}</span>
         </span>
       </div>
       <div className="grid gap-x-[9px] mb-[5px]" style={{ gridTemplateColumns: cols }}>

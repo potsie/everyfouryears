@@ -193,10 +193,13 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
           {/* Center */}
           <div className="mh-center">
             {state === 'in' && (
-              <div className="mh-status live">
-                {match.isHalftime
-                  ? 'HALF TIME'
-                  : <><PulseDot /> {clock} · Live</>
+              <div className={'mh-status ' + (match.isDelayed ? 'delayed' : 'live')}>
+                {match.isDelayed
+                  // Static dot, not a PulseDot — play is stopped, clock frozen.
+                  ? <>● Delayed{clock ? ` · ${clock}` : ''}</>
+                  : match.isHalftime
+                    ? 'HALF TIME'
+                    : <><PulseDot /> {clock} · Live</>
                 }
               </div>
             )}
@@ -326,8 +329,12 @@ function Timeline({ match }: { match: MatchCenterData }) {
   if (state === 'in') {
     rows.push(
       <div className="tl-mark" key="livenow">
-        <span style={{ color: 'var(--live-ink)', background: 'var(--live-soft)', borderColor: '#cfe8d8' }}>
-          {match.isHalftime ? '● Half Time' : `● Live · ${match.clock}`}
+        <span style={match.isDelayed
+          ? { color: 'var(--delay-ink)', background: 'var(--delay-soft)', borderColor: '#f0dca8' }
+          : { color: 'var(--live-ink)', background: 'var(--live-soft)', borderColor: '#cfe8d8' }}>
+          {match.isDelayed
+            ? `● Delayed${match.clock ? ` · ${match.clock}` : ''}`
+            : match.isHalftime ? '● Half Time' : `● Live · ${match.clock}`}
         </span>
       </div>
     );

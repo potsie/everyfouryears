@@ -47,6 +47,14 @@ const GROUP_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L
 
 function MatchStatus({ m }: { m: ScheduleMatch }) {
   if (m.state === 'in') {
+    if (m.isDelayed) {
+      // Play stopped, clock frozen — static dot, amber, no pulse.
+      return (
+        <span className="s-status s-delayed" style={{ color: 'var(--delay-ink)', fontWeight: 700 }}>
+          ● Delayed{m.clock ? ` · ${m.clock}` : ''}
+        </span>
+      );
+    }
     return (
       <span className="s-status s-live">
         {m.isHalftime ? <span style={{ color: 'var(--live-ink)', fontWeight: 700 }}>HALF TIME</span> : <><PulseDot />{m.clock}</>}

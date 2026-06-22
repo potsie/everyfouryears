@@ -21,6 +21,8 @@ export interface ScheduleMatch {
   state: 'pre' | 'in' | 'post';
   clock: string;
   isHalftime: boolean;
+  // ESPN STATUS_DELAYED — play stopped, clock frozen, state still 'in'.
+  isDelayed: boolean;
   stage: string;
   dateISO: string;
   score: [number, number] | null;
@@ -65,6 +67,7 @@ function toScheduleMatch(m: WorldCupMatchNormalized): ScheduleMatch {
     state: m.status.state,
     clock: m.status.clock,
     isHalftime: m.status.isHalftime,
+    isDelayed: m.status.isDelayed,
     stage: m.stage,
     dateISO: m.date,
     score,

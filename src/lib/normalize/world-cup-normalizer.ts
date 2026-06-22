@@ -85,6 +85,10 @@ export interface WorldCupMatchNormalized {
     state: 'pre' | 'in' | 'post';
     clock: string;
     isHalftime: boolean;
+    // ESPN's STATUS_DELAYED (type id 7) — play is stopped (weather, etc). State
+    // stays 'in' but the clock is frozen at the minute it halted. ESPN gives no
+    // reason for the delay, so we surface a generic "Delayed", not "Weather".
+    isDelayed: boolean;
   };
   venue: string;
   venueCity: string;
@@ -184,6 +188,7 @@ export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
       state: comp.status?.type?.state ?? 'pre',
       clock: comp.status?.displayClock ?? '',
       isHalftime: comp.status?.type?.name === 'STATUS_HALFTIME',
+      isDelayed: comp.status?.type?.name === 'STATUS_DELAYED',
     },
     venue: comp.venue?.fullName ?? '',
     venueCity: comp.venue?.address?.city ?? '',
@@ -342,6 +347,9 @@ export interface MatchCenterData {
   attendance: number | null;
   clock: string;
   isHalftime: boolean;
+  // ESPN's STATUS_DELAYED (type id 7): play stopped, clock frozen, state still
+  // 'in'. No reason is provided by ESPN, so the UI shows a generic "Delayed".
+  isDelayed: boolean;
   home: MatchCenterTeam;
   away: MatchCenterTeam;
   events: MatchKeyEvent[];
@@ -742,6 +750,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     attendance: data.gameInfo.attendance ?? null,
     clock: comp.status.displayClock,
     isHalftime: comp.status.type.name === 'STATUS_HALFTIME',
+    isDelayed: comp.status.type.name === 'STATUS_DELAYED',
     home: buildTeam(homeComp, 'home'),
     away: buildTeam(awayComp, 'away'),
     events,

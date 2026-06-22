@@ -16,6 +16,8 @@
   --color-live: #16a34a;
   --color-live-ink: #0b7a37;
   --color-live-soft: #e6f6ec;
+  --color-delay-ink: #9a6400;
+  --color-delay-soft: #fdf3da;
   --color-danger: #e0464b;
   --color-advance: #eaf7ef;
   --color-clinched-border: #16a34a;
@@ -37,6 +39,8 @@
   --live: #16a34a;
   --live-ink: #0b7a37;
   --live-soft: #e6f6ec;
+  --delay-ink: #9a6400;
+  --delay-soft: #fdf3da;
   --danger: #e0464b;
   --advance: #eaf7ef;
   --clinched-border: #16a34a;
@@ -483,6 +487,7 @@ body {
   display: inline-flex; align-items: center; gap: 7px; height: 16px;
 }
 .mh-status.live { color: #7ee2a8; }
+.mh-status.delayed { color: #f5b945; }
 .mh-status.ft { color: rgba(255,255,255,.55); }
 .mh-status.pre { color: rgba(255,255,255,.55); }
 .mh-nums { display: flex; align-items: center; gap: 14px; font-family: var(--display); font-weight: 800; line-height: 1; }

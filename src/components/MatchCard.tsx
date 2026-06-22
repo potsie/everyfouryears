@@ -72,7 +72,14 @@ export function MatchCard({ match }: MatchCardProps) {
         >
           <span style={{ letterSpacing: '.04em' }}>{stageLabel(match)}</span>
 
-          {isLive && (
+          {isLive && match.status.isDelayed && (
+            <span className="flex items-center gap-[6px]" style={{ color: '#f5b945' }}>
+              {/* Static dot — play stopped, clock frozen. */}
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f5b945' }} />
+              DELAYED{match.status.clock ? ` · ${match.status.clock}` : ''}
+            </span>
+          )}
+          {isLive && !match.status.isDelayed && (
             <span className="flex items-center gap-[6px]" style={{ color: '#7ee2a8' }}>
               {!match.status.isHalftime && <span className="pulse-dot on-dark" style={{ width: 6, height: 6 }} />}
               {match.status.isHalftime ? 'HALF TIME' : match.status.clock}
