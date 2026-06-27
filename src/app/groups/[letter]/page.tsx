@@ -140,6 +140,12 @@ export default async function GroupDetailPage({
                   Best-third contention
                 </span>
               </span>
+              <span className="gt-foot" style={{ padding: 0 }}>
+                <span className="k">
+                  <span className="sw" style={{ background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'inset 3px 0 0 var(--danger)' }} />
+                  Eliminated
+                </span>
+              </span>
             </div>
 
             <p className="qual-note" style={{ marginTop: 14 }}>

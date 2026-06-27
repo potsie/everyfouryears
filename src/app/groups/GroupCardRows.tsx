@@ -9,6 +9,7 @@ function rowClass(s: WorldCupTeamStanding, isMyTeam: boolean): string {
   if (s.status === 'clinched') cls += ' clinched';
   else if (s.status === 'advancing') cls += ' adv';
   else if (s.status === 'bubble') cls += ' best3';
+  else if (s.status === 'eliminated') cls += ' eliminated';
   if (isMyTeam) cls += ' mine';
   return cls;
 }

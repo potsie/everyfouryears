@@ -61,6 +61,10 @@ function GroupsLegend() {
         <span className="sw" style={{ background: 'var(--best3)', border: '1px solid #f0e2bd' }} />
         Best-third contention
       </span>
+      <span className="k">
+        <span className="sw" style={{ background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'inset 3px 0 0 var(--danger)' }} />
+        Eliminated
+      </span>
     </div>
   );
 }

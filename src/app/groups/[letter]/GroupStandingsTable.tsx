@@ -9,6 +9,7 @@ function rowClass(s: WorldCupTeamStanding): string {
   if (s.status === 'clinched') return `${base} clinched`;
   if (s.status === 'advancing') return `${base} adv`;
   if (s.status === 'bubble') return `${base} best3`;
+  if (s.status === 'eliminated') return `${base} eliminated`;
   return base;
 }
 
@@ -23,9 +24,9 @@ export function GroupStandingsTable({ standings }: GroupStandingsTableProps) {
     <>
       {standings.map(s => {
         const isMyTeam = myTeam != null && s.teamAbbr.toUpperCase() === myTeam.toUpperCase();
-        // Don't override the clinched accent border for a favorite team that's
-        // also clinched — clinched wins, matching the homepage group cards.
-        const showMine = isMyTeam && s.status !== 'clinched';
+        // Don't override the clinched/eliminated accent border for a favorite
+        // team — those status accents win, matching the homepage group cards.
+        const showMine = isMyTeam && s.status !== 'clinched' && s.status !== 'eliminated';
         return (
           <div
             key={s.teamId}

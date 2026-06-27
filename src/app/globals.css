@@ -340,6 +340,8 @@ body {
    homepage group cards. Placed after .mine so the clinched accent wins. */
 .gfrow.clinched { background: var(--advance); box-shadow: inset 3px 0 0 var(--clinched-border); }
 .gfrow.clinched .rk { color: var(--live-ink); }
+/* Eliminated: red left-border accent, the mirror of clinched. */
+.gfrow.eliminated { box-shadow: inset 3px 0 0 var(--danger); }
 
 /* ── Groups legend ── */
 .gt-foot { display: flex; gap: 14px; padding: 10px 15px 12px; font-size: 10.5px; color: var(--ink-3); flex-wrap: wrap; }

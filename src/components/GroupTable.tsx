@@ -42,6 +42,7 @@ export function GroupTable({ group, myTeamId, compact = false }: GroupTableProps
         const isClinched = team.status === 'clinched';
         const isAdv = team.status === 'advancing' || isClinched;
         const isBubble = team.status === 'bubble';
+        const isEliminated = team.status === 'eliminated';
         const isMine = team.teamId === myTeamId;
         const gd = team.goalDiff;
 
@@ -57,6 +58,8 @@ export function GroupTable({ group, myTeamId, compact = false }: GroupTableProps
               background: isAdv ? 'var(--advance)' : isBubble ? 'var(--best3)' : undefined,
               boxShadow: isClinched
                 ? 'inset 3px 0 0 var(--clinched-border)'
+                : isEliminated
+                ? 'inset 3px 0 0 var(--danger)'
                 : isMine
                 ? 'inset 3px 0 0 var(--accent)'
                 : undefined,
@@ -115,6 +118,13 @@ export function GroupTable({ group, myTeamId, compact = false }: GroupTableProps
             style={{ width: 9, height: 9, background: 'var(--best3)' }}
           />
           Best 3rd
+        </span>
+        <span className="flex items-center gap-[5px]">
+          <span
+            className="rounded-[3px] flex-shrink-0"
+            style={{ width: 9, height: 9, background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'inset 3px 0 0 var(--danger)' }}
+          />
+          Eliminated
         </span>
       </div>
     </div>
