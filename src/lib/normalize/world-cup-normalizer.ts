@@ -365,9 +365,10 @@ export interface MatchCenterData {
   motmName: string | null;
   motmLine: string | null;
   shots: ShotEvent[];
-  // Post-match only: ESPN highlight/analysis clips and the match recap article.
-  // Empty/null for pre-match and live games.
+  // ESPN highlight/analysis clips. Pre-match these are preview/tactics/team-news
+  // clips; post-match they're highlights. Empty when ESPN has none.
   videos: MatchVideo[];
+  // Match recap article — post-match only, null otherwise.
   recap: MatchRecap | null;
 }
 

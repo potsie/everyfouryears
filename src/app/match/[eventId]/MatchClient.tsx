@@ -18,6 +18,7 @@ import type {
   MatchBenchPlayer,
   ShotEvent,
   TeamForm,
+  MatchVideo,
 } from '@/lib/normalize/world-cup-normalizer';
 
 /* ---- inline SVG icons ---- */
@@ -1181,6 +1182,47 @@ function formatClipDuration(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+function VideoClips({ videos }: { videos: MatchVideo[] }) {
+  return (
+    <div className="hl-list">
+      {videos.map(v => (
+        <a
+          key={v.url}
+          href={v.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hl-clip"
+        >
+          <span
+            className="hl-thumb"
+            style={v.thumbnail ? { backgroundImage: `url(${v.thumbnail})` } : undefined}
+          >
+            <span className="hl-play"><PlayIcon /></span>
+            {v.duration > 0 && <span className="hl-dur">{formatClipDuration(v.duration)}</span>}
+          </span>
+          <span className="hl-title">{v.headline}</span>
+        </a>
+      ))}
+    </div>
+  );
+}
+
+// Pre-match/live preview clips in the right rail, sitting where the post-match
+// "Highlights & recap" video block lands. Post-match those highlights already
+// live in WatchPanel, so this panel is hidden for completed games.
+function PreviewVideoPanel({ match }: { match: MatchCenterData }) {
+  const { state, videos } = match;
+  if (state === 'post' || videos.length === 0) return null;
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <h3>{state === 'pre' ? 'Match preview' : 'Video'}</h3>
+      </div>
+      <VideoClips videos={videos} />
+    </div>
+  );
+}
+
 function WatchPanel({ match }: { match: MatchCenterData }) {
   const { state, broadcaster, streamer, kickoffISO, videos, recap } = match;
   const kickoffTime = formatKickoffTime(kickoffISO);
@@ -1192,28 +1234,7 @@ function WatchPanel({ match }: { match: MatchCenterData }) {
         <h3>{isPost ? 'Highlights & recap' : 'Where to watch'}</h3>
       </div>
 
-      {isPost && videos.length > 0 && (
-        <div className="hl-list">
-          {videos.map(v => (
-            <a
-              key={v.url}
-              href={v.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hl-clip"
-            >
-              <span
-                className="hl-thumb"
-                style={v.thumbnail ? { backgroundImage: `url(${v.thumbnail})` } : undefined}
-              >
-                <span className="hl-play"><PlayIcon /></span>
-                {v.duration > 0 && <span className="hl-dur">{formatClipDuration(v.duration)}</span>}
-              </span>
-              <span className="hl-title">{v.headline}</span>
-            </a>
-          ))}
-        </div>
-      )}
+      {isPost && videos.length > 0 && <VideoClips videos={videos} />}
 
       {isPost && recap && (
         <a
@@ -1294,6 +1315,7 @@ function Shelf({ match, weatherData, venueRoof, venueLat, venueLng }: ShelfProps
         />
       )}
       <WatchPanel match={match} />
+      <PreviewVideoPanel match={match} />
       <H2HPanel match={match} />
       <GroupPanel match={match} />
       {match.state === 'post' ? (
