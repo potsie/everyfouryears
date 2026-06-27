@@ -365,6 +365,24 @@ export interface MatchCenterData {
   motmName: string | null;
   motmLine: string | null;
   shots: ShotEvent[];
+  // Post-match only: ESPN highlight/analysis clips and the match recap article.
+  // Empty/null for pre-match and live games.
+  videos: MatchVideo[];
+  recap: MatchRecap | null;
+}
+
+export interface MatchVideo {
+  headline: string;
+  duration: number;   // seconds
+  thumbnail: string;
+  url: string;        // ESPN video page (link out, don't embed)
+}
+
+export interface MatchRecap {
+  headline: string;
+  description: string;
+  url: string;        // ESPN match report page
+  image: string | null;
 }
 
 function parseMinute(displayValue: string): { at: number; extra: number } {
@@ -737,6 +755,29 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     }
   }
 
+  // Highlight/analysis clips and recap article (post-match). Link out to ESPN —
+  // the direct video sources are geo/time-restricted, and linking is the clean
+  // rights posture. Only keep entries that have an outbound URL.
+  const videos: MatchVideo[] = (data.videos ?? [])
+    .map(v => ({
+      headline: v.headline ?? v.description ?? '',
+      duration: v.duration ?? 0,
+      thumbnail: v.thumbnail ?? '',
+      url: v.links?.web?.href ?? '',
+    }))
+    .filter(v => v.url);
+
+  const art = data.article;
+  const recapUrl = art?.links?.web?.href ?? '';
+  const recap: MatchRecap | null = art && recapUrl
+    ? {
+        headline: art.headline ?? '',
+        description: art.description ?? '',
+        url: recapUrl,
+        image: art.images?.[0]?.url ?? null,
+      }
+    : null;
+
   return {
     eventId,
     state,
@@ -769,5 +810,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     motmName,
     motmLine,
     shots: [], // populated from FIFA timeline in fetchMatchSummary
+    videos,
+    recap,
   };
 }

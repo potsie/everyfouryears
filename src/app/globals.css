@@ -732,6 +732,37 @@ body {
 .watch-thumb .play { width: 44px; height: 44px; border-radius: 50%; background: rgba(10,34,64,.9); display: grid; place-items: center; box-shadow: var(--sh-2); }
 .watch-thumb .cap { position: absolute; left: 10px; bottom: 9px; font-family: ui-monospace,Menlo,monospace; font-size: 10.5px; color: var(--ink-3); }
 
+/* ── Post-match highlight clip list (ESPN videos, link out) ── */
+.hl-list { display: flex; flex-direction: column; }
+.hl-clip {
+  display: flex; align-items: center; gap: 11px; padding: 10px 15px;
+  border-top: 1px solid var(--line); text-decoration: none; cursor: pointer;
+  transition: background .12s;
+}
+.hl-clip:first-child { border-top: none; }
+.hl-clip:hover { background: var(--surface-2, rgba(10,34,64,.035)); }
+.hl-thumb {
+  position: relative; flex-shrink: 0; width: 92px; aspect-ratio: 16/9;
+  border-radius: var(--r-sm); overflow: hidden; border: 1px solid var(--line);
+  background-color: #e9edf4; background-size: cover; background-position: center;
+  display: grid; place-items: center;
+}
+.hl-thumb .hl-play {
+  width: 26px; height: 26px; border-radius: 50%; background: rgba(10,34,64,.82);
+  color: #fff; display: grid; place-items: center; box-shadow: var(--sh-1);
+}
+.hl-thumb .hl-play svg { width: 12px; height: 12px; }
+.hl-thumb .hl-dur {
+  position: absolute; right: 4px; bottom: 4px; padding: 1px 4px; border-radius: 3px;
+  background: rgba(10,34,64,.85); color: #fff; font-size: 10px; font-weight: 700;
+  font-family: ui-monospace,Menlo,monospace; line-height: 1.4;
+}
+.hl-title {
+  font-size: 12.5px; font-weight: 600; color: var(--ink); line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.hl-clip:hover .hl-title { color: var(--link); }
+
 /* placeholder pill for embedded standings note */
 .embed-foot { padding: 11px 15px; font-size: 11.5px; color: var(--ink-3); border-top: 1px solid var(--line); display: flex; align-items: center; gap: 7px; }
 

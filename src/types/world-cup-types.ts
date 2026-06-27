@@ -190,8 +190,21 @@ export interface ESPNMatchSummaryFull extends ESPNWorldCupSummaryResponse {
   headToHeadGames?: { events?: ESPNHeadToHeadGame[] };
   lastFiveGames?: ESPNLastFiveBlock[];
   leaders?: ESPNLeader[];
-  article?: { story?: string };
-  videos?: { source?: { HD?: { href: string } }; thumbnail?: string; description?: string; duration?: number }[];
+  article?: {
+    story?: string;
+    headline?: string;
+    description?: string;
+    images?: { url?: string }[];
+    links?: { web?: { href?: string } };
+  };
+  videos?: {
+    headline?: string;
+    source?: { HD?: { href: string } };
+    thumbnail?: string;
+    description?: string;
+    duration?: number;
+    links?: { web?: { href?: string } };
+  }[];
   winprobability?: { homeWinPercentage: number; tiePercentage: number; awayWinPercentage?: number; playId?: string }[];
   // Summary endpoint puts broadcast info here (header.competitions[].geoBroadcasts
   // is null on this endpoint, unlike the scoreboard endpoint).

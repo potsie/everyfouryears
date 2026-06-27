@@ -1173,21 +1173,57 @@ function Channels({ list }: { list: MatchBroadcast[] }) {
   );
 }
 
+function formatClipDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 function WatchPanel({ match }: { match: MatchCenterData }) {
-  const { state, broadcaster, streamer, kickoffISO } = match;
+  const { state, broadcaster, streamer, kickoffISO, videos, recap } = match;
   const kickoffTime = formatKickoffTime(kickoffISO);
+  const isPost = state === 'post';
 
   return (
     <div className="panel">
       <div className="panel-head">
-        <h3>{state === 'post' ? 'Highlights & recap' : 'Where to watch'}</h3>
+        <h3>{isPost ? 'Highlights & recap' : 'Where to watch'}</h3>
       </div>
 
-      {state === 'post' && (
-        <div className="watch-thumb">
-          <div className="play"><PlayIcon /></div>
-          <span className="cap">highlight reel</span>
+      {isPost && videos.length > 0 && (
+        <div className="hl-list">
+          {videos.map(v => (
+            <a
+              key={v.url}
+              href={v.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hl-clip"
+            >
+              <span
+                className="hl-thumb"
+                style={v.thumbnail ? { backgroundImage: `url(${v.thumbnail})` } : undefined}
+              >
+                <span className="hl-play"><PlayIcon /></span>
+                {v.duration > 0 && <span className="hl-dur">{formatClipDuration(v.duration)}</span>}
+              </span>
+              <span className="hl-title">{v.headline}</span>
+            </a>
+          ))}
         </div>
+      )}
+
+      {isPost && recap && (
+        <a
+          href={recap.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="watch-row"
+          style={{ textDecoration: 'none' }}
+        >
+          <span className="lbl"><PeopleIcon /> Match recap</span>
+          <span className="val" style={{ color: 'var(--link)' }}>Read →</span>
+        </a>
       )}
 
       {broadcaster.length > 0 && (
@@ -1203,12 +1239,7 @@ function WatchPanel({ match }: { match: MatchCenterData }) {
         </div>
       )}
 
-      {state === 'post' ? (
-        <div className="watch-row">
-          <span className="lbl"><PeopleIcon /> Match recap</span>
-          <span className="val" style={{ color: 'var(--link)' }}>Read →</span>
-        </div>
-      ) : (
+      {!isPost && (
         <div className="watch-row">
           <span className="lbl"><PinSm /> Kick-off</span>
           <span className="val">{kickoffTime}</span>
