@@ -146,7 +146,7 @@ function formatKickoffTime(iso: string): string {
    MATCH HERO
    ============================================================== */
 function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: string }) {
-  const { state, home, away, kickoffISO, group, matchday, venue, venueCity, officials, clock, attendance } = match;
+  const { state, home, away, kickoffISO, group, matchday, round, venue, venueCity, officials, clock, attendance } = match;
   const referee = officials.find(o => o.role === 'Referee') ?? officials[0];
 
   const homeScore = home.score;
@@ -167,10 +167,12 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
             <Back /> Schedule
           </Link>
           <span className="mh-meta">
-            {/* Group matches get the homepage-hero label "GROUP STAGE (X)" in a
-                pill; knockout rounds keep the plain matchday/round name. */}
+            {/* Group matches get a "GROUP STAGE (X)" pill; knockout rounds get a
+                "KNOCKOUT STAGE · ROUND OF 32" pill from the parsed round name. */}
             {group ? (
               <span className="gtag">GROUP STAGE ({group})</span>
+            ) : round && round !== 'Match' ? (
+              <span className="gtag">KNOCKOUT STAGE · {round.toUpperCase()}</span>
             ) : (
               <span>{matchday}</span>
             )}

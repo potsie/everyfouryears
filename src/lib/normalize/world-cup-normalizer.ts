@@ -705,15 +705,21 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     if (geo) broadcaster = [{ name: geo, lang: channelLang(geo) }];
   }
 
-  // Group info from header. The summary endpoint's group object exposes
-  // `name`/`abbreviation` ("Group I") but no `shortName`, so check those too.
+  // Round/stage from the summary header. ESPN exposes the human-readable round
+  // only in `season.name` ("2026 FIFA World Cup, Round of 32"); the sibling
+  // `season.type` is an opaque internal id (13802 = group, 13801 = R32, …) —
+  // NOT the 1–7 ids the scoreboard slug maps to — so we parse the name instead.
+  const seasonName: string = data.header.season?.name ?? '';
+  const round = seasonName.includes(',') ? seasonName.split(',').pop()!.trim() : 'Match';
+  const isGroupStage = /group stage/i.test(round);
+
+  // `comp.groups` is present on *every* match — even knockout ties, where it
+  // reads "Group 1" meaninglessly — so only trust it during the group stage.
   const groupObj = (comp as any).groups ?? (comp as any).group ?? {};
-  const rawGroup: string =
-    groupObj.shortName ?? groupObj.abbreviation ?? groupObj.name ?? '';
+  const rawGroup: string = isGroupStage
+    ? (groupObj.shortName ?? groupObj.abbreviation ?? groupObj.name ?? '')
+    : '';
   const groupLetter = rawGroup.replace(/^Group\s+/i, '').trim();
-  const seasonTypeId = Number(data.header.season?.type?.id ?? 1);
-  const roundNames: Record<number, string> = { 1: 'Group Stage', 2: 'Round of 32', 3: 'Round of 16', 4: 'Quarterfinals', 5: 'Semifinals', 6: 'Third Place', 7: 'Final' };
-  const round = roundNames[seasonTypeId] ?? 'Match';
   const matchday = (comp as any).week?.number ? `Matchday ${(comp as any).week?.number}` : round;
 
   function buildTeam(competitor: typeof homeComp, homeAway: 'home' | 'away'): MatchCenterTeam {

@@ -57,10 +57,9 @@ interface BTieProps {
   t: Tie;
   path: PathResult;
   active: string | null;
-  onHover: (code: string | null) => void;
 }
 
-function BTie({ t, path, active, onHover }: BTieProps) {
+function BTie({ t, path, active }: BTieProps) {
   const bk = useBK();
   const isPost = t.state === 'post';
   const isLive = t.state === 'in';
@@ -82,10 +81,7 @@ function BTie({ t, path, active, onHover }: BTieProps) {
       return <div className="bt-row tbd"><span className="bt-code">{team.src}</span></div>;
     }
     return (
-      <div
-        className={`bt-row${win ? ' win' : ''}${lose ? ' lose' : ''}`}
-        onMouseEnter={() => onHover((team as TieTeam).code)}
-      >
+      <div className={`bt-row${win ? ' win' : ''}${lose ? ' lose' : ''}`}>
         <Flag logo={(team as TieTeam).flag} abbr={(team as TieTeam).code} size={15} />
         <span className="bt-code">{(team as TieTeam).code}</span>
         {(isPost || isLive) && t.score && (
@@ -120,12 +116,10 @@ function BTie({ t, path, active, onHover }: BTieProps) {
   const mineCode = hasMine ? bk.myTeam : '';
 
   return (
-    <div
+    <a
       data-tie={t.id}
       className={cls}
-      onMouseLeave={() => onHover(null)}
-      role="button"
-      tabIndex={0}
+      href={`/match/${t.id}`}
     >
       {hasMine && (
         <span
@@ -139,7 +133,7 @@ function BTie({ t, path, active, onHover }: BTieProps) {
       <TeamRow s="a" />
       <TeamRow s="b" />
       {foot}
-    </div>
+    </a>
   );
 }
 
@@ -149,9 +143,10 @@ function FinalCard({ path }: { path: PathResult }) {
   const f = bk.final;
   const onPath = path.future.has(f.id) || path.confirmed.has(f.id);
   return (
-    <div
+    <a
       data-tie={f.id}
       className="bk-final"
+      href={`/match/${f.id}`}
       style={onPath ? { outline: '2px solid var(--accent)', outlineOffset: 2 } : undefined}
     >
       <div className="bf-cap">
@@ -167,7 +162,7 @@ function FinalCard({ path }: { path: PathResult }) {
         </div>
       </div>
       <div className="bf-when">{f.venue} · {bracketWhen(f)}</div>
-    </div>
+    </a>
   );
 }
 
@@ -175,11 +170,11 @@ function ThirdCard() {
   const bk = useBK();
   const t = bk.third;
   return (
-    <div data-tie={t.id} className="bk-third">
+    <a data-tie={t.id} className="bk-third" href={`/match/${t.id}`}>
       <div className="b3-cap">Third Place</div>
       <div className="b3-row"><span>{isTBD(t.a) ? t.a.src : (t.a as TieTeam).code}</span></div>
       <div className="b3-row"><span>{isTBD(t.b) ? t.b.src : (t.b as TieTeam).code}</span></div>
-    </div>
+    </a>
   );
 }
 
@@ -187,7 +182,6 @@ function ThirdCard() {
 interface FullBracketProps {
   path: PathResult;
   active: string | null;
-  onHover: (code: string | null) => void;
   onFocusRound: (key: string) => void;
 }
 
@@ -197,7 +191,7 @@ interface LineSeg {
   conn: string;
 }
 
-function FullBracket({ path, active, onHover, onFocusRound }: FullBracketProps) {
+function FullBracket({ path, active, onFocusRound }: FullBracketProps) {
   const bk = useBK();
   const gridRef = useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<LineSeg[]>([]);
@@ -245,7 +239,7 @@ function FullBracket({ path, active, onHover, onFocusRound }: FullBracketProps) 
     return (
       <div className={`bk-col${col.side === 'C' ? ' center' : ''}`}>
         {col.ties.map((t) => (
-          <BTie key={t.id} t={t} path={path} active={active} onHover={onHover} />
+          <BTie key={t.id} t={t} path={path} active={active} />
         ))}
       </div>
     );
@@ -346,7 +340,7 @@ function BigTie({ t }: { t: Tie }) {
   }
 
   return (
-    <div className={`btie-lg${isLive ? ' is-live' : ''}`} role="button" tabIndex={0}>
+    <a className={`btie-lg${isLive ? ' is-live' : ''}`} href={`/match/${t.id}`}>
       <div className="btl-head">
         <span className="tag">{showTag ? `${t.tag} · ` : ''}{meta}</span>
         {isLive
@@ -366,7 +360,7 @@ function BigTie({ t }: { t: Tie }) {
         </span>
         <span className="tv">{t.tv}</span>
       </div>
-    </div>
+    </a>
   );
 }
 
@@ -421,7 +415,6 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
     if (typeof window === 'undefined') return 'R32';
     return localStorage.getItem('wc-bracket-round') || 'R32';
   });
-  const [hover, setHover] = useState<string | null>(null);
   const [trace, setTrace] = useState<string | null>(null);
 
   useEffect(() => {
@@ -431,8 +424,7 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
     try { localStorage.setItem('wc-bracket-round', round); } catch (_) {}
   }, [round]);
 
-  const pinned = trace;
-  const active = hover || pinned;
+  const active = trace;
   const path = useMemo(() => data.pathForTeam(active), [data, active]);
 
   const focusRound = (k: string) => { setRound(k); setView('Round'); };
@@ -495,7 +487,7 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
 
       {view === 'Full' ? (
         <>
-          <FullBracket path={path} active={active} onHover={setHover} onFocusRound={focusRound} />
+          <FullBracket path={path} active={active} onFocusRound={focusRound} />
           <div className="bk-legend">
             <span className="k"><span className="sw" style={{ background: 'var(--live)' }} /> Advanced</span>
             <span className="k"><Pulse /> Live now</span>

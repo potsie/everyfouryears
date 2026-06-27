@@ -105,7 +105,10 @@ export interface ESPNWorldCupCommentary {
 export interface ESPNWorldCupSummaryResponse {
   header: {
     competitions: ESPNWorldCupCompetition[];
-    season?: { type: { id: string; name: string } };
+    // ESPN summary returns `type` as an opaque numeric id (e.g. 13801 = R32,
+    // 13802 = group) and the human round label as a sibling `name`
+    // ("2026 FIFA World Cup, Round of 32").
+    season?: { year?: number; type?: number; name?: string };
   };
   boxscore: {
     teams: ESPNSoccerTeamEntry[];
