@@ -50,6 +50,10 @@ function GroupsLegend() {
   return (
     <div className="gt-foot" style={{ marginTop: 8 }}>
       <span className="k">
+        <span className="sw" style={{ background: 'var(--advance)', boxShadow: 'inset 3px 0 0 var(--clinched-border)' }} />
+        Clinched
+      </span>
+      <span className="k">
         <span className="sw" style={{ background: 'var(--advance)', border: '1px solid #cfe8d8' }} />
         Advance to Round of 32
       </span>

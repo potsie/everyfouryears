@@ -197,12 +197,12 @@ export function DataShelf({
             className="flex items-center justify-between px-[15px] py-3"
             style={{ borderBottom: '1px solid var(--line)' }}
           >
-            <h3 className="font-display font-bold text-[14px] m-0 tracking-[.01em]">
+            <h3 className="font-display font-bold text-[14px] m-0 tracking-[.04em] uppercase">
               Standings
             </h3>
             <button
               onClick={onToggleAllGroups}
-              className="text-[12px] font-semibold cursor-pointer"
+              className="text-[12px] font-semibold cursor-pointer uppercase tracking-[.04em]"
               style={{
                 color: 'var(--ink-2)',
                 background: 'none',

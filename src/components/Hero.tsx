@@ -9,6 +9,9 @@ interface HeroProps {
   phase: 'pre' | 'live' | 'knockout';
   todayMatches: WorldCupMatchNormalized[];
   openingMatch?: WorldCupMatchNormalized;
+  // teamId → group letter; scoreboard events lack group info, so the parent
+  // derives this from standings and passes it down for stage labels.
+  teamGroupLetter?: Map<string, string>;
 }
 
 const TOURNAMENT_START = new Date('2026-06-11T15:00:00-04:00').getTime();
@@ -114,7 +117,7 @@ function OpeningMatchCard({ match }: { match: WorldCupMatchNormalized }) {
   );
 }
 
-function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
+function LiveMatchTile({ match, groupLetter }: { match: WorldCupMatchNormalized; groupLetter?: string }) {
   const homeScore = parseInt(match.home.score) || 0;
   const awayScore = parseInt(match.away.score) || 0;
   const awayLeads = awayScore > homeScore;
@@ -134,6 +137,16 @@ function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
         : match.status.isHalftime
           ? 'HALF TIME'
           : (match.status.clock || 'Live');
+
+  // Group-stage matches surface the group letter alongside the stage label,
+  // e.g. "Group Stage (D)". The letter comes from match.groupLetter when ESPN
+  // provides it, otherwise from the standings-derived lookup (groupLetter prop).
+  // Knockout rounds just use the stage name.
+  const letter = match.groupLetter || groupLetter;
+  const stageLabel =
+    match.seasonTypeId === 1 && letter
+      ? `Group Stage (${letter})`
+      : match.stage;
 
   const cols = '1fr 18px 18px 28px';
 
@@ -174,7 +187,7 @@ function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
         className="flex items-center justify-between mb-[11px] font-semibold text-[11.5px]"
         style={{ color: 'rgba(255,255,255,.6)' }}
       >
-        <span className="tracking-[.04em] uppercase">{match.stage}</span>
+        <span className="tracking-[.04em] uppercase">{stageLabel}</span>
         <span className="flex items-center gap-[6px]">
           {match.status.state === 'in' && !match.status.isHalftime && !isDelayed && (
             <span className="pulse-dot on-dark" style={{ width: 6, height: 6 }} />
@@ -194,7 +207,7 @@ function LiveMatchTile({ match }: { match: WorldCupMatchNormalized }) {
   );
 }
 
-export function Hero({ phase, todayMatches, openingMatch }: HeroProps) {
+export function Hero({ phase, todayMatches, openingMatch, teamGroupLetter }: HeroProps) {
   const liveMatches = todayMatches.filter(m => m.status.state === 'in');
   // The full day's slate — live, upcoming, and finished — in chronological
   // (kickoff) order, left to right.
@@ -247,7 +260,7 @@ export function Hero({ phase, todayMatches, openingMatch }: HeroProps) {
           </div>
           <a
             href="/schedule"
-            className="font-semibold text-[13px] whitespace-nowrap no-underline"
+            className="font-semibold text-[13px] whitespace-nowrap no-underline uppercase tracking-[.04em]"
             style={{ color: 'rgba(255,255,255,.8)' }}
           >
             Full schedule →
@@ -268,7 +281,14 @@ export function Hero({ phase, todayMatches, openingMatch }: HeroProps) {
             style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}
           >
             {displayMatches.slice(0, 6).map(match => (
-              <LiveMatchTile key={match.eventId} match={match} />
+              <LiveMatchTile
+                key={match.eventId}
+                match={match}
+                groupLetter={
+                  teamGroupLetter?.get(match.home.id) ??
+                  teamGroupLetter?.get(match.away.id)
+                }
+              />
             ))}
           </div>
         )}

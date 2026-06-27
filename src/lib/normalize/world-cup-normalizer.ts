@@ -687,8 +687,11 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     if (geo) broadcaster = [{ name: geo, lang: channelLang(geo) }];
   }
 
-  // Group info from header
-  const rawGroup = (comp as any).groups?.shortName ?? (comp as any).group?.shortName ?? '';
+  // Group info from header. The summary endpoint's group object exposes
+  // `name`/`abbreviation` ("Group I") but no `shortName`, so check those too.
+  const groupObj = (comp as any).groups ?? (comp as any).group ?? {};
+  const rawGroup: string =
+    groupObj.shortName ?? groupObj.abbreviation ?? groupObj.name ?? '';
   const groupLetter = rawGroup.replace(/^Group\s+/i, '').trim();
   const seasonTypeId = Number(data.header.season?.type?.id ?? 1);
   const roundNames: Record<number, string> = { 1: 'Group Stage', 2: 'Round of 32', 3: 'Round of 16', 4: 'Quarterfinals', 5: 'Semifinals', 6: 'Third Place', 7: 'Final' };

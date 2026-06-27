@@ -6,6 +6,7 @@ import type { WorldCupTeamStanding } from '@/types/standings-types';
 
 function rowClass(s: WorldCupTeamStanding): string {
   const base = 'gfrow';
+  if (s.status === 'clinched') return `${base} clinched`;
   if (s.status === 'advancing') return `${base} adv`;
   if (s.status === 'bubble') return `${base} best3`;
   return base;
@@ -22,11 +23,14 @@ export function GroupStandingsTable({ standings }: GroupStandingsTableProps) {
     <>
       {standings.map(s => {
         const isMyTeam = myTeam != null && s.teamAbbr.toUpperCase() === myTeam.toUpperCase();
+        // Don't override the clinched accent border for a favorite team that's
+        // also clinched — clinched wins, matching the homepage group cards.
+        const showMine = isMyTeam && s.status !== 'clinched';
         return (
           <div
             key={s.teamId}
             className={rowClass(s)}
-            style={isMyTeam ? { boxShadow: 'inset 3px 0 0 var(--accent)' } : undefined}
+            style={showMine ? { boxShadow: 'inset 3px 0 0 var(--accent)' } : undefined}
           >
             <span className="rk tnum">{s.rank}</span>
             <span className="tm">

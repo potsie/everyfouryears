@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 import type { WorldCupGroupTable } from '@/types/standings-types';
 import type { DateRailDay } from '@/components/DateRail';
@@ -129,6 +130,17 @@ export function HomeClient({ allMatches, groupStandings, todayStr, news }: HomeC
     m => getMatchDateKey(m.date) === today,
   );
 
+  // Scoreboard events don't carry group info, so derive a teamId → group
+  // letter map from the standings (which do) for the hero's stage labels.
+  const teamGroupLetter = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const group of groupStandings) {
+      const letter = group.groupName.replace(/^Group\s+/i, '').trim();
+      for (const t of group.standings) map.set(t.teamId, letter);
+    }
+    return map;
+  }, [groupStandings]);
+
   // Opening match for pre-phase hero
   const openingMatch = [...matches]
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -190,7 +202,7 @@ export function HomeClient({ allMatches, groupStandings, todayStr, news }: HomeC
         }}
       >
         {/* Hero */}
-        <Hero phase={phase} todayMatches={todayMatches} openingMatch={openingMatch} />
+        <Hero phase={phase} todayMatches={todayMatches} openingMatch={openingMatch} teamGroupLetter={teamGroupLetter} />
 
         {/* Date rail */}
         {dateRailDays.length > 0 && (
@@ -247,7 +259,7 @@ export function HomeClient({ allMatches, groupStandings, todayStr, news }: HomeC
                 }}
               >
                 {selectedMatches.map(match => (
-                  <MatchCard key={match.eventId} match={match} />
+                  <MatchCard key={match.eventId} match={match} teamGroupLetter={teamGroupLetter} />
                 ))}
               </div>
             )}
@@ -294,20 +306,25 @@ export function HomeClient({ allMatches, groupStandings, todayStr, news }: HomeC
               className="grid gap-[13px]"
               style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(248px, 1fr))' }}
             >
-              {groupStandings.map(group => (
-                <div
-                  key={group.groupId}
-                  style={{
-                    background: 'var(--surface)',
-                    border: '1px solid var(--line)',
-                    borderRadius: 'var(--r-md)',
-                    boxShadow: 'var(--sh-1)',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <GroupTable group={group} compact />
-                </div>
-              ))}
+              {groupStandings.map(group => {
+                const letter = group.groupName.replace(/^Group\s+/i, '').trim();
+                return (
+                  <Link
+                    key={group.groupId}
+                    href={`/groups/${letter.toLowerCase()}`}
+                    className="block no-underline group-card-link"
+                    style={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--line)',
+                      borderRadius: 'var(--r-md)',
+                      boxShadow: 'var(--sh-1)',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <GroupTable group={group} compact />
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Legend */}

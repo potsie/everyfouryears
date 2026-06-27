@@ -300,6 +300,8 @@ body {
   text-decoration: none; display: block; color: inherit;
 }
 .gcard:hover { box-shadow: var(--sh-2); transform: translateY(-1px); }
+.group-card-link { transition: box-shadow .14s, transform .08s, border-color .14s; }
+.group-card-link:hover { box-shadow: var(--sh-2); border-color: var(--line-2); transform: translateY(-1px); }
 .gcard-head {
   display: flex; align-items: center; justify-content: space-between;
   padding: 11px 15px; background: var(--navy); border-bottom: none;
@@ -334,6 +336,10 @@ body {
 .gfrow.adv .rk { color: var(--live-ink); }
 .gfrow.best3 { background: var(--best3); }
 .gfrow.mine { box-shadow: inset 3px 0 0 var(--accent); }
+/* Clinched: advance background plus a green left-border accent, matching the
+   homepage group cards. Placed after .mine so the clinched accent wins. */
+.gfrow.clinched { background: var(--advance); box-shadow: inset 3px 0 0 var(--clinched-border); }
+.gfrow.clinched .rk { color: var(--live-ink); }
 
 /* ── Groups legend ── */
 .gt-foot { display: flex; gap: 14px; padding: 10px 15px 12px; font-size: 10.5px; color: var(--ink-3); flex-wrap: wrap; }
@@ -460,7 +466,7 @@ body {
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
   margin-bottom: 16px; font-size: 12px;
 }
-.mh-back { color: rgba(255,255,255,.72); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.mh-back { color: rgba(255,255,255,.72); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-transform: uppercase; letter-spacing: .04em; }
 .mh-back:hover { color: #fff; }
 .mh-meta { display: inline-flex; align-items: center; gap: 9px; color: rgba(255,255,255,.62); font-weight: 600; letter-spacing: .03em; white-space: nowrap; }
 .mh-meta .gtag {

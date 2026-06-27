@@ -7,6 +7,9 @@ import { Flag } from './Flag';
 
 interface MatchCardProps {
   match: WorldCupMatchNormalized;
+  // teamId → group letter fallback for scoreboard-fed matches, whose
+  // groupLetter is empty (ESPN's scoreboard omits group info).
+  teamGroupLetter?: Map<string, string>;
 }
 
 function formatKickoff(isoDate: string): string {
@@ -20,14 +23,15 @@ function formatKickoff(isoDate: string): string {
   }
 }
 
-function stageLabel(match: WorldCupMatchNormalized): string {
-  if (match.seasonTypeId === 1 && match.groupLetter) {
-    return `GROUP ${match.groupLetter}`;
+function stageLabel(match: WorldCupMatchNormalized, fallbackLetter?: string): string {
+  const letter = match.groupLetter || fallbackLetter;
+  if (match.seasonTypeId === 1 && letter) {
+    return `GROUP STAGE (${letter})`;
   }
   return match.stage.toUpperCase();
 }
 
-export function MatchCard({ match }: MatchCardProps) {
+export function MatchCard({ match, teamGroupLetter }: MatchCardProps) {
   const isLive = match.status.state === 'in';
   const isPost = match.status.state === 'post';
   const xg = useXg(match.eventId);
@@ -70,7 +74,12 @@ export function MatchCard({ match }: MatchCardProps) {
             color: 'rgba(255,255,255,.7)',
           }}
         >
-          <span style={{ letterSpacing: '.04em' }}>{stageLabel(match)}</span>
+          <span style={{ letterSpacing: '.04em' }}>
+            {stageLabel(
+              match,
+              teamGroupLetter?.get(match.home.id) ?? teamGroupLetter?.get(match.away.id),
+            )}
+          </span>
 
           {isLive && match.status.isDelayed && (
             <span className="flex items-center gap-[6px]" style={{ color: '#f5b945' }}>

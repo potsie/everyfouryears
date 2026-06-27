@@ -124,6 +124,12 @@ export default async function GroupDetailPage({
             <div className="row gap12" style={{ marginTop: 12, fontSize: 11.5, color: 'var(--ink-3)', flexWrap: 'wrap' }}>
               <span className="gt-foot" style={{ padding: 0 }}>
                 <span className="k">
+                  <span className="sw" style={{ background: 'var(--advance)', boxShadow: 'inset 3px 0 0 var(--clinched-border)' }} />
+                  Clinched
+                </span>
+              </span>
+              <span className="gt-foot" style={{ padding: 0 }}>
+                <span className="k">
                   <span className="sw" style={{ background: 'var(--advance)', border: '1px solid #cfe8d8' }} />
                   Advance to Round of 32
                 </span>

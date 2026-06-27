@@ -6,7 +6,8 @@ import type { WorldCupTeamStanding } from '@/types/standings-types';
 
 function rowClass(s: WorldCupTeamStanding, isMyTeam: boolean): string {
   let cls = 'gfrow';
-  if (s.status === 'advancing') cls += ' adv';
+  if (s.status === 'clinched') cls += ' clinched';
+  else if (s.status === 'advancing') cls += ' adv';
   else if (s.status === 'bubble') cls += ' best3';
   if (isMyTeam) cls += ' mine';
   return cls;

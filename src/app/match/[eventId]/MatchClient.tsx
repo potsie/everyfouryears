@@ -167,13 +167,13 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
             <Back /> Schedule
           </Link>
           <span className="mh-meta">
-            {group && (
-              <>
-                <span className="gtag">GROUP {group}</span>
-                <span className="sep">·</span>
-              </>
+            {/* Group matches get the homepage-hero label "GROUP STAGE (X)" in a
+                pill; knockout rounds keep the plain matchday/round name. */}
+            {group ? (
+              <span className="gtag">GROUP STAGE ({group})</span>
+            ) : (
+              <span>{matchday}</span>
             )}
-            <span>{matchday}</span>
             <span className="sep">·</span>
             <span>{kickoffDate}</span>
           </span>
