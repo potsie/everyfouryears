@@ -9,7 +9,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { normalizePmsrName, resolveFifaId } from '../src/lib/pmsr.ts';
 
-const HUB = 'https://www.fifatrainingcentre.com/en/fifa-world-cup-2026/match-report-hub.php';
+const HUBS = [
+  'https://www.fifatrainingcentre.com/en/fifa-world-cup-2026/match-report-hub.php',
+  'https://www.fifatrainingcentre.com/en/fifa-world-cup-2026/match-report-hub-knockout-stage.php',
+];
 const HOST = 'https://www.fifatrainingcentre.com';
 const SCOREBOARD =
   'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260610-20260720&limit=200';
@@ -31,10 +34,12 @@ async function getJson(url) {
 
 // Discover available report PDFs from the hub. Filenames are PMSR-M<n>-<HOME>-V-<AWAY>.pdf.
 async function discoverPdfs() {
-  const html = await getText(HUB);
   const re = /\/media\/native\/[^"')]*PMSR-M\d+[-\s]([A-Z]{3})[-\s]V[-\s]([A-Z]{3})[^"')]*\.pdf/g;
   const out = new Map(); // url -> { home, away }
-  for (const m of html.matchAll(re)) out.set(HOST + m[0], { home: m[1], away: m[2] });
+  for (const hub of HUBS) {
+    const html = await getText(hub);
+    for (const m of html.matchAll(re)) out.set(HOST + m[0], { home: m[1], away: m[2] });
+  }
   return [...out].map(([url, teams]) => ({ url, ...teams }));
 }
 
