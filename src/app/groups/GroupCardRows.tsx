@@ -8,6 +8,7 @@ function rowClass(s: WorldCupTeamStanding, isMyTeam: boolean): string {
   let cls = 'gfrow';
   if (s.status === 'clinched') cls += ' clinched';
   else if (s.status === 'advancing') cls += ' adv';
+  else if (s.status === 'advanced-third') cls += ' best3-adv';
   else if (s.status === 'bubble') cls += ' best3';
   else if (s.status === 'eliminated') cls += ' eliminated';
   if (isMyTeam) cls += ' mine';
@@ -28,6 +29,7 @@ export function GroupCardRows({ standings }: { standings: WorldCupTeamStanding[]
               <Flag logo={s.logo} abbr={s.teamAbbr} size={18} />
               <span className="c">{s.teamAbbr}</span>
               <span className="n">{s.teamName}</span>
+              {s.status === 'advanced-third' && <span className="adv-badge">Advanced</span>}
             </span>
             <span className="num tnum">{s.gamesPlayed}</span>
             <span className="num tnum">{s.wins}</span>

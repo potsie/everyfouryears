@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import { fetchAllMatches, fetchAllGroupStandings, fetchTeamColors, fetchFifaRankings, fetchFifaTeamBio, fetchFifaCoaches, fetchFifaSquads } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchAllGroupStandings, collectKnockoutTeamIds, fetchTeamColors, fetchFifaRankings, fetchFifaTeamBio, fetchFifaCoaches, fetchFifaSquads } from '@/lib/espn/wc-fetchers';
 import { fetchTeamNewsMerged } from '@/lib/news';
 import { espnFetch } from '@/lib/espn/core';
 import { getAllPmsr } from '@/lib/pmsr.server';
@@ -71,7 +71,7 @@ export default async function TeamPage({
   const espnId = espnTeamEntry?.[0] ?? suppTeamActual?.espn_id ?? '';
 
   const [allStandings, teamColors, fifaRankings, fifaCoaches, teamNews] = await Promise.all([
-    fetchAllGroupStandings(teamDict),
+    fetchAllGroupStandings(teamDict, collectKnockoutTeamIds(matches)),
     fetchTeamColors(espnId),
     fetchFifaRankings(),
     fetchFifaCoaches(),

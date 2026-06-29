@@ -1,4 +1,4 @@
-import { fetchAllMatches, fetchAllGroupStandings } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchAllGroupStandings, collectKnockoutTeamIds } from '@/lib/espn/wc-fetchers';
 import { getMergedNews, type NewsItem } from '@/lib/news';
 import { todayESPN } from '@/lib/dates';
 import { Nav } from '@/components/Nav';
@@ -9,7 +9,7 @@ export const revalidate = 60;
 
 export default async function HomePage() {
   const { matches, teamDict } = await fetchAllMatches();
-  const groupStandings = await fetchAllGroupStandings(teamDict);
+  const groupStandings = await fetchAllGroupStandings(teamDict, collectKnockoutTeamIds(matches));
   const todayStr = todayESPN();
 
   let news: NewsItem[] = [];

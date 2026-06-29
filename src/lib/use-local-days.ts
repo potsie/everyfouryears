@@ -11,6 +11,9 @@ export function useLocalDays(serverDays: ScheduleDay[]): ScheduleDay[] {
   const [days, setDays] = useState(serverDays);
 
   useEffect(() => {
+    // Re-bucket into the browser's timezone only after mount — the local zone is
+    // unknown during SSR, so this can't move into render without a mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only timezone regroup
     setDays(regroupDaysLocal(serverDays));
   }, [serverDays]);
 

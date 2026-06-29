@@ -104,6 +104,9 @@ function useTimeUntil(isoDate: string) {
   const target = new Date(isoDate).getTime();
   const [diff, setDiff] = useState<number | null>(null);
   useEffect(() => {
+    // Starts null (server has no clock) and is set on mount to avoid a hydration
+    // mismatch, then ticks every second.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only countdown init
     setDiff(target - Date.now());
     const id = setInterval(() => setDiff(target - Date.now()), 1000);
     return () => clearInterval(id);

@@ -102,8 +102,10 @@ export function HomeClient({ allMatches, groupStandings, todayStr, news }: HomeC
   const { myTeam } = useMyTeam();
 
   useEffect(() => {
+    // Correct "today" to the viewer's local date after mount (server uses Eastern).
     const local = localTodayKey();
     if (local === today) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only local-date correction
     setToday(local);
     // Move the default selection to the local "today" only if the user hasn't
     // already picked a different date from the rail.

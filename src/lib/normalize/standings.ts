@@ -20,11 +20,18 @@ function parseAdvancementStatus(note?: { color?: string; description?: string })
   return 'pending';
 }
 
+// ESPN never narrows the third-place "Best 8 advance" note to the eight teams
+// that actually qualify — all twelve thirds keep the generic note even after the
+// bracket is seeded. So once the Round of 32 exists we resolve each third against
+// the set of teams actually in the knockout draw: in the draw → 'advanced-third',
+// otherwise → 'eliminated'. `knockoutTeamIds` empty (pre-seeding) leaves thirds
+// on 'bubble', the honest "still in contention" state.
 export function normalizeGroupStandings(
   groupId: string,
   groupName: string,
   espnStandingsData: any[],
-  teamDictionary: Record<string, { name: string; abbr: string; logo: string }>
+  teamDictionary: Record<string, { name: string; abbr: string; logo: string }>,
+  knockoutTeamIds: Set<string> = new Set()
 ): WorldCupGroupTable {
   const standings: WorldCupTeamStanding[] = espnStandingsData.map((entry, index) => {
     const teamRef: string = entry.team?.$ref ?? '';
@@ -71,9 +78,14 @@ export function normalizeGroupStandings(
     if (b.points !== a.points) return b.points - a.points;
     return b.goalDiff - a.goalDiff;
   });
+  const knockoutSeeded = knockoutTeamIds.size > 0;
   standings.forEach((s, i) => {
     s.rank = i + 1;
     if (s.status === 'advancing' && s.gamesPlayed === 3) s.status = 'clinched';
+    // Resolve third-place teams once the Round of 32 is seeded.
+    if (s.rank === 3 && s.status === 'bubble' && knockoutSeeded) {
+      s.status = knockoutTeamIds.has(s.teamId) ? 'advanced-third' : 'eliminated';
+    }
   });
 
   return { groupId, groupName, standings };

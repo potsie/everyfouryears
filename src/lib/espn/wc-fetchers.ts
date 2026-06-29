@@ -26,6 +26,19 @@ export interface ScoreboardResult {
   teamDict: TeamDictionary;
 }
 
+// Team IDs appearing in the Round of 32 (seasonTypeId 2) — the authoritative set
+// of 32 teams that advanced, including the eight best thirds. Empty until ESPN
+// seeds the bracket (real competitor IDs replace the TBD placeholders).
+export function collectKnockoutTeamIds(matches: WorldCupMatchNormalized[]): Set<string> {
+  const ids = new Set<string>();
+  for (const m of matches) {
+    if (m.seasonTypeId !== 2) continue;
+    if (m.home.id) ids.add(m.home.id);
+    if (m.away.id) ids.add(m.away.id);
+  }
+  return ids;
+}
+
 export async function fetchAllMatches(): Promise<ScoreboardResult> {
   const url =
     'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard' +
@@ -43,6 +56,7 @@ export async function fetchAllMatches(): Promise<ScoreboardResult> {
 async function fetchGroupById(
   groupId: string,
   teamDict: TeamDictionary,
+  knockoutTeamIds: Set<string>,
 ): Promise<WorldCupGroupTable | null> {
   try {
     const base =
@@ -61,7 +75,7 @@ async function fetchGroupById(
       standingsData.entries ??
       (Array.isArray(standingsData) ? standingsData : []);
 
-    return normalizeGroupStandings(groupId, groupName, rawEntries, teamDict);
+    return normalizeGroupStandings(groupId, groupName, rawEntries, teamDict, knockoutTeamIds);
   } catch {
     return null;
   }
@@ -69,6 +83,7 @@ async function fetchGroupById(
 
 export async function fetchAllGroupStandings(
   teamDict: TeamDictionary,
+  knockoutTeamIds: Set<string> = new Set(),
 ): Promise<WorldCupGroupTable[]> {
   const url =
     'https://sports.core.api.espn.com/v2/sports/soccer/leagues/fifa.world/seasons/2026/types/1/groups?limit=20';
@@ -85,7 +100,9 @@ export async function fetchAllGroupStandings(
 
   if (groupIds.length === 0) return [];
 
-  const results = await Promise.all(groupIds.map(id => fetchGroupById(id, teamDict)));
+  const results = await Promise.all(
+    groupIds.map(id => fetchGroupById(id, teamDict, knockoutTeamIds)),
+  );
   return results.filter((g): g is WorldCupGroupTable => g !== null);
 }
 

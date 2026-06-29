@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 import { linescoreCells } from '@/lib/normalize/world-cup-normalizer';
 import { Flag } from './Flag';
@@ -21,6 +22,7 @@ function Countdown() {
 
   useEffect(() => {
     // Initialize after mount to avoid SSR/client hydration mismatch
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only countdown init
     setDiff(TOURNAMENT_START - Date.now());
     const id = setInterval(() => setDiff(TOURNAMENT_START - Date.now()), 1000);
     return () => clearInterval(id);
@@ -258,13 +260,13 @@ export function Hero({ phase, todayMatches, openingMatch, teamGroupLetter }: Her
               </>
             )}
           </div>
-          <a
+          <Link
             href="/schedule"
             className="font-semibold text-[13px] whitespace-nowrap no-underline uppercase tracking-[.04em]"
             style={{ color: 'rgba(255,255,255,.8)' }}
           >
             Full schedule →
-          </a>
+          </Link>
         </div>
 
         {/* Phase-specific body */}

@@ -8,6 +8,7 @@ function rowClass(s: WorldCupTeamStanding): string {
   const base = 'gfrow';
   if (s.status === 'clinched') return `${base} clinched`;
   if (s.status === 'advancing') return `${base} adv`;
+  if (s.status === 'advanced-third') return `${base} best3-adv`;
   if (s.status === 'bubble') return `${base} best3`;
   if (s.status === 'eliminated') return `${base} eliminated`;
   return base;
@@ -26,7 +27,11 @@ export function GroupStandingsTable({ standings }: GroupStandingsTableProps) {
         const isMyTeam = myTeam != null && s.teamAbbr.toUpperCase() === myTeam.toUpperCase();
         // Don't override the clinched/eliminated accent border for a favorite
         // team — those status accents win, matching the homepage group cards.
-        const showMine = isMyTeam && s.status !== 'clinched' && s.status !== 'eliminated';
+        const showMine =
+          isMyTeam &&
+          s.status !== 'clinched' &&
+          s.status !== 'advanced-third' &&
+          s.status !== 'eliminated';
         return (
           <div
             key={s.teamId}
@@ -38,6 +43,7 @@ export function GroupStandingsTable({ standings }: GroupStandingsTableProps) {
               <Flag logo={s.logo} abbr={s.teamAbbr} size={18} />
               <span className="c">{s.teamAbbr}</span>
               <span className="n">{s.teamName}</span>
+              {s.status === 'advanced-third' && <span className="adv-badge">Advanced</span>}
             </span>
             <span className="num tnum">{s.gamesPlayed}</span>
             <span className="num tnum">{s.wins}</span>

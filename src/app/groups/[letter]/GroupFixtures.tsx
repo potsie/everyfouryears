@@ -94,6 +94,8 @@ interface MatchdayGroup {
 // for a Central viewer.
 export function GroupFixtures({ matchdays }: { matchdays: MatchdayGroup[] }) {
   const [timeZone, setTimeZone] = useState<string | undefined>('America/New_York');
+  // Switch from the SSR Eastern seed to the viewer's local zone after mount.
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only timezone switch
   useEffect(() => { setTimeZone(undefined); }, []);
 
   return (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, createContext, useContext } from 'react';
+import Link from 'next/link';
 import { Flag } from '@/components/Flag';
 import { PageHero } from '@/components/PageHero';
 import { useMyTeam } from '@/contexts/my-team-context';
@@ -59,6 +60,25 @@ interface BTieProps {
   active: string | null;
 }
 
+// Hoisted out of BTie so it isn't redefined on every render (react-hooks/static-components).
+function BTieTeamRow({ t, s, isPost, isLive }: { t: Tie; s: 'a' | 'b'; isPost: boolean; isLive: boolean }) {
+  const team = t[s];
+  const win = isPost && t.winner === s;
+  const lose = isPost && t.winner !== s;
+  if (isTBD(team)) {
+    return <div className="bt-row tbd"><span className="bt-code">{team.src}</span></div>;
+  }
+  return (
+    <div className={`bt-row${win ? ' win' : ''}${lose ? ' lose' : ''}`}>
+      <Flag logo={(team as TieTeam).flag} abbr={(team as TieTeam).code} size={15} />
+      <span className="bt-code">{(team as TieTeam).code}</span>
+      {(isPost || isLive) && t.score && (
+        <span className="bt-sc tnum">{t.score[s === 'a' ? 0 : 1]}</span>
+      )}
+    </div>
+  );
+}
+
 function BTie({ t, path, active }: BTieProps) {
   const bk = useBK();
   const isPost = t.state === 'post';
@@ -72,24 +92,6 @@ function BTie({ t, path, active }: BTieProps) {
     (!isTBD(t.a) && (t.a as TieTeam).code === bk.myTeam) ||
     (!isTBD(t.b) && (t.b as TieTeam).code === bk.myTeam)
   );
-
-  function TeamRow({ s }: { s: 'a' | 'b' }) {
-    const team = t[s];
-    const win = isPost && t.winner === s;
-    const lose = isPost && t.winner !== s;
-    if (isTBD(team)) {
-      return <div className="bt-row tbd"><span className="bt-code">{team.src}</span></div>;
-    }
-    return (
-      <div className={`bt-row${win ? ' win' : ''}${lose ? ' lose' : ''}`}>
-        <Flag logo={(team as TieTeam).flag} abbr={(team as TieTeam).code} size={15} />
-        <span className="bt-code">{(team as TieTeam).code}</span>
-        {(isPost || isLive) && t.score && (
-          <span className="bt-sc tnum">{t.score[s === 'a' ? 0 : 1]}</span>
-        )}
-      </div>
-    );
-  }
 
   let foot: React.ReactNode = null;
   if (isLive) {
@@ -130,8 +132,8 @@ function BTie({ t, path, active }: BTieProps) {
           <CheckIco />
         </span>
       )}
-      <TeamRow s="a" />
-      <TeamRow s="b" />
+      <BTieTeamRow t={t} s="a" isPost={isPost} isLive={isLive} />
+      <BTieTeamRow t={t} s="b" isPost={isPost} isLive={isLive} />
       {foot}
     </a>
   );
@@ -308,36 +310,36 @@ const ROUND_LABELS: Record<string, string> = {
   SF: 'Semifinal', F: 'Final', '3P': 'Third-Place Playoff',
 };
 
+// Hoisted out of BigTie so it isn't redefined on every render (react-hooks/static-components).
+function BigTieRow({ t, s, isPost, isLive }: { t: Tie; s: 'a' | 'b'; isPost: boolean; isLive: boolean }) {
+  const team = t[s];
+  const win = isPost && t.winner === s;
+  const lose = isPost && t.winner !== s;
+  if (isTBD(team)) {
+    return <div className="btl-row"><span className="btl-name tbd">{team.src}</span></div>;
+  }
+  return (
+    <div className={`btl-row${lose ? ' lose' : ''}`}>
+      <Flag logo={(team as TieTeam).flag} abbr={(team as TieTeam).code} size={30} />
+      <span className="btl-name">
+        {(team as TieTeam).code}
+        <span className="full">{(team as TieTeam).name}</span>
+      </span>
+      {(isPost || isLive) && t.score && (
+        <span className="btl-sc tnum" style={win ? { color: 'var(--ink)' } : undefined}>
+          {t.score[s === 'a' ? 0 : 1]}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function BigTie({ t }: { t: Tie }) {
   const isPost = t.state === 'post';
   const isLive = t.state === 'in';
-  const isTbd = t.state === 'tbd';
   const meta = ROUND_LABELS[t.round];
   const isPens = t.clock?.includes('pens');
   const showTag = t.tag && (t.round === 'QF' || t.round === 'SF');
-
-  function Row({ s }: { s: 'a' | 'b' }) {
-    const team = t[s];
-    const win = isPost && t.winner === s;
-    const lose = isPost && t.winner !== s;
-    if (isTBD(team)) {
-      return <div className="btl-row"><span className="btl-name tbd">{team.src}</span></div>;
-    }
-    return (
-      <div className={`btl-row${lose ? ' lose' : ''}`}>
-        <Flag logo={(team as TieTeam).flag} abbr={(team as TieTeam).code} size={30} />
-        <span className="btl-name">
-          {(team as TieTeam).code}
-          <span className="full">{(team as TieTeam).name}</span>
-        </span>
-        {(isPost || isLive) && t.score && (
-          <span className="btl-sc tnum" style={win ? { color: 'var(--ink)' } : undefined}>
-            {t.score[s === 'a' ? 0 : 1]}
-          </span>
-        )}
-      </div>
-    );
-  }
 
   return (
     <a className={`btie-lg${isLive ? ' is-live' : ''}`} href={`/match/${t.id}`}>
@@ -346,13 +348,11 @@ function BigTie({ t }: { t: Tie }) {
         {isLive
           ? <span className="st live"><Pulse /> {t.clock}</span>
           : isPost
-            ? <span className="st ft">{isPens ? t.clock!.toUpperCase() : 'FULL TIME'}</span>
-            : isTbd
-              ? <span className="st">{bracketWhen(t)}</span>
-              : <span className="st">{bracketWhen(t)}</span>
+            ? <span className="st ft">{t.dateISO ? `${localDate(t.dateISO)} · ` : ''}{isPens ? t.clock!.toUpperCase() : 'FULL TIME'}</span>
+            : <span className="st">{t.dateISO ? `${localDate(t.dateISO)} · ${localTime(t.dateISO)}` : short(t.when)}</span>
         }
       </div>
-      <div className="btl-body"><Row s="a" /><Row s="b" /></div>
+      <div className="btl-body"><BigTieRow t={t} s="a" isPost={isPost} isLive={isLive} /><BigTieRow t={t} s="b" isPost={isPost} isLive={isLive} /></div>
       <div className="btl-foot">
         <span className="venue">
           <PinIco />
@@ -482,7 +482,7 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
         )}
 
         <div className="fspace" />
-        <a className="btn" href="/schedule?stage=ko">Knockout schedule →</a>
+        <Link className="btn" href="/schedule?stage=ko">Knockout schedule →</Link>
       </div>
 
       {view === 'Full' ? (

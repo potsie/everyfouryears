@@ -189,9 +189,11 @@ function HostMap() {
 export function VenuesClient() {
   const [view, setView] = useState<'Showcase' | 'Atlas'>('Showcase');
 
+  // Restore the saved view preference after mount (localStorage is client-only).
   useEffect(() => {
     try {
       const saved = localStorage.getItem('wc-venues-view') as 'Showcase' | 'Atlas';
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only hydration read
       if (saved === 'Atlas') setView('Atlas');
     } catch {}
   }, []);

@@ -1,4 +1,4 @@
-import { fetchAllMatches, fetchAllGroupStandings } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchAllGroupStandings, collectKnockoutTeamIds } from '@/lib/espn/wc-fetchers';
 import { groupMatchesByDay } from '@/lib/schedule-utils';
 import { Nav } from '@/components/Nav';
 import { ScheduleClient } from '@/components/ScheduleClient';
@@ -12,7 +12,7 @@ export const metadata = {
 
 export default async function SchedulePage() {
   const { matches, teamDict } = await fetchAllMatches();
-  const standings = await fetchAllGroupStandings(teamDict);
+  const standings = await fetchAllGroupStandings(teamDict, collectKnockoutTeamIds(matches));
   const days = groupMatchesByDay(matches);
 
   // Map group letter → team abbrs for client-side filtering.

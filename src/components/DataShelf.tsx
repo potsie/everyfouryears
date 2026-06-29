@@ -69,6 +69,9 @@ export function DataShelf({
 
   useEffect(() => {
     const espnId = myTeamStanding?.teamId;
+    // Reset then async-fetch colors when the favorite team changes; the value
+    // comes from a network call, so it can't be derived during render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset before async fetch
     if (!espnId) { setTeamColors(null); return; }
     fetch(`/api/team-colors?espnId=${espnId}`)
       .then(r => r.json())

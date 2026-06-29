@@ -101,6 +101,9 @@ function MyTeamModal({ isOpen, onClose, myTeam, onSelect }: MyTeamModalProps) {
 
   useEffect(() => {
     if (isOpen) {
+      // Reset the search field each time the modal opens (responding to the
+      // isOpen prop, not derivable during render).
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset on open
       setQuery('');
       requestAnimationFrame(() => inputRef.current?.focus());
     }
@@ -388,10 +391,13 @@ export function MyTeamProvider({ children }: { children: React.ReactNode }) {
   const [myTeam, setMyTeamState] = useState<string | null>(null);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
-  // SSR-safe localStorage read on mount
+  // SSR-safe localStorage read on mount: localStorage is unavailable during SSR,
+  // so this client-only value must be set in an effect (a lazy initializer would
+  // cause a hydration mismatch).
   useEffect(() => {
     try {
       const stored = localStorage.getItem('wc2026_myteam');
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only hydration read
       if (stored) setMyTeamState(stored);
     } catch {
       // localStorage not available (e.g. private browsing with strict settings)

@@ -45,6 +45,8 @@
   --advance: #eaf7ef;
   --clinched-border: #16a34a;
   --best3: #fff7e6;
+  --best3-border: #d99e00;
+  --best3-ink: #8a6300;
   --accent: #0a2240;
   --accent-ink: #ffffff;
   /* Home/away team viz colors (stat bars, possession, win-prob, h2h).
@@ -335,6 +337,17 @@ body {
 .gfrow.adv { background: var(--advance); }
 .gfrow.adv .rk { color: var(--live-ink); }
 .gfrow.best3 { background: var(--best3); }
+/* Best-third that actually advanced: the amber third shade plus a gold left-border
+   accent (mirroring clinched green / eliminated red) and an "Advanced" badge. */
+.gfrow.best3-adv { background: var(--best3); box-shadow: inset 3px 0 0 var(--best3-border); }
+.adv-badge {
+  margin-left: 2px; margin-right: auto; flex: 0 0 auto;
+  font-family: var(--display); font-weight: 800; font-size: 8px;
+  letter-spacing: .07em; text-transform: uppercase;
+  color: var(--best3-ink); background: #fdeecb;
+  border: 1px solid var(--best3-border); border-radius: 999px;
+  padding: 1px 6px; line-height: 1.45;
+}
 .gfrow.mine { box-shadow: inset 3px 0 0 var(--accent); }
 /* Clinched: advance background plus a green left-border accent, matching the
    homepage group cards. Placed after .mine so the clinched accent wins. */

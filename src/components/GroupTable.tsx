@@ -41,7 +41,8 @@ export function GroupTable({ group, myTeamId, compact = false }: GroupTableProps
       {group.standings.map(team => {
         const isClinched = team.status === 'clinched';
         const isAdv = team.status === 'advancing' || isClinched;
-        const isBubble = team.status === 'bubble';
+        const isAdvThird = team.status === 'advanced-third';
+        const isBubble = team.status === 'bubble' || isAdvThird;
         const isEliminated = team.status === 'eliminated';
         const isMine = team.teamId === myTeamId;
         const gd = team.goalDiff;
@@ -58,6 +59,8 @@ export function GroupTable({ group, myTeamId, compact = false }: GroupTableProps
               background: isAdv ? 'var(--advance)' : isBubble ? 'var(--best3)' : undefined,
               boxShadow: isClinched
                 ? 'inset 3px 0 0 var(--clinched-border)'
+                : isAdvThird
+                ? 'inset 3px 0 0 var(--best3-border)'
                 : isEliminated
                 ? 'inset 3px 0 0 var(--danger)'
                 : isMine

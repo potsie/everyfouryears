@@ -144,9 +144,11 @@ export function VenueWeather({ data, roofType, lat, lng }: Props) {
   const [hourlyCache, setHourlyCache] = useState<Map<string, Period[]>>(new Map());
   const triggerRef = useRef<HTMLButtonElement>(null);
 
+  // Restore the saved temperature unit after mount (localStorage is client-only).
   useEffect(() => {
     try {
       const saved = localStorage.getItem('wc-temp-unit') as 'F' | 'C';
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only hydration read
       if (saved === 'F' || saved === 'C') setUnit(saved);
     } catch {}
   }, []);

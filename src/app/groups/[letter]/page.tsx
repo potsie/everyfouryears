@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { fetchAllMatches, fetchAllGroupStandings } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchAllGroupStandings, collectKnockoutTeamIds } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
 import { Flag } from '@/components/Flag';
 import { GroupStandingsTable } from './GroupStandingsTable';
@@ -31,7 +31,7 @@ export default async function GroupDetailPage({
   if (!GROUP_LETTERS.includes(upperLetter)) notFound();
 
   const { matches, teamDict } = await fetchAllMatches();
-  const allStandings = await fetchAllGroupStandings(teamDict);
+  const allStandings = await fetchAllGroupStandings(teamDict, collectKnockoutTeamIds(matches));
 
   const groupStanding = allStandings.find(g =>
     g.groupName.replace('Group ', '').trim().toUpperCase() === upperLetter
@@ -138,6 +138,12 @@ export default async function GroupDetailPage({
                 <span className="k">
                   <span className="sw" style={{ background: 'var(--best3)', border: '1px solid #f0e2bd' }} />
                   Best-third contention
+                </span>
+              </span>
+              <span className="gt-foot" style={{ padding: 0 }}>
+                <span className="k">
+                  <span className="sw" style={{ background: 'var(--best3)', boxShadow: 'inset 3px 0 0 var(--best3-border)' }} />
+                  Advanced (best third)
                 </span>
               </span>
               <span className="gt-foot" style={{ padding: 0 }}>

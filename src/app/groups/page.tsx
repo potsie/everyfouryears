@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { fetchAllMatches, fetchAllGroupStandings } from '@/lib/espn/wc-fetchers';
+import { fetchAllMatches, fetchAllGroupStandings, collectKnockoutTeamIds } from '@/lib/espn/wc-fetchers';
 import { Nav } from '@/components/Nav';
 import { PageHero } from '@/components/PageHero';
 import type { WorldCupGroupTable } from '@/types/standings-types';
@@ -62,6 +62,10 @@ function GroupsLegend() {
         Best-third contention
       </span>
       <span className="k">
+        <span className="sw" style={{ background: 'var(--best3)', boxShadow: 'inset 3px 0 0 var(--best3-border)' }} />
+        Advanced (best third)
+      </span>
+      <span className="k">
         <span className="sw" style={{ background: 'var(--surface)', border: '1px solid var(--line)', boxShadow: 'inset 3px 0 0 var(--danger)' }} />
         Eliminated
       </span>
@@ -70,8 +74,8 @@ function GroupsLegend() {
 }
 
 export default async function GroupsPage() {
-  const { teamDict } = await fetchAllMatches();
-  const standings = await fetchAllGroupStandings(teamDict);
+  const { matches, teamDict } = await fetchAllMatches();
+  const standings = await fetchAllGroupStandings(teamDict, collectKnockoutTeamIds(matches));
 
   // Sort A → L
   const sorted = [...standings].sort((a, b) =>
