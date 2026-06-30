@@ -2,6 +2,7 @@
 
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 import { linescoreCells } from '@/lib/normalize/world-cup-normalizer';
+import { ShootoutStrip } from '@/components/ShootoutStrip';
 import { useXg } from '@/contexts/xg-context';
 import { Flag } from './Flag';
 
@@ -42,6 +43,9 @@ export function MatchCard({ match, teamGroupLetter }: MatchCardProps) {
   const homeDim = !isPre && awayScore > homeScore;
   const awayDim = !isPre && homeScore > awayScore;
   const cells = linescoreCells(match);
+  const hasShootout = !!match.home.shootout && !!match.away.shootout;
+  // A shootout inserts a PK column between the team name and the 1H/2H/T columns.
+  const gridCols = hasShootout ? 'auto 1fr 26px 22px 22px 30px' : 'auto 1fr 22px 22px 30px';
 
   return (
     <a
@@ -104,10 +108,10 @@ export function MatchCard({ match, teamGroupLetter }: MatchCardProps) {
 
         {/* Body — two team rows with the 1H/2H/T linescore */}
         <div className="px-[16px] py-[14px]">
-          <div className="grid items-center gap-x-[10px] mb-[6px]" style={{ gridTemplateColumns: 'auto 1fr 22px 22px 30px' }}>
+          <div className="grid items-center gap-x-[10px] mb-[6px]" style={{ gridTemplateColumns: gridCols }}>
             <span /><span />
-            {['1H', '2H', 'T'].map(h => (
-              <span key={h} className="text-center text-[9.5px] font-bold uppercase tracking-wider" style={{ color: 'var(--ink-3)' }}>{h}</span>
+            {(hasShootout ? ['PK', '1H', '2H', 'T'] : ['1H', '2H', 'T']).map(h => (
+              <span key={h} className="text-center text-[9.5px] font-bold uppercase tracking-wider" style={{ color: h === 'PK' ? '#16a34a' : 'var(--ink-3)' }}>{h}</span>
             ))}
           </div>
           {(['home', 'away'] as const).map((side, i) => {
@@ -119,7 +123,7 @@ export function MatchCard({ match, teamGroupLetter }: MatchCardProps) {
               <div
                 key={side}
                 className="grid items-center gap-x-[10px]"
-                style={{ gridTemplateColumns: 'auto 1fr 22px 22px 30px', opacity: dim ? 0.62 : 1, marginTop: i === 1 ? 10 : 0 }}
+                style={{ gridTemplateColumns: gridCols, opacity: dim ? 0.62 : 1, marginTop: i === 1 ? 10 : 0 }}
               >
                 <Flag logo={t.logo} abbr={t.abbr} size={32} />
                 <div className="min-w-0">
@@ -131,12 +135,24 @@ export function MatchCard({ match, teamGroupLetter }: MatchCardProps) {
                   </div>
                   <span className="text-[12px] font-semibold block" style={{ color: 'var(--ink-3)' }}>{t.name}</span>
                 </div>
+                {hasShootout && (
+                  <span className="font-display font-black text-[15px] tnum text-center" style={{ color: '#16a34a' }}>{t.shootout!.score}</span>
+                )}
                 <span className="font-display font-bold text-[15px] tnum text-center" style={{ color: 'var(--ink-3)' }}>{h1}</span>
                 <span className="font-display font-bold text-[15px] tnum text-center" style={{ color: 'var(--ink-3)' }}>{h2}</span>
                 <span className="font-display font-black text-[24px] tnum text-center" style={{ letterSpacing: '.02em' }}>{tot}</span>
               </div>
             );
           })}
+          {hasShootout && (
+            <ShootoutStrip
+              homeAbbr={match.home.abbr}
+              awayAbbr={match.away.abbr}
+              home={match.home.shootout!}
+              away={match.away.shootout!}
+              tone="light"
+            />
+          )}
         </div>
 
         {/* Scorer lines */}

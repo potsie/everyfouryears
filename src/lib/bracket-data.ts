@@ -42,6 +42,9 @@ export interface Tie {
   a: AnyTeam;
   b: AnyTeam;
   score: [number, number] | null;
+  // Penalty-shootout score [a, b] when the tie was decided on penalties; null
+  // otherwise. The goal `score` stays level, so this determines the winner.
+  shootout: [number, number] | null;
   winner: 'a' | 'b' | null;
   state: TieState;
   clock: string | null;

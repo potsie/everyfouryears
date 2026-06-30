@@ -120,6 +120,7 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
 
     let a: AnyTeam, b: AnyTeam;
     let score: [number, number] | null = null;
+    let shootout: [number, number] | null = null;
     let winner: 'a' | 'b' | null = null;
     let state: Tie['state'] = 'tbd';
     let clock: string | null = null;
@@ -149,8 +150,14 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
         const as_ = Number(m.away.score);
         score = [hs, as_];
         winner = hs > as_ ? 'a' : as_ > hs ? 'b' : null;
-        // Scores equal → check if there are pen goals in details (future: derive from summary)
-        // For now, leave winner null on draw — will need summary endpoint for shootouts
+        // Level on goals → decided by penalties. The shootout score (sourced
+        // from the scoreboard + commentary) breaks the tie.
+        if (winner === null && m.home.shootout && m.away.shootout) {
+          const sh = m.home.shootout.score;
+          const sa = m.away.shootout.score;
+          shootout = [sh, sa];
+          winner = sh > sa ? 'a' : sa > sh ? 'b' : null;
+        }
       }
 
       // Raw ISO stored; BracketClient formats in visitor's local timezone
@@ -167,7 +174,7 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
       side: slot.side,
       rk: slot.rk,
       tag: slot.tag,
-      a, b, score, winner, state, clock, when, dateISO, venue, city, tv,
+      a, b, score, shootout, winner, state, clock, when, dateISO, venue, city, tv,
       feeders: slot.feeders,
       parent: null,
     };

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { WorldCupMatchNormalized } from '@/lib/normalize/world-cup-normalizer';
 import { linescoreCells } from '@/lib/normalize/world-cup-normalizer';
+import { ShootoutStrip } from '@/components/ShootoutStrip';
 import { Flag } from './Flag';
 
 interface HeroProps {
@@ -150,11 +151,19 @@ function LiveMatchTile({ match, groupLetter }: { match: WorldCupMatchNormalized;
       ? `Group Stage (${letter})`
       : match.stage;
 
-  const cols = '1fr 18px 18px 28px';
+  const hasShootout = !!match.home.shootout && !!match.away.shootout;
+  // A shootout inserts a PK column between the team name and the 1H/2H/T columns.
+  const cols = hasShootout ? '1fr 26px 18px 18px 28px' : '1fr 18px 18px 28px';
+
+  // On a shootout, the winner is decided on penalties, not the (level) score —
+  // mark whichever side won the shootout.
+  const soLeads = (side: 'home' | 'away') =>
+    hasShootout && match[side].shootout!.score > match[side === 'home' ? 'away' : 'home'].shootout!.score;
 
   const teamRow = (side: 'home' | 'away', leads: boolean, dim: boolean) => {
     const t = match[side];
     const [h1, h2, tot] = cells[side];
+    const winner = hasShootout ? soLeads(side) : leads;
     return (
       <div
         className="grid items-center gap-x-[9px]"
@@ -163,10 +172,13 @@ function LiveMatchTile({ match, groupLetter }: { match: WorldCupMatchNormalized;
         <div className="flex items-center gap-[9px] min-w-0">
           <Flag logo={t.logo} abbr={t.abbr} size={24} />
           <span className="font-display font-bold text-[16px] text-white leading-none">{t.abbr}</span>
-          {isPost && leads && (
+          {isPost && winner && (
             <span className="font-extrabold text-[9px] tracking-[.08em] uppercase whitespace-nowrap" style={{ color: '#7ee2a8' }}>● Winner</span>
           )}
         </div>
+        {hasShootout && (
+          <span className="font-display font-black text-[14px] tnum text-center" style={{ color: '#7ee2a8' }}>{t.shootout!.score}</span>
+        )}
         <span className="font-display font-bold text-[14px] tnum text-center" style={{ color: 'rgba(255,255,255,.7)' }}>{h1}</span>
         <span className="font-display font-bold text-[14px] tnum text-center" style={{ color: 'rgba(255,255,255,.7)' }}>{h2}</span>
         <span className="font-display font-black text-[22px] tnum text-white text-center">{tot}</span>
@@ -199,12 +211,21 @@ function LiveMatchTile({ match, groupLetter }: { match: WorldCupMatchNormalized;
       </div>
       <div className="grid gap-x-[9px] mb-[5px]" style={{ gridTemplateColumns: cols }}>
         <span />
-        {['1H', '2H', 'T'].map(h => (
-          <span key={h} className="text-center font-bold text-[9px] tracking-[.06em] uppercase" style={{ color: 'rgba(255,255,255,.4)' }}>{h}</span>
+        {(hasShootout ? ['PK', '1H', '2H', 'T'] : ['1H', '2H', 'T']).map(h => (
+          <span key={h} className="text-center font-bold text-[9px] tracking-[.06em] uppercase" style={{ color: h === 'PK' ? '#7ee2a8' : 'rgba(255,255,255,.4)' }}>{h}</span>
         ))}
       </div>
       {teamRow('home', homeLeads, awayLeads)}
       {teamRow('away', awayLeads, homeLeads)}
+      {hasShootout && (
+        <ShootoutStrip
+          homeAbbr={match.home.abbr}
+          awayAbbr={match.away.abbr}
+          home={match.home.shootout!}
+          away={match.away.shootout!}
+          tone="dark"
+        />
+      )}
     </a>
   );
 }

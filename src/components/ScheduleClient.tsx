@@ -104,8 +104,13 @@ function ScoreCell({ m }: { m: ScheduleMatch }) {
   if (!m.score) return <span className="s-score pre">—</span>;
   const [hs, as_] = m.score;
   return (
-    <span className="s-score tnum">
-      {hs}<span className="x">–</span>{as_}
+    <span className="s-score-wrap">
+      <span className="s-score tnum">
+        {hs}<span className="x">–</span>{as_}
+      </span>
+      {m.shootout && (
+        <span className="s-pens tnum">{m.shootout[0]}–{m.shootout[1]} pens</span>
+      )}
     </span>
   );
 }
@@ -113,10 +118,12 @@ function ScoreCell({ m }: { m: ScheduleMatch }) {
 function ScheduleRow({ m }: { m: ScheduleMatch }) {
   const post = m.state === 'post';
   const [hs, as_] = m.score ?? [0, 0];
-  const loseHome = post && !!m.score && hs < as_;
-  const loseAway = post && !!m.score && as_ < hs;
-  const winHome = post && !!m.score && hs > as_;
-  const winAway = post && !!m.score && as_ > hs;
+  // A penalty tie is level on goals — the shootout score decides the winner.
+  const so = m.shootout;
+  const loseHome = post && (so ? so[0] < so[1] : !!m.score && hs < as_);
+  const loseAway = post && (so ? so[1] < so[0] : !!m.score && as_ < hs);
+  const winHome = post && (so ? so[0] > so[1] : !!m.score && hs > as_);
+  const winAway = post && (so ? so[1] > so[0] : !!m.score && as_ > hs);
 
   const badge = m.groupLetter
     ? `GRP ${m.groupLetter}`

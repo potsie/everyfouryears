@@ -4,6 +4,9 @@ export interface ESPNWorldCupCompetitor {
   homeAway: 'home' | 'away';
   winner?: boolean;
   score: string;
+  // Running penalty-shootout goal tally in knockout ties decided on penalties.
+  // Null/absent until the shootout begins. ESPN returns it as a number (e.g. 4.0).
+  shootoutScore?: number | null;
   team: {
     id: string;
     displayName: string;
@@ -99,7 +102,20 @@ export interface ESPNWorldCupRosterTeam {
 export interface ESPNWorldCupCommentary {
   text: string;
   clock?: { displayValue: string };
+  time?: { displayValue: string };
+  // Monotonic ordering key. During a penalty shootout every entry shares the
+  // clock "120'", so `sequence` is the ONLY reliable way to order the kicks.
+  sequence?: number;
   type?: { text: string };
+  // Structured play data, present on shootout kicks (and other detailed plays).
+  // type.id: 104 = Penalty - Scored, 115 = Penalty - Missed, 116 = Penalty - Saved.
+  // `team.displayName` is the kicking side — use it, not the prose, which on a
+  // saved kick also names the (opposing) goalkeeper's country.
+  play?: {
+    type?: { id?: string; text?: string };
+    team?: { displayName?: string };
+    participants?: { athlete?: { displayName?: string } }[];
+  };
 }
 
 export interface ESPNWorldCupSummaryResponse {

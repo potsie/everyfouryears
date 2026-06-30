@@ -260,6 +260,8 @@ body {
   background: var(--inset); border: 1px solid var(--line); border-radius: 8px;
   padding: 3px 11px; min-width: 56px; justify-content: center;
 }
+.srow .s-score-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; justify-self: center; }
+.srow .s-pens { font-size: 10px; font-weight: 800; letter-spacing: .04em; color: var(--live-ink); text-transform: uppercase; white-space: nowrap; }
 .srow .s-score .x { color: var(--ink-3); font-weight: 600; font-size: 13px; }
 .srow .s-score.pre {
   font-family: var(--ui); font-weight: 700; font-size: 11.5px; color: var(--ink-3);
@@ -517,6 +519,8 @@ body {
 .mh-nums .dash { font-size: 30px; color: rgba(255,255,255,.4); margin-top: -4px; }
 .mh-kick { font-family: var(--display); font-weight: 800; font-size: 34px; line-height: 1; }
 .mh-pen { font-size: 11.5px; color: rgba(255,255,255,.62); font-weight: 600; }
+.mh-pens { font-size: 12px; font-weight: 700; letter-spacing: .04em; color: #7ee2a8; text-transform: uppercase; }
+.mh-shootout { max-width: 320px; margin: 16px auto 0; }
 .mh-when { font-size: 12px; color: rgba(255,255,255,.6); font-weight: 500; }
 .starts-in { font-size: 11px; color: rgba(255,255,255,.45); font-weight: 600; letter-spacing: .05em; margin-top: 4px; }
 
@@ -583,6 +587,10 @@ body {
 .tl-icn.card-r { width: 14px; height: 19px; border-radius: 3px; background: var(--danger); }
 .tl-icn.sub { background: var(--inset); border: 1px solid var(--line-2); color: var(--live-ink); }
 .tl-score { font-family: var(--display); font-weight: 800; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-2); border-radius: 6px; padding: 2px 7px; white-space: nowrap; }
+/* shootout kick dot — filled green for scored, hollow red ring for missed */
+.tl-pk { width: 13px; height: 13px; border-radius: 50%; flex: 0 0 auto; box-sizing: border-box; }
+.tl-pk.scored { background: #16a34a; }
+.tl-pk.missed { border: 2px solid var(--danger); }
 
 /* full-width markers (HT / FT / kickoff) */
 .tl-mark { position: relative; display: flex; justify-content: center; padding: 10px 0; }

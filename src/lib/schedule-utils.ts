@@ -32,6 +32,10 @@ export interface ScheduleMatch {
   city: string;
   broadcaster: string;
   koAbbr?: string;
+  // Penalty-shootout score [home, away] when a knockout tie was decided on
+  // penalties; null otherwise. The goal score stays level, so this is what
+  // determines the winner.
+  shootout: [number, number] | null;
 }
 
 export interface ScheduleDay {
@@ -59,6 +63,9 @@ function toScheduleMatch(m: WorldCupMatchNormalized): ScheduleMatch {
   const homeScore = m.status.state !== 'pre' && m.home.score ? parseInt(m.home.score, 10) : NaN;
   const awayScore = m.status.state !== 'pre' && m.away.score ? parseInt(m.away.score, 10) : NaN;
   const score = !isNaN(homeScore) && !isNaN(awayScore) ? [homeScore, awayScore] as [number, number] : null;
+  const shootout = m.home.shootout && m.away.shootout
+    ? [m.home.shootout.score, m.away.shootout.score] as [number, number]
+    : null;
 
   return {
     id: m.eventId,
@@ -77,6 +84,7 @@ function toScheduleMatch(m: WorldCupMatchNormalized): ScheduleMatch {
     city: m.venueCity,
     broadcaster: m.broadcaster,
     koAbbr: !isGroup ? KO_ABBR[m.seasonTypeId] : undefined,
+    shootout,
   };
 }
 

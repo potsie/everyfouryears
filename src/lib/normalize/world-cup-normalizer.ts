@@ -1,6 +1,7 @@
 import type {
   ESPNKeyEvent,
   ESPNWorldCupRosterTeam,
+  ESPNWorldCupCommentary,
   ESPNMatchDetail,
   ESPNMatchSummaryFull,
 } from '@/types/world-cup-types';
@@ -26,6 +27,34 @@ export interface WorldCupPlayer {
   position: string;
 }
 
+export type ShootoutResult = 'scored' | 'missed';
+
+export interface ShootoutKick {
+  result: ShootoutResult;
+  player: string;
+}
+
+// A single kick in global (interleaved) order, with the running shootout score
+// after it. Used for the match-timeline shootout block.
+export interface ShootoutSequenceKick {
+  team: 'home' | 'away';
+  player: string;
+  result: ShootoutResult;
+  homeScore: number;
+  awayScore: number;
+}
+
+// A team's penalty-shootout state, present only on knockout ties that reach
+// penalties. `score` is the running made-count (ESPN's shootoutScore — always
+// available once the shootout starts). `kicks` is this team's attempts in the
+// order they were taken; it's only populated from the summary endpoint's
+// commentary (the scoreboard carries totals but no kick sequence), so it can be
+// empty even when `score` is known — render dots only when kicks exist.
+export interface TeamShootout {
+  score: number;
+  kicks: ShootoutKick[];
+}
+
 export interface WorldCupTeamBoxScore {
   id: string;
   name: string;
@@ -37,6 +66,7 @@ export interface WorldCupTeamBoxScore {
   linescore: { h1: number; h2: number };  // goals by half, derived from goal minutes
   cards: WorldCupCard[];
   roster: WorldCupPlayer[];
+  shootout?: TeamShootout;  // present only on ties decided by a penalty shootout
 }
 
 // Split a team's goals into first/second half from their minute (e.g. "45'+2'"
@@ -50,6 +80,88 @@ export function halvesFromGoals(goals: WorldCupGoal[]): { h1: number; h2: number
     if (m <= 45) h1++; else h2++;
   }
   return { h1, h2 };
+}
+
+// Penalty-shootout TOTALS, from ESPN's per-side shootoutScore. The scoreboard
+// exposes the running score but not the kick sequence, so kicks start empty —
+// callers enrich them from commentary (see shootoutFromCommentary). Returns
+// undefined when the tie wasn't decided on penalties.
+export function shootoutFromScore(
+  soScore: { home: number | null | undefined; away: number | null | undefined },
+): { home: TeamShootout; away: TeamShootout } | undefined {
+  if (soScore.home == null && soScore.away == null) return undefined;
+  return {
+    home: { score: soScore.home ?? 0, kicks: [] },
+    away: { score: soScore.away ?? 0, kicks: [] },
+  };
+}
+
+// Penalty-shootout state with the full make/miss sequence, parsed from the
+// summary endpoint's commentary — the only source that records misses. Each
+// shootout entry carries a structured `play`: type.id 104 = scored, 115/116 =
+// missed (off-target / saved); `play.team.displayName` is the kicker's side
+// (trust it, not the prose). Entries all share clock "120'", so order by the
+// monotonic `sequence`. Teams are matched by display name (commentary has no
+// team id). soScore stays authoritative for the headline number.
+const SHOOTOUT_TYPE_IDS = new Set(['104', '115', '116']);
+export function shootoutFromCommentary(
+  commentary: ESPNWorldCupCommentary[] | undefined,
+  homeName: string,
+  awayName: string,
+  soScore: { home: number | null | undefined; away: number | null | undefined },
+): { home: TeamShootout; away: TeamShootout } | undefined {
+  const entries = (commentary ?? [])
+    .filter(c => c.play?.type?.id && SHOOTOUT_TYPE_IDS.has(c.play.type.id))
+    .sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0));
+
+  if (entries.length === 0) return shootoutFromScore(soScore);
+
+  const collect = (name: string): ShootoutKick[] =>
+    entries
+      .filter(c => c.play!.team?.displayName === name)
+      .map(c => ({
+        result: c.play!.type!.id === '104' ? 'scored' : 'missed',
+        player: c.play!.participants?.[0]?.athlete?.displayName ?? '',
+      }));
+
+  const homeKicks = collect(homeName);
+  const awayKicks = collect(awayName);
+  const made = (ks: ShootoutKick[]) => ks.filter(k => k.result === 'scored').length;
+  return {
+    home: { score: soScore.home ?? made(homeKicks), kicks: homeKicks },
+    away: { score: soScore.away ?? made(awayKicks), kicks: awayKicks },
+  };
+}
+
+// Same commentary source as shootoutFromCommentary, but kept in global kick
+// order with the running shootout score after each — for the timeline block.
+export function shootoutSequenceFromCommentary(
+  commentary: ESPNWorldCupCommentary[] | undefined,
+  homeName: string,
+  awayName: string,
+): ShootoutSequenceKick[] {
+  const entries = (commentary ?? [])
+    .filter(c => c.play?.type?.id && SHOOTOUT_TYPE_IDS.has(c.play.type.id))
+    .sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0));
+
+  let homeScore = 0, awayScore = 0;
+  const seq: ShootoutSequenceKick[] = [];
+  for (const c of entries) {
+    const name = c.play!.team?.displayName;
+    const team: 'home' | 'away' | null =
+      name === homeName ? 'home' : name === awayName ? 'away' : null;
+    if (!team) continue;
+    const result: ShootoutResult = c.play!.type!.id === '104' ? 'scored' : 'missed';
+    if (result === 'scored') { if (team === 'home') homeScore++; else awayScore++; }
+    seq.push({
+      team,
+      player: c.play!.participants?.[0]?.athlete?.displayName ?? '',
+      result,
+      homeScore,
+      awayScore,
+    });
+  }
+  return seq;
 }
 
 // Display strings for the [1H, 2H, T] linescore columns, per team. A half that
@@ -178,6 +290,19 @@ export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
       ? `Group ${groupLetter}`
       : (STAGE_NAMES[seasonTypeId] ?? 'Match');
 
+  // Scoreboard carries shootout TOTALS only; the kick sequence (with misses) is
+  // enriched later from the summary commentary (see fetchAllMatches).
+  const shootout = shootoutFromScore({
+    home: homeComp?.shootoutScore,
+    away: awayComp?.shootoutScore,
+  });
+  const home = buildTeam(homeComp);
+  const away = buildTeam(awayComp);
+  if (shootout) {
+    home.shootout = shootout.home;
+    away.shootout = shootout.away;
+  }
+
   return {
     eventId: event.id,
     date: comp.date ?? event.date ?? '',
@@ -193,8 +318,8 @@ export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
     venue: comp.venue?.fullName ?? '',
     venueCity: comp.venue?.address?.city ?? '',
     broadcaster: comp.geoBroadcasts?.[0]?.media?.shortName ?? '',
-    home: buildTeam(homeComp),
-    away: buildTeam(awayComp),
+    home,
+    away,
   };
 }
 
@@ -211,6 +336,7 @@ export interface MatchCenterTeam {
   lines: MatchLinePlayer[][];  // grouped by position line: [GK], [DEF...], [MID...], [FWD...]
   bench: MatchBenchPlayer[];
   goals: MatchGoal[];
+  shootout?: TeamShootout;  // present only on ties decided by a penalty shootout
 }
 
 export interface MatchBenchPlayer {
@@ -365,6 +491,10 @@ export interface MatchCenterData {
   motmName: string | null;
   motmLine: string | null;
   shots: ShotEvent[];
+  // Penalty-shootout kicks in the order they were taken, with the running
+  // shootout score after each. Empty unless the tie went to penalties. Drives
+  // the shootout block in the match timeline.
+  shootoutSequence: ShootoutSequenceKick[];
   // ESPN highlight/analysis clips. Pre-match these are preview/tactics/team-news
   // clips; post-match they're highlights. Empty when ESPN has none.
   videos: MatchVideo[];
@@ -560,6 +690,18 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
   const keyEvents = data.keyEvents ?? [];
   const state = comp.status.type.state;
 
+  const shootout = shootoutFromCommentary(
+    data.commentary,
+    homeComp.team.displayName,
+    awayComp.team.displayName,
+    { home: homeComp.shootoutScore, away: awayComp.shootoutScore },
+  );
+  const shootoutSequence = shootoutSequenceFromCommentary(
+    data.commentary,
+    homeComp.team.displayName,
+    awayComp.team.displayName,
+  );
+
   // Events for timeline. ESPN returns keyEvents in chronological order, so the
   // running score is accumulated as we walk them.
   let runningHome = 0, runningAway = 0;
@@ -745,6 +887,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
       lines: roster.lines,
       bench: roster.bench,
       goals: teamGoals,
+      shootout: homeAway === 'home' ? shootout?.home : shootout?.away,
     };
   }
 
@@ -817,6 +960,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     motmName,
     motmLine,
     shots: [], // populated from FIFA timeline in fetchMatchSummary
+    shootoutSequence,
     videos,
     recap,
   };

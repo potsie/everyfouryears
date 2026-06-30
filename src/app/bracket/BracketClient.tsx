@@ -328,6 +328,7 @@ function BigTieRow({ t, s, isPost, isLive }: { t: Tie; s: 'a' | 'b'; isPost: boo
       {(isPost || isLive) && t.score && (
         <span className="btl-sc tnum" style={win ? { color: 'var(--ink)' } : undefined}>
           {t.score[s === 'a' ? 0 : 1]}
+          {t.shootout && <span className="btl-pen"> ({t.shootout[s === 'a' ? 0 : 1]})</span>}
         </span>
       )}
     </div>
@@ -338,7 +339,6 @@ function BigTie({ t }: { t: Tie }) {
   const isPost = t.state === 'post';
   const isLive = t.state === 'in';
   const meta = ROUND_LABELS[t.round];
-  const isPens = t.clock?.includes('pens');
   const showTag = t.tag && (t.round === 'QF' || t.round === 'SF');
 
   return (
@@ -348,7 +348,7 @@ function BigTie({ t }: { t: Tie }) {
         {isLive
           ? <span className="st live"><Pulse /> {t.clock}</span>
           : isPost
-            ? <span className="st ft">{t.dateISO ? `${localDate(t.dateISO)} · ` : ''}{isPens ? t.clock!.toUpperCase() : 'FULL TIME'}</span>
+            ? <span className="st ft">{t.dateISO ? `${localDate(t.dateISO)} · ` : ''}{t.shootout ? 'FT · PENS' : 'FULL TIME'}</span>
             : <span className="st">{t.dateISO ? `${localDate(t.dateISO)} · ${localTime(t.dateISO)}` : short(t.when)}</span>
         }
       </div>

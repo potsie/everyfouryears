@@ -1,5 +1,5 @@
 import { espnFetch } from '@/lib/espn/core';
-import { normalizeScoreboardEvent, normalizeMatchDetail, type WorldCupMatchNormalized, type MatchCenterData, type MatchCenterTeam, type MatchOfficial, type ShotEvent } from '@/lib/normalize/world-cup-normalizer';
+import { normalizeScoreboardEvent, normalizeMatchDetail, shootoutFromCommentary, type WorldCupMatchNormalized, type MatchCenterData, type MatchCenterTeam, type MatchOfficial, type ShotEvent } from '@/lib/normalize/world-cup-normalizer';
 import { normalizeGroupStandings } from '@/lib/normalize/standings';
 import type { WorldCupGroupTable } from '@/types/standings-types';
 import type { ESPNMatchSummaryFull } from '@/types/world-cup-types';
@@ -46,9 +46,32 @@ export async function fetchAllMatches(): Promise<ScoreboardResult> {
 
   const data = await espnFetch<any>(url, 'wc-scoreboard-all', 60);
   const events: any[] = data.events ?? [];
+  const matches = events.map(normalizeScoreboardEvent);
+
+  // The scoreboard gives shootout TOTALS but not the make/miss sequence — that
+  // lives only in each match's summary commentary. For the (rare) ties on
+  // penalties, pull the summary to fill in the kick dots. Best-effort and
+  // parallel; a failure just leaves the PK score showing without dots.
+  await Promise.all(
+    matches
+      .filter(m => m.home.shootout && m.away.shootout)
+      .map(async m => {
+        try {
+          const sumUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${m.eventId}`;
+          const sum = await espnFetch<ESPNMatchSummaryFull>(sumUrl, `wc-match-${m.eventId}`, 60);
+          const so = shootoutFromCommentary(sum.commentary, m.home.name, m.away.name, {
+            home: m.home.shootout!.score,
+            away: m.away.shootout!.score,
+          });
+          if (so) { m.home.shootout = so.home; m.away.shootout = so.away; }
+        } catch {
+          /* keep totals-only shootout */
+        }
+      }),
+  );
 
   return {
-    matches: events.map(normalizeScoreboardEvent),
+    matches,
     teamDict: buildTeamDictionary(events),
   };
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Flag } from '@/components/Flag';
 import { Shot } from '@/components/Shot';
+import { ShootoutStrip } from '@/components/ShootoutStrip';
 import { GroupMini, type GroupMiniRow } from '@/components/GroupMini';
 import { VenueWeather } from '@/components/VenueWeather';
 import type { WeatherData } from '@/lib/weather';
@@ -156,8 +157,21 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
   const homeScore = home.score;
   const awayScore = away.score;
 
-  const loseHome = state === 'post' && homeScore !== null && awayScore !== null && homeScore < awayScore;
-  const loseAway = state === 'post' && homeScore !== null && awayScore !== null && awayScore < homeScore;
+  // On a penalty tie the score is level — the winner is whoever won the
+  // shootout, so win/lose styling keys off the shootout score, not the goals.
+  const hasShootout = !!home.shootout && !!away.shootout;
+  const soHome = home.shootout?.score ?? 0;
+  const soAway = away.shootout?.score ?? 0;
+  const soWinHome = hasShootout && soHome > soAway;
+  const soWinAway = hasShootout && soAway > soHome;
+
+  // Winner/loser styling only once the result is final — never mid-shootout,
+  // when the lead can still flip.
+  const decided = state === 'post';
+  const winHome = decided && (hasShootout ? soWinHome : homeScore !== null && awayScore !== null && homeScore > awayScore);
+  const winAway = decided && (hasShootout ? soWinAway : homeScore !== null && awayScore !== null && awayScore > homeScore);
+  const loseHome = decided && (hasShootout ? soWinAway : homeScore !== null && awayScore !== null && homeScore < awayScore);
+  const loseAway = decided && (hasShootout ? soWinHome : homeScore !== null && awayScore !== null && awayScore < homeScore);
 
   const kickoffDate = formatKickoffDate(kickoffISO);
   const kickoffTime = formatKickoffTime(kickoffISO);
@@ -191,9 +205,7 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
             <Flag logo={home.logo} abbr={home.abbr} size={56} className="fl" />
             <div className="code">{home.abbr}</div>
             <div className="nm">{home.name}</div>
-            {state === 'post' && homeScore !== null && awayScore !== null && homeScore > awayScore && (
-              <div className="wintag">● Winner</div>
-            )}
+            {winHome && <div className="wintag">● Winner</div>}
           </div>
 
           {/* Center */}
@@ -218,11 +230,16 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
                 <StartsIn iso={kickoffISO} />
               </>
             ) : (
-              <div className="mh-nums tnum">
-                <span className={'n' + (loseHome ? ' dim' : '')}>{homeScore ?? 0}</span>
-                <span className="dash">–</span>
-                <span className={'n' + (loseAway ? ' dim' : '')}>{awayScore ?? 0}</span>
-              </div>
+              <>
+                <div className="mh-nums tnum">
+                  <span className={'n' + (loseHome ? ' dim' : '')}>{homeScore ?? 0}</span>
+                  <span className="dash">–</span>
+                  <span className={'n' + (loseAway ? ' dim' : '')}>{awayScore ?? 0}</span>
+                </div>
+                {hasShootout && (
+                  <div className="mh-pens tnum">{soHome}–{soAway} on pens</div>
+                )}
+              </>
             )}
           </div>
 
@@ -231,11 +248,22 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
             <Flag logo={away.logo} abbr={away.abbr} size={56} className="fl" />
             <div className="code">{away.abbr}</div>
             <div className="nm">{away.name}</div>
-            {state === 'post' && awayScore !== null && homeScore !== null && awayScore > homeScore && (
-              <div className="wintag">● Winner</div>
-            )}
+            {winAway && <div className="wintag">● Winner</div>}
           </div>
         </div>
+
+        {hasShootout && (
+          <div className="mh-shootout">
+            <ShootoutStrip
+              homeAbbr={home.abbr}
+              awayAbbr={away.abbr}
+              home={home.shootout!}
+              away={away.shootout!}
+              tone="dark"
+              size={11}
+            />
+          </div>
+        )}
 
         <div className="mh-foot">
           {venueSlug ? (
@@ -330,6 +358,28 @@ function Timeline({ match }: { match: MatchCenterData }) {
       </div>
     );
   });
+
+  // Penalty shootout — ESPN keeps the kicks out of keyEvents, so they're sourced
+  // from commentary (match.shootoutSequence) and rendered as their own block
+  // after full time, in the order taken with the running shootout score.
+  if (match.shootoutSequence.length > 0) {
+    rows.push(
+      <div className="tl-mark" key="so-head"><span>Penalty Shootout</span></div>
+    );
+    match.shootoutSequence.forEach((k, i) => {
+      rows.push(
+        <div className={`tl-row ${k.team}`} key={`so${i}`}>
+          <div className="tl-card">
+            <span className={`tl-pk ${k.result}`} />
+            <span className="pl">{k.player}</span>
+            <span className="dt">{k.result === 'scored' ? 'scored' : 'missed'}</span>
+            <span className="tl-score tnum">{k.homeScore}–{k.awayScore}</span>
+          </div>
+          <span className="tl-min tnum">PK</span>
+        </div>
+      );
+    });
+  }
 
   // Add "live now" marker for in-progress matches
   if (state === 'in') {
