@@ -215,9 +215,11 @@ function MatchHero({ match, venueSlug }: { match: MatchCenterData; venueSlug?: s
                 {match.isDelayed
                   // Static dot, not a PulseDot — play is stopped, clock frozen.
                   ? <>● Delayed{clock ? ` · ${clock}` : ''}</>
-                  : match.isHalftime
-                    ? 'HALF TIME'
-                    : <><PulseDot /> {clock} · Live</>
+                  : match.isShootout
+                    ? <><PulseDot /> PENALTIES</>
+                    : match.isHalftime
+                      ? 'HALF TIME'
+                      : <><PulseDot /> {clock} · Live</>
                 }
               </div>
             )}
@@ -390,6 +392,7 @@ function Timeline({ match }: { match: MatchCenterData }) {
           : { color: 'var(--live-ink)', background: 'var(--live-soft)', borderColor: '#cfe8d8' }}>
           {match.isDelayed
             ? `● Delayed${match.clock ? ` · ${match.clock}` : ''}`
+            : match.isShootout ? '● Penalties'
             : match.isHalftime ? '● Half Time' : `● Live · ${match.clock}`}
         </span>
       </div>
@@ -817,7 +820,7 @@ function Commentary({ match }: { match: MatchCenterData }) {
     <div className="mc-card">
       <div className="mc-head">
         <h3>Live commentary</h3>
-        <span className="sub">{state === 'post' ? 'Full match' : state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'Auto-updating'}</span>
+        <span className="sub">{state === 'post' ? 'Full match' : state === 'in' ? (match.isShootout ? 'PENALTIES' : match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'Auto-updating'}</span>
       </div>
       <div className="cmt">
         {commentary.map((c: CommentaryEntry, i: number) => {
@@ -937,7 +940,7 @@ function MainColumn({ tab, match, onSelectTab, pmsr }: { tab: string; match: Mat
         <div className="mc-card">
           <div className="mc-head">
             <h3>Team stats</h3>
-            <span className="sub">{state === 'in' ? (match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'FULL TIME'}</span>
+            <span className="sub">{state === 'in' ? (match.isShootout ? 'PENALTIES' : match.isHalftime ? 'HALF TIME' : `Live · ${clock}`) : 'FULL TIME'}</span>
           </div>
           <PossessionHeader stats={stats} homeAbbr={home.abbr} awayAbbr={away.abbr} />
           <div className="stats-wrap">

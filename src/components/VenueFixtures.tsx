@@ -12,7 +12,7 @@ function isSeed(t: ScheduleTeam | SeedTeam): t is SeedTeam {
 
 function MatchStatusCell({ m }: { m: ScheduleMatch }) {
   if (m.state === 'in') {
-    return <span className="s-status s-live">{m.isHalftime ? <span style={{ color: 'var(--live-ink)', fontWeight: 700 }}>HALF TIME</span> : <><span className="pulse-dot" />{m.clock}</>}</span>;
+    return <span className="s-status s-live">{m.isShootout ? <><span className="pulse-dot" />PENALTIES</> : m.isHalftime ? <span style={{ color: 'var(--live-ink)', fontWeight: 700 }}>HALF TIME</span> : <><span className="pulse-dot" />{m.clock}</>}</span>;
   }
   if (m.state === 'post') {
     return <span className="s-status s-ft">FULL TIME</span>;

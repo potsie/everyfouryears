@@ -137,9 +137,11 @@ function LiveMatchTile({ match, groupLetter }: { match: WorldCupMatchNormalized;
       : isDelayed
         // Clock is frozen at the minute play halted (e.g. "45'+3'").
         ? (match.status.clock ? `DELAYED · ${match.status.clock}` : 'DELAYED')
-        : match.status.isHalftime
-          ? 'HALF TIME'
-          : (match.status.clock || 'Live');
+        : match.status.isShootout
+          ? 'PENALTIES'
+          : match.status.isHalftime
+            ? 'HALF TIME'
+            : (match.status.clock || 'Live');
 
   // Group-stage matches surface the group letter alongside the stage label,
   // e.g. "Group Stage (D)". The letter comes from match.groupLetter when ESPN

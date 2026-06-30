@@ -48,6 +48,9 @@ export interface Tie {
   winner: 'a' | 'b' | null;
   state: TieState;
   clock: string | null;
+  // True while the live tie is in a penalty shootout (STATUS_SHOOTOUT); the UI
+  // shows "PENALTIES" instead of the frozen "120'" clock.
+  isShootout: boolean;
   when: string | null;
   dateISO: string | null;
   venue: string | null;

@@ -95,7 +95,7 @@ export function MatchCard({ match, teamGroupLetter }: MatchCardProps) {
           {isLive && !match.status.isDelayed && (
             <span className="flex items-center gap-[6px]" style={{ color: '#7ee2a8' }}>
               {!match.status.isHalftime && <span className="pulse-dot on-dark" style={{ width: 6, height: 6 }} />}
-              {match.status.isHalftime ? 'HALF TIME' : match.status.clock}
+              {match.status.isShootout ? 'PENALTIES' : match.status.isHalftime ? 'HALF TIME' : match.status.clock}
             </span>
           )}
           {isPost && (

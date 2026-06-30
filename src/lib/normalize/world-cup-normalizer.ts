@@ -201,6 +201,10 @@ export interface WorldCupMatchNormalized {
     // stays 'in' but the clock is frozen at the minute it halted. ESPN gives no
     // reason for the delay, so we surface a generic "Delayed", not "Weather".
     isDelayed: boolean;
+    // ESPN's STATUS_SHOOTOUT (type id 44) — the tie is being decided by penalty
+    // kicks. State stays 'in' but displayClock is frozen at "120'", so the UI
+    // shows "PENALTIES" instead of the stale clock.
+    isShootout: boolean;
   };
   venue: string;
   venueCity: string;
@@ -314,6 +318,7 @@ export function normalizeScoreboardEvent(event: any): WorldCupMatchNormalized {
       clock: comp.status?.displayClock ?? '',
       isHalftime: comp.status?.type?.name === 'STATUS_HALFTIME',
       isDelayed: comp.status?.type?.name === 'STATUS_DELAYED',
+      isShootout: comp.status?.type?.name === 'STATUS_SHOOTOUT',
     },
     venue: comp.venue?.fullName ?? '',
     venueCity: comp.venue?.address?.city ?? '',
@@ -476,6 +481,9 @@ export interface MatchCenterData {
   // ESPN's STATUS_DELAYED (type id 7): play stopped, clock frozen, state still
   // 'in'. No reason is provided by ESPN, so the UI shows a generic "Delayed".
   isDelayed: boolean;
+  // ESPN's STATUS_SHOOTOUT (type id 44): tie being decided by penalty kicks.
+  // State stays 'in' with the clock frozen at "120'"; UI shows "PENALTIES".
+  isShootout: boolean;
   home: MatchCenterTeam;
   away: MatchCenterTeam;
   events: MatchKeyEvent[];
@@ -945,6 +953,7 @@ export function normalizeMatchDetail(eventId: string, data: ESPNMatchSummaryFull
     clock: comp.status.displayClock,
     isHalftime: comp.status.type.name === 'STATUS_HALFTIME',
     isDelayed: comp.status.type.name === 'STATUS_DELAYED',
+    isShootout: comp.status.type.name === 'STATUS_SHOOTOUT',
     home: buildTeam(homeComp, 'home'),
     away: buildTeam(awayComp, 'away'),
     events,

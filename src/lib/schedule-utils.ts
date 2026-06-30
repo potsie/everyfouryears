@@ -23,6 +23,8 @@ export interface ScheduleMatch {
   isHalftime: boolean;
   // ESPN STATUS_DELAYED — play stopped, clock frozen, state still 'in'.
   isDelayed: boolean;
+  // ESPN STATUS_SHOOTOUT — tie being decided on penalties; UI shows "PENALTIES".
+  isShootout: boolean;
   stage: string;
   dateISO: string;
   score: [number, number] | null;
@@ -75,6 +77,7 @@ function toScheduleMatch(m: WorldCupMatchNormalized): ScheduleMatch {
     clock: m.status.clock,
     isHalftime: m.status.isHalftime,
     isDelayed: m.status.isDelayed,
+    isShootout: m.status.isShootout,
     stage: m.stage,
     dateISO: m.date,
     score,

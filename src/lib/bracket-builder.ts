@@ -124,6 +124,7 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
     let winner: 'a' | 'b' | null = null;
     let state: Tie['state'] = 'tbd';
     let clock: string | null = null;
+    let isShootout = false;
     let when: string | null = null;
     let dateISO: string | null = null;
     let venue: string | null = null;
@@ -143,6 +144,7 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
 
       if (state === 'in') {
         clock = m.status.clock || null;
+        isShootout = m.status.isShootout;
       }
 
       if (state === 'post') {
@@ -174,7 +176,7 @@ export function buildBracketFromMatches(matches: WorldCupMatchNormalized[]): Ser
       side: slot.side,
       rk: slot.rk,
       tag: slot.tag,
-      a, b, score, shootout, winner, state, clock, when, dateISO, venue, city, tv,
+      a, b, score, shootout, winner, state, clock, isShootout, when, dateISO, venue, city, tv,
       feeders: slot.feeders,
       parent: null,
     };

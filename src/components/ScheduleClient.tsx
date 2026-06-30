@@ -57,7 +57,7 @@ function MatchStatus({ m }: { m: ScheduleMatch }) {
     }
     return (
       <span className="s-status s-live">
-        {m.isHalftime ? <span style={{ color: 'var(--live-ink)', fontWeight: 700 }}>HALF TIME</span> : <><PulseDot />{m.clock}</>}
+        {m.isShootout ? <><PulseDot />PENALTIES</> : m.isHalftime ? <span style={{ color: 'var(--live-ink)', fontWeight: 700 }}>HALF TIME</span> : <><PulseDot />{m.clock}</>}
       </span>
     );
   }

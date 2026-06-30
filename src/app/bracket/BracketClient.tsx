@@ -95,7 +95,7 @@ function BTie({ t, path, active }: BTieProps) {
 
   let foot: React.ReactNode = null;
   if (isLive) {
-    foot = <div className="bt-foot live"><Pulse /><span>{t.tag} · {t.clock}</span></div>;
+    foot = <div className="bt-foot live"><Pulse /><span>{t.tag} · {t.isShootout ? 'PENALTIES' : t.clock}</span></div>;
   } else if ((t.state === 'pre' || isTbd) && t.tag) {
     foot = (
       <div className="bt-foot">
@@ -346,7 +346,7 @@ function BigTie({ t }: { t: Tie }) {
       <div className="btl-head">
         <span className="tag">{showTag ? `${t.tag} · ` : ''}{meta}</span>
         {isLive
-          ? <span className="st live"><Pulse /> {t.clock}</span>
+          ? <span className="st live"><Pulse /> {t.isShootout ? 'PENALTIES' : t.clock}</span>
           : isPost
             ? <span className="st ft">{t.dateISO ? `${localDate(t.dateISO)} · ` : ''}{t.shootout ? 'FT · PENS' : 'FULL TIME'}</span>
             : <span className="st">{t.dateISO ? `${localDate(t.dateISO)} · ${localTime(t.dateISO)}` : short(t.when)}</span>
