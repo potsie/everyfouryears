@@ -374,7 +374,7 @@ function Timeline({ match }: { match: MatchCenterData }) {
           <div className="tl-card">
             <span className={`tl-pk ${k.result}`} />
             <span className="pl">{k.player}</span>
-            <span className="dt">{k.result === 'scored' ? 'scored' : 'missed'}</span>
+            <span className="dt">{k.result === 'scored' ? 'scored' : k.result === 'saved' ? 'saved' : 'missed'}</span>
             <span className="tl-score tnum">{k.homeScore}–{k.awayScore}</span>
           </div>
           <span className="tl-min tnum">PK</span>

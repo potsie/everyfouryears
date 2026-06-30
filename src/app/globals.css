@@ -591,6 +591,8 @@ body {
 .tl-pk { width: 13px; height: 13px; border-radius: 50%; flex: 0 0 auto; box-sizing: border-box; }
 .tl-pk.scored { background: #16a34a; }
 .tl-pk.missed { border: 2px solid var(--danger); }
+/* Goalkeeper save — amber ring with a centre pip, distinct from an off-target miss. */
+.tl-pk.saved { border: 2px solid #d97706; background: radial-gradient(circle, #d97706 0 30%, transparent 32%); }
 
 /* full-width markers (HT / FT / kickoff) */
 .tl-mark { position: relative; display: flex; justify-content: center; padding: 10px 0; }

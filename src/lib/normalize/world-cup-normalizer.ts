@@ -27,7 +27,19 @@ export interface WorldCupPlayer {
   position: string;
 }
 
-export type ShootoutResult = 'scored' | 'missed';
+// ESPN distinguishes two kinds of non-goal in a shootout: a goalkeeper save
+// (play.type.id 116) from an off-target/over miss (115). We keep them apart so
+// the UI can show a save differently from a sky-high miss.
+export type ShootoutResult = 'scored' | 'missed' | 'saved';
+
+// Map a shootout commentary entry's play.type.id to a result. 104 = scored,
+// 116 = saved (keeper got to it), anything else in SHOOTOUT_TYPE_IDS (115) =
+// missed.
+function shootoutResult(typeId: string | undefined): ShootoutResult {
+  if (typeId === '104') return 'scored';
+  if (typeId === '116') return 'saved';
+  return 'missed';
+}
 
 export interface ShootoutKick {
   result: ShootoutResult;
@@ -98,8 +110,8 @@ export function shootoutFromScore(
 
 // Penalty-shootout state with the full make/miss sequence, parsed from the
 // summary endpoint's commentary — the only source that records misses. Each
-// shootout entry carries a structured `play`: type.id 104 = scored, 115/116 =
-// missed (off-target / saved); `play.team.displayName` is the kicker's side
+// shootout entry carries a structured `play`: type.id 104 = scored, 116 = saved,
+// 115 = missed (see shootoutResult); `play.team.displayName` is the kicker's side
 // (trust it, not the prose). Entries all share clock "120'", so order by the
 // monotonic `sequence`. Teams are matched by display name (commentary has no
 // team id). soScore stays authoritative for the headline number.
@@ -120,7 +132,7 @@ export function shootoutFromCommentary(
     entries
       .filter(c => c.play!.team?.displayName === name)
       .map(c => ({
-        result: c.play!.type!.id === '104' ? 'scored' : 'missed',
+        result: shootoutResult(c.play!.type!.id),
         player: c.play!.participants?.[0]?.athlete?.displayName ?? '',
       }));
 
@@ -151,7 +163,7 @@ export function shootoutSequenceFromCommentary(
     const team: 'home' | 'away' | null =
       name === homeName ? 'home' : name === awayName ? 'away' : null;
     if (!team) continue;
-    const result: ShootoutResult = c.play!.type!.id === '104' ? 'scored' : 'missed';
+    const result = shootoutResult(c.play!.type!.id);
     if (result === 'scored') { if (team === 'home') homeScore++; else awayScore++; }
     seq.push({
       team,

@@ -8,10 +8,11 @@ const STD_ROUND = 5; // best-of-five before sudden death
 
 type Tone = 'dark' | 'light';
 
-const PALETTE: Record<Tone, { scored: string; missed: string; upcoming: string; label: string; rule: string; num: string }> = {
+const PALETTE: Record<Tone, { scored: string; missed: string; saved: string; upcoming: string; label: string; rule: string; num: string }> = {
   dark: {
     scored: '#7ee2a8',
     missed: '#f0727a',
+    saved: '#f5b945',
     upcoming: 'rgba(255,255,255,.22)',
     label: 'rgba(255,255,255,.5)',
     rule: 'rgba(255,255,255,.12)',
@@ -20,6 +21,7 @@ const PALETTE: Record<Tone, { scored: string; missed: string; upcoming: string; 
   light: {
     scored: '#16a34a',
     missed: '#dc2626',
+    saved: '#d97706',
     upcoming: 'var(--line-2)',
     label: 'var(--ink-3)',
     rule: 'var(--line)',
@@ -27,15 +29,33 @@ const PALETTE: Record<Tone, { scored: string; missed: string; upcoming: string; 
   },
 };
 
+const RESULT_LABEL: Record<ShootoutResult, string> = { scored: 'scored', missed: 'missed', saved: 'saved' };
+
 function Dot({ result, tone, size, title }: { result: ShootoutResult | 'upcoming'; tone: Tone; size: number; title?: string }) {
   const p = PALETTE[tone];
-  // Scored = filled; missed/upcoming = hollow ring, so shape (not just colour)
-  // carries the scored/not-scored distinction. Colour then separates a recorded
-  // miss (red) from a kick still to come (faint).
+  // Scored = filled disc; everything else = hollow ring, so shape (not just
+  // colour) carries the scored/not-scored distinction. Colour then separates the
+  // three not-scored states: a goalkeeper save (amber, with a centre pip to mark
+  // the keeper's contact), an off-target miss (red), and a kick still to come
+  // (faint).
   const common = { width: size, height: size, borderRadius: '50%', display: 'inline-block' as const };
   if (result === 'scored') return <span title={title} style={{ ...common, background: p.scored }} />;
-  const color = result === 'missed' ? p.missed : p.upcoming;
-  return <span title={title} style={{ ...common, border: `1.5px solid ${color}`, boxSizing: 'border-box' }} />;
+  const color = result === 'missed' ? p.missed : result === 'saved' ? p.saved : p.upcoming;
+  return (
+    <span
+      title={title}
+      style={{
+        ...common,
+        border: `1.5px solid ${color}`,
+        boxSizing: 'border-box',
+        // A save gets a small filled centre so it reads distinctly from an empty
+        // off-target ring even before you reach for the tooltip.
+        background: result === 'saved'
+          ? `radial-gradient(circle, ${color} 0 30%, transparent 32%)`
+          : undefined,
+      }}
+    />
+  );
 }
 
 function TeamDots({ so, slots, tone, size }: { so: TeamShootout; slots: number; tone: Tone; size: number }) {
@@ -43,8 +63,9 @@ function TeamDots({ so, slots, tone, size }: { so: TeamShootout; slots: number; 
     <span className="inline-flex items-center" style={{ gap: size * 0.45 }}>
       {Array.from({ length: slots }, (_, i) => {
         const kick = i < so.kicks.length ? so.kicks[i] : null;
+        const title = kick ? (kick.player ? `${kick.player} — ${RESULT_LABEL[kick.result]}` : RESULT_LABEL[kick.result]) : undefined;
         return (
-          <Dot key={i} result={kick ? kick.result : 'upcoming'} tone={tone} size={size} title={kick?.player} />
+          <Dot key={i} result={kick ? kick.result : 'upcoming'} tone={tone} size={size} title={title} />
         );
       })}
     </span>
