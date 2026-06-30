@@ -29,45 +29,55 @@ interface SlotDef {
 
 // Keyed by ESPN event ID
 const SLOT_MAP: Record<string, SlotDef> = {
-  // ── R32 Left half (feeds SF1 via QF1+QF2) ──────────────────
-  '760486': { round: 'R32', side: 'L', rk: 1, tag: null, feeders: null },
-  '760487': { round: 'R32', side: 'L', rk: 2, tag: null, feeders: null },
-  '760489': { round: 'R32', side: 'L', rk: 3, tag: null, feeders: null },
-  '760488': { round: 'R32', side: 'L', rk: 4, tag: null, feeders: null },
-  '760493': { round: 'R32', side: 'L', rk: 5, tag: null, feeders: null },
-  '760494': { round: 'R32', side: 'L', rk: 6, tag: null, feeders: null },
-  '760497': { round: 'R32', side: 'L', rk: 7, tag: null, feeders: null },
-  '760496': { round: 'R32', side: 'L', rk: 8, tag: null, feeders: null },
+  // R32 placement + R16/QF feeders derived from ESPN's authoritative FIFA match
+  // numbers (Core API competition.matchNumber: R32 = M73-M88, R16 = M89-M96) and
+  // the fixed FIFA bracket pairings:
+  //   M89=W74+W77 M90=W73+W75 M91=W76+W78 M92=W79+W80
+  //   M93=W83+W84 M94=W81+W82 M95=W86+W88 M96=W85+W87
+  // rk follows the FIFA vertical layout. NOTE: ESPN's "Round of 32 N" label uses
+  // the FIFA match number, NOT date order — don't reorder by kickoff time.
+  // Left half = M101 SF subtree (QF M97/M98); right = M102 (QF M99/M100).
+  // Verified by tests/bracket/bracket-wiring.test.mjs.
 
-  // ── R32 Right half (feeds SF2 via QF3+QF4) ─────────────────
-  '760490': { round: 'R32', side: 'R', rk: 1, tag: null, feeders: null },
-  '760492': { round: 'R32', side: 'R', rk: 2, tag: null, feeders: null },
-  '760491': { round: 'R32', side: 'R', rk: 3, tag: null, feeders: null },
-  '760495': { round: 'R32', side: 'R', rk: 4, tag: null, feeders: null },
-  '760498': { round: 'R32', side: 'R', rk: 5, tag: null, feeders: null },
-  '760499': { round: 'R32', side: 'R', rk: 6, tag: null, feeders: null },
-  '760500': { round: 'R32', side: 'R', rk: 7, tag: null, feeders: null },
-  '760501': { round: 'R32', side: 'R', rk: 8, tag: null, feeders: null },
+  // ── R32 Left half (M74,M77 | M73,M75 | M83,M84 | M81,M82) ──
+  '760489': { round: 'R32', side: 'L', rk: 1, tag: null, feeders: null }, // M74 GER/PAR
+  '760492': { round: 'R32', side: 'L', rk: 2, tag: null, feeders: null }, // M77 FRA/SWE
+  '760486': { round: 'R32', side: 'L', rk: 3, tag: null, feeders: null }, // M73 RSA/CAN
+  '760488': { round: 'R32', side: 'L', rk: 4, tag: null, feeders: null }, // M75 NED/MAR
+  '760496': { round: 'R32', side: 'L', rk: 5, tag: null, feeders: null }, // M83 POR/CRO
+  '760497': { round: 'R32', side: 'L', rk: 6, tag: null, feeders: null }, // M84 ESP/AUT
+  '760494': { round: 'R32', side: 'L', rk: 7, tag: null, feeders: null }, // M81 USA/BIH
+  '760493': { round: 'R32', side: 'L', rk: 8, tag: null, feeders: null }, // M82 BEL/SEN
+
+  // ── R32 Right half (M76,M78 | M79,M80 | M86,M88 | M85,M87) ──
+  '760487': { round: 'R32', side: 'R', rk: 1, tag: null, feeders: null }, // M76 BRA/JPN
+  '760490': { round: 'R32', side: 'R', rk: 2, tag: null, feeders: null }, // M78 CIV/NOR
+  '760491': { round: 'R32', side: 'R', rk: 3, tag: null, feeders: null }, // M79 MEX/ECU
+  '760495': { round: 'R32', side: 'R', rk: 4, tag: null, feeders: null }, // M80 ENG/COD
+  '760500': { round: 'R32', side: 'R', rk: 5, tag: null, feeders: null }, // M86 ARG/CPV
+  '760499': { round: 'R32', side: 'R', rk: 6, tag: null, feeders: null }, // M88 AUS/EGY
+  '760498': { round: 'R32', side: 'R', rk: 7, tag: null, feeders: null }, // M85 SUI/ALG
+  '760501': { round: 'R32', side: 'R', rk: 8, tag: null, feeders: null }, // M87 COL/GHA
 
   // ── R16 Left ────────────────────────────────────────────────
-  '760502': { round: 'R16', side: 'L', rk: 1, tag: null, feeders: ['760486', '760487'] },
-  '760503': { round: 'R16', side: 'L', rk: 2, tag: null, feeders: ['760489', '760488'] },
-  '760506': { round: 'R16', side: 'L', rk: 3, tag: null, feeders: ['760493', '760494'] },
-  '760507': { round: 'R16', side: 'L', rk: 4, tag: null, feeders: ['760497', '760496'] },
+  '760503': { round: 'R16', side: 'L', rk: 1, tag: null, feeders: ['760489', '760492'] }, // M89
+  '760502': { round: 'R16', side: 'L', rk: 2, tag: null, feeders: ['760486', '760488'] }, // M90
+  '760506': { round: 'R16', side: 'L', rk: 3, tag: null, feeders: ['760496', '760497'] }, // M93
+  '760507': { round: 'R16', side: 'L', rk: 4, tag: null, feeders: ['760494', '760493'] }, // M94
 
   // ── R16 Right ───────────────────────────────────────────────
-  '760504': { round: 'R16', side: 'R', rk: 1, tag: null, feeders: ['760490', '760492'] },
-  '760505': { round: 'R16', side: 'R', rk: 2, tag: null, feeders: ['760491', '760495'] },
-  '760509': { round: 'R16', side: 'R', rk: 3, tag: null, feeders: ['760498', '760499'] },
-  '760508': { round: 'R16', side: 'R', rk: 4, tag: null, feeders: ['760500', '760501'] },
+  '760504': { round: 'R16', side: 'R', rk: 1, tag: null, feeders: ['760487', '760490'] }, // M91
+  '760505': { round: 'R16', side: 'R', rk: 2, tag: null, feeders: ['760491', '760495'] }, // M92
+  '760509': { round: 'R16', side: 'R', rk: 3, tag: null, feeders: ['760500', '760499'] }, // M95
+  '760508': { round: 'R16', side: 'R', rk: 4, tag: null, feeders: ['760498', '760501'] }, // M96
 
   // ── QF Left ─────────────────────────────────────────────────
-  '760510': { round: 'QF', side: 'L', rk: 1, tag: 'QF1', feeders: ['760502', '760503'] },
-  '760511': { round: 'QF', side: 'L', rk: 2, tag: 'QF2', feeders: ['760506', '760507'] },
+  '760510': { round: 'QF', side: 'L', rk: 1, tag: 'QF1', feeders: ['760503', '760502'] }, // M97
+  '760511': { round: 'QF', side: 'L', rk: 2, tag: 'QF2', feeders: ['760506', '760507'] }, // M98
 
   // ── QF Right ────────────────────────────────────────────────
-  '760512': { round: 'QF', side: 'R', rk: 1, tag: 'QF3', feeders: ['760504', '760505'] },
-  '760513': { round: 'QF', side: 'R', rk: 2, tag: 'QF4', feeders: ['760509', '760508'] },
+  '760512': { round: 'QF', side: 'R', rk: 1, tag: 'QF3', feeders: ['760504', '760505'] }, // M99
+  '760513': { round: 'QF', side: 'R', rk: 2, tag: 'QF4', feeders: ['760509', '760508'] }, // M100
 
   // ── SF ──────────────────────────────────────────────────────
   '760514': { round: 'SF', side: 'L', rk: 1, tag: 'SF1', feeders: ['760510', '760511'] },
