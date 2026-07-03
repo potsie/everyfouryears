@@ -77,6 +77,8 @@
 }
 .bt-foot.live { color: var(--live-ink); background: var(--live-soft); border-top-color: #d6efe0; }
 .bt-foot .tg { color: var(--ink-2); }
+.bt-foot.stacked { flex-direction: column; gap: 1px; padding: 4px 6px; }
+.bt-foot.stacked .wh { font-weight: 600; color: var(--ink-3); }
 .btie.on-path { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent), var(--sh-1); }
 .btie.on-future { border-color: var(--accent); border-style: dashed; }
 .btie.faded { opacity: .32; }
@@ -157,3 +159,42 @@
 body.dense .btie .bt-row { padding: 4px 8px; }
 body.dense .btl-body { padding: 9px 14px; }
 body.dense .btl-row + .btl-row { margin-top: 6px; }
+
+/* print — full bracket only; page.tsx / BracketClient hide everything
+   else via .no-print, this just fits the tree onto one landscape page.
+   Scaling uses transform (not zoom) so it's a pure visual shrink — zoom
+   triggers a relayout that drifts out of sync with the JS-measured pixel
+   offsets baked into the connector-line SVG paths. .bk-print-frame is
+   given an explicit width (= the measured content width) so it doesn't
+   stretch to fill .page, which lets transform-origin: center center
+   double as both the scale anchor and the centering mechanism. */
+.print-title { display: none; }
+@media print {
+  nav, .no-print { display: none !important; }
+  @page { size: landscape; margin: 12mm; }
+  /* two even flex rows: title centered in the top one, bracket centered
+     in the bottom one — the split point isn't literally "where the round
+     labels start", but it reads the same and doesn't need JS measurement */
+  .page {
+    padding: 0; display: flex; flex-direction: column;
+    min-height: calc(100vh - 24mm);
+  }
+  .print-title {
+    display: flex; align-items: center; justify-content: center;
+    flex: 1 0 auto; margin: 0; text-align: center; text-transform: uppercase;
+    font-family: var(--display); font-weight: 800; font-size: 20px;
+    letter-spacing: .04em; color: var(--navy);
+  }
+  .bk-stage {
+    overflow: visible; margin: 0; flex: 1 0 auto;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .bk-print-frame { transform: scale(0.71); transform-origin: center center; }
+  .btie, .bk-final, .bk-third { box-shadow: none; }
+  .btie:hover { transform: none; }
+  .bt-foot { background: none; }
+  /* live-match indicators don't make sense on a static printout */
+  .bt-foot.live { display: none; }
+  .btie.is-live { border-color: var(--line); }
+  .pulse-dot { display: none; }
+}

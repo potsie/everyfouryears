@@ -30,6 +30,15 @@ function CheckIco() {
     </svg>
   );
 }
+function PrintIco() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="6 9 6 2 18 2 18 9" />
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+      <rect x="6" y="14" width="12" height="8" />
+    </svg>
+  );
+}
 
 function short(w: string | null): string {
   return (w || '').replace(/^\w+ · /, '').replace(':00', '');
@@ -46,10 +55,7 @@ function localDate(iso: string | null): string {
 }
 
 function bracketWhen(t: Tie): string {
-  if (t.dateISO) {
-    if (t.state === 'tbd') return `${localDate(t.dateISO)} · ${localTime(t.dateISO)}`;
-    return localTime(t.dateISO);
-  }
+  if (t.dateISO) return `${localDate(t.dateISO)} · ${localTime(t.dateISO)}`;
   return short(t.when);
 }
 
@@ -96,11 +102,11 @@ function BTie({ t, path, active }: BTieProps) {
   let foot: React.ReactNode = null;
   if (isLive) {
     foot = <div className="bt-foot live"><Pulse /><span>{t.tag} · {t.isShootout ? 'PENALTIES' : t.clock}</span></div>;
-  } else if ((t.state === 'pre' || isTbd) && t.tag) {
+  } else if ((t.state === 'pre' || isTbd) && t.round !== 'R32' && (t.tag || t.dateISO || t.when)) {
     foot = (
-      <div className="bt-foot">
-        <span className="tg">{t.tag}</span>
-        {t.state === 'pre' && (t.dateISO || t.when) && <> · {bracketWhen(t)}</>}
+      <div className="bt-foot stacked">
+        {t.tag && <span className="tg">{t.tag}</span>}
+        {(t.dateISO || t.when) && <span className="wh">{bracketWhen(t)}</span>}
       </div>
     );
   }
@@ -251,54 +257,56 @@ function FullBracket({ path, active, onFocusRound }: FullBracketProps) {
 
   return (
     <div className="bk-stage">
-      <div className="bk-heads">
-        {['R32', 'R16', 'QF', 'SF'].map((k) => {
-          const m = RM(k);
-          return (
-            <button key={`L-${k}`} className="bk-head" onClick={() => onFocusRound(k)} title={`Focus ${m.label}`}>
-              <span className="rl">{m.label}</span>
-              <span className="rn">{m.n} {m.n === 1 ? 'match' : 'matches'}</span>
-            </button>
-          );
-        })}
-        {(() => { const m = RM('F'); return (
-          <button key="F-C" className="bk-head center" onClick={() => onFocusRound('F')} title="Focus Final">
-            <span className="rl">{m.label}</span>
-            <span className="rn">{m.n} match</span>
-          </button>
-        ); })()}
-        {['SF', 'QF', 'R16', 'R32'].map((k) => {
-          const m = RM(k);
-          return (
-            <button key={`R-${k}`} className="bk-head" onClick={() => onFocusRound(k)} title={`Focus ${m.label}`}>
-              <span className="rl">{m.label}</span>
-              <span className="rn">{m.n} {m.n === 1 ? 'match' : 'matches'}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="bk-grid" ref={gridRef}>
-        <svg
-          className="bk-lines"
-          width={dims.w}
-          height={dims.h}
-          viewBox={`0 0 ${dims.w} ${dims.h}`}
-        >
-          {lines.map((s) => {
-            const cls = path.conns.has(s.conn) ? 'on' : path.futureConns.has(s.conn) ? 'future' : active ? 'dim' : '';
-            return <path key={s.key} d={s.d} className={cls} />;
+      <div className="bk-print-frame" style={{ width: dims.w || undefined }}>
+        <div className="bk-heads">
+          {['R32', 'R16', 'QF', 'SF'].map((k) => {
+            const m = RM(k);
+            return (
+              <button key={`L-${k}`} className="bk-head" onClick={() => onFocusRound(k)} title={`Focus ${m.label}`}>
+                <span className="rl">{m.label}</span>
+                <span className="rn">{m.n} {m.n === 1 ? 'match' : 'matches'}</span>
+              </button>
+            );
           })}
-        </svg>
-
-        {bk.columnsL.map((c, i) => <Col key={`L${i}`} col={c} />)}
-
-        <div className="bk-col center">
-          <FinalCard path={path} />
-          <ThirdCard />
+          {(() => { const m = RM('F'); return (
+            <button key="F-C" className="bk-head center" onClick={() => onFocusRound('F')} title="Focus Final">
+              <span className="rl">{m.label}</span>
+              <span className="rn">{m.n} match</span>
+            </button>
+          ); })()}
+          {['SF', 'QF', 'R16', 'R32'].map((k) => {
+            const m = RM(k);
+            return (
+              <button key={`R-${k}`} className="bk-head" onClick={() => onFocusRound(k)} title={`Focus ${m.label}`}>
+                <span className="rl">{m.label}</span>
+                <span className="rn">{m.n} {m.n === 1 ? 'match' : 'matches'}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {bk.columnsR.map((c, i) => <Col key={`R${i}`} col={c} />)}
+        <div className="bk-grid" ref={gridRef}>
+          <svg
+            className="bk-lines"
+            width={dims.w}
+            height={dims.h}
+            viewBox={`0 0 ${dims.w} ${dims.h}`}
+          >
+            {lines.map((s) => {
+              const cls = path.conns.has(s.conn) ? 'on' : path.futureConns.has(s.conn) ? 'future' : active ? 'dim' : '';
+              return <path key={s.key} d={s.d} className={cls} />;
+            })}
+          </svg>
+
+          {bk.columnsL.map((c, i) => <Col key={`L${i}`} col={c} />)}
+
+          <div className="bk-col center">
+            <FinalCard path={path} />
+            <ThirdCard />
+          </div>
+
+          {bk.columnsR.map((c, i) => <Col key={`R${i}`} col={c} />)}
+        </div>
       </div>
     </div>
   );
@@ -431,64 +439,72 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
 
   return (
     <BracketCtx.Provider value={data}>
-      <PageHero
-        eyebrow="2026 FIFA World Cup"
-        title="Knockout Bracket"
-        sub={<>
-          <span style={{ color: '#fff', fontWeight: 700 }}>32</span> teams
-          <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
-          <span style={{ color: '#fff', fontWeight: 700 }}>31</span> matches
-          <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
-          <span>{data.window}</span>
-        </>}
-      />
+      <div className="no-print">
+        <PageHero
+          eyebrow="2026 FIFA World Cup"
+          title="Knockout Bracket"
+          sub={<>
+            <span style={{ color: '#fff', fontWeight: 700 }}>32</span> teams
+            <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+            <span style={{ color: '#fff', fontWeight: 700 }}>31</span> matches
+            <span style={{ color: 'rgba(255,255,255,.35)' }}>·</span>
+            <span>{data.window}</span>
+          </>}
+        />
 
-      <div className="bk-controls">
-        <div className="seg" role="tablist" aria-label="Bracket view">
-          <button
-            role="tab"
-            aria-selected={view === 'Full'}
-            className={view === 'Full' ? 'on' : ''}
-            onClick={() => setView('Full')}
-          >
-            Full bracket
-          </button>
-          <button
-            role="tab"
-            aria-selected={view === 'Round'}
-            className={view === 'Round' ? 'on' : ''}
-            onClick={() => setView('Round')}
-          >
-            By round
-          </button>
+        <div className="bk-controls">
+          <div className="seg" role="tablist" aria-label="Bracket view">
+            <button
+              role="tab"
+              aria-selected={view === 'Full'}
+              className={view === 'Full' ? 'on' : ''}
+              onClick={() => setView('Full')}
+            >
+              Full bracket
+            </button>
+            <button
+              role="tab"
+              aria-selected={view === 'Round'}
+              className={view === 'Round' ? 'on' : ''}
+              onClick={() => setView('Round')}
+            >
+              By round
+            </button>
+          </div>
+
+          {view === 'Full' && (
+            <>
+              <div className="bk-trace">
+                <span>Trace</span>
+                <select
+                  value={trace || ''}
+                  onChange={(e) => { setTrace(e.target.value || null); }}
+                >
+                  <option value="">a team…</option>
+                  {data.alive.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+                {trace && (
+                  <button className="clear" onClick={() => setTrace(null)} aria-label="Clear">✕</button>
+                )}
+              </div>
+            </>
+          )}
+
+          <div className="fspace" />
+          {view === 'Full' && (
+            <button className="btn" onClick={() => window.print()}>
+              <PrintIco /> Print bracket
+            </button>
+          )}
+          <Link className="btn" href="/schedule?stage=ko">Knockout schedule →</Link>
         </div>
-
-        {view === 'Full' && (
-          <>
-            <div className="bk-trace">
-              <span>Trace</span>
-              <select
-                value={trace || ''}
-                onChange={(e) => { setTrace(e.target.value || null); }}
-              >
-                <option value="">a team…</option>
-                {data.alive.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-              {trace && (
-                <button className="clear" onClick={() => setTrace(null)} aria-label="Clear">✕</button>
-              )}
-            </div>
-          </>
-        )}
-
-        <div className="fspace" />
-        <Link className="btn" href="/schedule?stage=ko">Knockout schedule →</Link>
       </div>
 
       {view === 'Full' ? (
         <>
+          <h1 className="print-title">2026 FIFA Men&apos;s World Cup — Knockout Bracket</h1>
           <FullBracket path={path} active={active} onFocusRound={focusRound} />
-          <div className="bk-legend">
+          <div className="bk-legend no-print">
             <span className="k"><span className="sw" style={{ background: 'var(--live)' }} /> Advanced</span>
             <span className="k"><Pulse /> Live now</span>
             <span className="k"><span className="sw" style={{ background: 'var(--inset)', border: '1px dashed var(--line-2)' }} /> Awaiting teams</span>
@@ -501,7 +517,7 @@ export function BracketClient({ data: serialized }: BracketClientProps) {
               </span>
             )}
           </div>
-          <div className="bk-view-note">
+          <div className="bk-view-note no-print">
             <p style={{ color: 'var(--ink-2)', fontSize: 13, padding: '20px 4px', textAlign: 'center' }}>
               The full bracket is best viewed on a wider screen.{' '}
               <button
