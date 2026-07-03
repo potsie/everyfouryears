@@ -257,14 +257,14 @@ function FullBracket({ path, active, onFocusRound }: FullBracketProps) {
           return (
             <button key={`L-${k}`} className="bk-head" onClick={() => onFocusRound(k)} title={`Focus ${m.label}`}>
               <span className="rl">{m.label}</span>
-              <span className="rn">{m.n} {m.n === 1 ? 'tie' : 'ties'}</span>
+              <span className="rn">{m.n} {m.n === 1 ? 'match' : 'matches'}</span>
             </button>
           );
         })}
         {(() => { const m = RM('F'); return (
           <button key="F-C" className="bk-head center" onClick={() => onFocusRound('F')} title="Focus Final">
             <span className="rl">{m.label}</span>
-            <span className="rn">{m.n} tie</span>
+            <span className="rn">{m.n} match</span>
           </button>
         ); })()}
         {['SF', 'QF', 'R16', 'R32'].map((k) => {
@@ -272,7 +272,7 @@ function FullBracket({ path, active, onFocusRound }: FullBracketProps) {
           return (
             <button key={`R-${k}`} className="bk-head" onClick={() => onFocusRound(k)} title={`Focus ${m.label}`}>
               <span className="rl">{m.label}</span>
-              <span className="rn">{m.n} {m.n === 1 ? 'tie' : 'ties'}</span>
+              <span className="rn">{m.n} {m.n === 1 ? 'match' : 'matches'}</span>
             </button>
           );
         })}
