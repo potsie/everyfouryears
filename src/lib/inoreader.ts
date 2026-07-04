@@ -15,6 +15,7 @@
  * bundle, so a stray import can't leak the client secret or tokens.
  */
 import { getCache, setCache } from '@/lib/cache';
+import { getToken, setToken } from '@/lib/inoreader-token-store';
 import type { NewsItem } from '@/lib/news';
 
 if (typeof window !== 'undefined') {
@@ -75,11 +76,11 @@ interface TokenResponse {
  */
 async function getAccessToken(cfg: InoreaderConfig, force = false): Promise<string> {
   if (!force) {
-    const cached = await getCache<{ token: string }>(ACCESS_TOKEN_KEY);
+    const cached = await getToken<{ token: string }>(ACCESS_TOKEN_KEY);
     if (cached?.token) return cached.token;
   }
 
-  const stored = await getCache<{ refresh: string }>(REFRESH_TOKEN_KEY);
+  const stored = await getToken<{ refresh: string }>(REFRESH_TOKEN_KEY);
   const refreshToken = stored?.refresh || cfg.refreshToken;
 
   const res = await fetch(TOKEN_URL, {
@@ -102,11 +103,11 @@ async function getAccessToken(cfg: InoreaderConfig, force = false): Promise<stri
 
   // Cache the access token slightly ahead of its real expiry to avoid races.
   const ttl = Math.max(60, (data.expires_in ?? 3600) - 60);
-  await setCache(ACCESS_TOKEN_KEY, { token: data.access_token }, ttl);
+  await setToken(ACCESS_TOKEN_KEY, { token: data.access_token }, ttl);
 
   // Persist a rotated refresh token (no TTL) so future refreshes keep working.
   if (data.refresh_token && data.refresh_token !== refreshToken) {
-    await setCache(REFRESH_TOKEN_KEY, { refresh: data.refresh_token });
+    await setToken(REFRESH_TOKEN_KEY, { refresh: data.refresh_token });
   }
 
   return data.access_token;
