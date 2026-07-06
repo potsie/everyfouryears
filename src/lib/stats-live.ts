@@ -146,7 +146,7 @@ export function buildTournamentStats(
         const minute = evt.clock?.displayValue ?? '';
         ownGoalsList.push({ player, ownTeam, oppTeam, minute, eventId });
       }
-      if (text.includes('VAR')) totalVAR++;
+      if (/\bVAR\b/.test(text) || /\bVAR\b/.test(evt.text ?? '')) totalVAR++;
     }
     totalPens += matchPens;
     totalPensTaken += matchPensTaken;
