@@ -146,10 +146,32 @@ export function buildTournamentStats(
         const minute = evt.clock?.displayValue ?? '';
         ownGoalsList.push({ player, ownTeam, oppTeam, minute, eventId });
       }
-      if (/\bVAR\b/.test(text) || /\bVAR\b/.test(evt.text ?? '')) totalVAR++;
     }
     totalPens += matchPens;
     totalPensTaken += matchPensTaken;
+
+    // VAR decisions. Most VAR outcomes (overturned goals/penalties, card
+    // upgrades, confirmed calls) only appear in `commentary`, tagged via
+    // `play.type.text` (e.g. "VAR - Referee decision cancelled"), not in
+    // keyEvents. A goal that's confirmed by VAR shows up as a plain "Goal"
+    // keyEvent AND a separate commentary "VAR Decision: Goal ..." entry
+    // sharing the same underlying `play.id` as some keyEvent — dedupe on
+    // that id so a single review isn't counted twice.
+    const matchVarIds = new Set<string>();
+    for (const c of summary.commentary ?? []) {
+      const ctext = c.text ?? '';
+      const ptype = c.play?.type?.text ?? '';
+      if (/\bVAR\b/.test(ctext) || /\bVAR\b/.test(ptype)) {
+        matchVarIds.add(c.play?.id ?? `seq-${c.sequence}`);
+      }
+    }
+    for (const evt of summary.keyEvents ?? []) {
+      const text = evt.type?.text ?? '';
+      if ((/\bVAR\b/.test(text) || /\bVAR\b/.test(evt.text ?? '')) && !matchVarIds.has(evt.id)) {
+        matchVarIds.add(evt.id);
+      }
+    }
+    totalVAR += matchVarIds.size;
 
     // Per-player from rosters
     for (const teamRoster of summary.rosters ?? []) {

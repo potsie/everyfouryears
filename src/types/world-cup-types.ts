@@ -148,6 +148,19 @@ export interface ESPNCommentaryEntry {
   clock?: { displayValue: string };
   type?: { text: string };
   athletesInvolved?: { id: string; displayName: string }[];
+  // Monotonic ordering key, also usable to dedupe against keyEvents (see
+  // `play.id` below vs ESPNKeyEvent.id — VAR-overturned goals appear in both).
+  sequence?: number;
+  // Structured play data. VAR decisions carry a distinct play.type.text (e.g.
+  // "VAR - Referee decision cancelled", "Deleted After Review",
+  // "VAR - Referee decision confirmed") that the plain-text keyEvents never
+  // surface — most VAR review outcomes only show up here, not in keyEvents.
+  play?: {
+    id?: string;
+    type?: { id?: string; text?: string };
+    team?: { displayName?: string };
+    participants?: { athlete?: { displayName?: string } }[];
+  };
 }
 
 export interface ESPNPickcenterEntry {
