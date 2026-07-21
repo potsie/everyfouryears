@@ -99,7 +99,12 @@
 .bk-final .bf-ttl { font-family: var(--display); font-weight: 800; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; margin-top: 2px; }
 .bk-final .bf-rows { padding: 0 12px 10px; display: flex; flex-direction: column; gap: 7px; }
 .bk-final .bf-row { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); border-radius: 8px; padding: 7px 9px; }
-.bk-final .bf-code { font-family: var(--ui); font-weight: 600; font-size: 11px; color: rgba(255,255,255,.7); }
+.bk-final .bf-code { font-family: var(--ui); font-weight: 600; font-size: 11px; color: rgba(255,255,255,.7); flex: 1; min-width: 0; }
+.bk-final .bf-row .tnum { font-family: var(--display); font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; color: rgba(255,255,255,.75); }
+.bk-final .bf-row .tnum .pens { font-size: 10px; font-weight: 700; opacity: .75; }
+.bk-final .bf-row.win { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.34); }
+.bk-final .bf-row.win .bf-code, .bk-final .bf-row.win .tnum { color: #fff; }
+.bk-final .bf-row.lose { opacity: .6; }
 .bk-final .bf-when { text-align: center; font-size: 10.5px; color: rgba(255,255,255,.6); padding: 7px 10px; border-top: 1px solid rgba(255,255,255,.12); font-weight: 600; }
 .bk-final:hover { box-shadow: 0 4px 10px rgba(11,29,51,.25), 0 16px 40px rgba(11,29,51,.18); }
 .bk-third {
@@ -110,6 +115,11 @@
 .bk-third .b3-cap { font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); text-align: center; padding: 6px 8px 4px; }
 .bk-third .b3-row { display: flex; align-items: center; gap: 7px; padding: 4px 10px; font-size: 10px; font-weight: 600; color: var(--ink-3); }
 .bk-third .b3-row:last-of-type { padding-bottom: 7px; }
+.bk-third .b3-row > span:first-child { flex: 1; min-width: 0; }
+.bk-third .b3-row .tnum { font-family: var(--display); font-weight: 800; font-size: 12px; font-variant-numeric: tabular-nums; }
+.bk-third .b3-row .tnum .pens { font-size: 9px; font-weight: 700; }
+.bk-third .b3-row.win { color: var(--ink); box-shadow: inset 2px 0 0 var(--live); }
+.bk-third .b3-row.lose { opacity: .55; }
 
 /* by round */
 .bround-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 22px 0 6px; }

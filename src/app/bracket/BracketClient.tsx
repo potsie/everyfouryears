@@ -146,10 +146,33 @@ function BTie({ t, path, active }: BTieProps) {
 }
 
 /* ---------- center final + third ---------- */
+// Score cell shared by the two center cards. Mirrors BTieTeamRow: goals show
+// once the tie is live or final, with the shootout score in parens when the
+// tie went to penalties.
+function CenterScore({ t, s }: { t: Tie; s: 'a' | 'b' }) {
+  if (t.state !== 'post' && t.state !== 'in') return null;
+  if (!t.score) return null;
+  const i = s === 'a' ? 0 : 1;
+  return (
+    <span className="tnum">
+      {t.score[i]}
+      {t.shootout && <span className="pens"> ({t.shootout[i]})</span>}
+    </span>
+  );
+}
+
+function centerRowClass(base: string, t: Tie, s: 'a' | 'b'): string {
+  if (t.state !== 'post') return base;
+  return `${base}${t.winner === s ? ' win' : t.winner ? ' lose' : ''}`;
+}
+
 function FinalCard({ path }: { path: PathResult }) {
   const bk = useBK();
   const f = bk.final;
   const onPath = path.future.has(f.id) || path.confirmed.has(f.id);
+  const result = f.state === 'post'
+    ? (f.shootout ? 'FT · PENS' : 'FULL TIME')
+    : null;
   return (
     <a
       data-tie={f.id}
@@ -162,14 +185,16 @@ function FinalCard({ path }: { path: PathResult }) {
         <div className="bf-ttl">Final</div>
       </div>
       <div className="bf-rows">
-        <div className="bf-row">
+        <div className={centerRowClass('bf-row', f, 'a')}>
           <span className="bf-code">{isTBD(f.a) ? f.a.src : (f.a as TieTeam).code}</span>
+          <CenterScore t={f} s="a" />
         </div>
-        <div className="bf-row">
+        <div className={centerRowClass('bf-row', f, 'b')}>
           <span className="bf-code">{isTBD(f.b) ? f.b.src : (f.b as TieTeam).code}</span>
+          <CenterScore t={f} s="b" />
         </div>
       </div>
-      <div className="bf-when">{f.venue} · {bracketWhen(f)}</div>
+      <div className="bf-when">{f.venue} · {result ?? bracketWhen(f)}</div>
     </a>
   );
 }
@@ -180,8 +205,14 @@ function ThirdCard() {
   return (
     <a data-tie={t.id} className="bk-third" href={`/match/${t.id}`}>
       <div className="b3-cap">Third Place</div>
-      <div className="b3-row"><span>{isTBD(t.a) ? t.a.src : (t.a as TieTeam).code}</span></div>
-      <div className="b3-row"><span>{isTBD(t.b) ? t.b.src : (t.b as TieTeam).code}</span></div>
+      <div className={centerRowClass('b3-row', t, 'a')}>
+        <span>{isTBD(t.a) ? t.a.src : (t.a as TieTeam).code}</span>
+        <CenterScore t={t} s="a" />
+      </div>
+      <div className={centerRowClass('b3-row', t, 'b')}>
+        <span>{isTBD(t.b) ? t.b.src : (t.b as TieTeam).code}</span>
+        <CenterScore t={t} s="b" />
+      </div>
     </a>
   );
 }
